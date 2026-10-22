@@ -14,7 +14,7 @@ KEY_BODY_NAMES = ["left_ankle_roll_link", "right_ankle_roll_link", "left_knee_pi
 
 class X1AMPCfg(LeggedRobotCfg):
     class env(LeggedRobotCfg.env):
-        num_envs = 1024
+        num_envs = 4096
         num_actions = 29
         num_commands = 3
         frame_stack = 5

@@ -46,7 +46,7 @@ def sha256(path):
     return digest.hexdigest()
 
 
-def ensure_assets(root, manifest_path=None):
+def ensure_assets(root, manifest_path=None, download_urls=None):
     root = Path(root).resolve()
     manifest_path = Path(manifest_path or Path(__file__).with_name("assets_manifest.json"))
     with manifest_path.open(encoding="utf-8") as stream:
@@ -59,7 +59,7 @@ def ensure_assets(root, manifest_path=None):
     if all((root/name).is_file() and sha256(root/name) == digest for name, digest in expected.items()):
         print("X1 AMP assets verified: {} files".format(len(expected)), flush=True)
         return
-    urls = list(manifest.get("mirrors", []))+[manifest["url"]]
+    urls = list(download_urls or [])+list(manifest.get("mirrors", []))+[manifest["url"]]
     if any(not url.startswith("https://") for url in urls):
         raise ValueError("Asset download requires HTTPS")
     with tempfile.TemporaryDirectory(prefix="x1_amp_assets_") as temporary:

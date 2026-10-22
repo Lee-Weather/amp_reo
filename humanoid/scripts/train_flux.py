@@ -1,5 +1,7 @@
 """Flux gm-run entry point: install the separate assets, then start normal training."""
 import os
+import argparse
+import base64
 from pathlib import Path
 import sys
 
@@ -12,7 +14,18 @@ from humanoid.amp.assets import ensure_assets
 
 
 def main():
-    ensure_assets(ROOT)
+    # A short-lived CDN redirect can be supplied by the task launcher when a
+    # training network cannot reach github.com. Never print or persist it.
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--asset_url_b64")
+    asset_args, remaining = parser.parse_known_args()
+    sys.argv = [sys.argv[0]]+remaining
+    urls = None
+    if asset_args.asset_url_b64:
+        encoded = asset_args.asset_url_b64
+        url = base64.urlsafe_b64decode(encoded+"="*(-len(encoded)%4)).decode("utf-8")
+        urls = [url]
+    ensure_assets(ROOT, download_urls=urls)
     # Isaac Gym must precede torch, including imports in the normal train module.
     import isaacgym
     from humanoid.scripts.train import train

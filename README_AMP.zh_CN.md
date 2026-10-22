@@ -23,7 +23,7 @@ source /home/robot/Anaconda/etc/profile.d/conda.sh
 conda activate F1
 export PYTHONPATH="$PWD"
 python humanoid/scripts/validate_amp.py --task=x1_amp --num_envs=8 --headless
-python humanoid/scripts/train.py --task=x1_amp --num_envs=1024 --run_name=amp29 --headless
+python humanoid/scripts/train.py --task=x1_amp --num_envs=4096 --run_name=amp29 --headless
 ```
 
 先进行少量迭代的连通性检查：
@@ -35,7 +35,7 @@ python humanoid/scripts/train.py --task=x1_amp --num_envs=64 --max_iterations=20
 Flux 云端入口使用独立的 GitHub Release 资源包，保持 `czy/robots/` 和轨迹目录不进入 Git 历史。入口会检查压缩包与67个文件的 SHA256，下载并安装模型和4段规范化轨迹，再执行同一训练流程：
 
 ```bash
-gm-run amp_reo/humanoid/scripts/train_flux.py --task=x1_amp --num_envs=1024 --max_iterations=6000 --run_name=amp29_6000 --headless
+gm-run amp_reo/humanoid/scripts/train_flux.py --task=x1_amp --num_envs=4096 --max_iterations=6000 --run_name=amp29_6000 --headless
 ```
 
 资源地址与校验和保存在 `humanoid/amp/assets_manifest.json`。已有文件校验通过时会直接复用。Flux 应选择 Isaac Gym Preview 4 镜像；`hparamsPath` 为 `amp_reo/humanoid/envs/x1/x1_amp_config.py`。
@@ -45,7 +45,7 @@ gm-run amp_reo/humanoid/scripts/train_flux.py --task=x1_amp --num_envs=1024 --ma
 恢复训练（将 `<run>` 替换为实际目录名）：
 
 ```bash
-python humanoid/scripts/train.py --task=x1_amp --resume --load_run='<run>' --checkpoint=20 --num_envs=1024 --max_iterations=1000 --run_name=amp29_resume --headless
+python humanoid/scripts/train.py --task=x1_amp --resume --load_run='<run>' --checkpoint=20 --num_envs=4096 --max_iterations=1000 --run_name=amp29_resume --headless
 ```
 
 这里 `max_iterations=1000` 表示再训练 1000 次更新。恢复策略、价值网络、判别器、判别器归一化、两个优化器和迭代数；经验回放池会由新 rollout 重新填充。检查点会校验关节名、动作零点、动作比例、观测维度、关键点顺序和策略周期。不兼容原 12 自由度 DH 模型。
