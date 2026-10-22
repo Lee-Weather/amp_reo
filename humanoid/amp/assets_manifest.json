@@ -70,5 +70,8 @@
     "czy/slow_walk_amp_v1.2/normalized/F1_B3_continuous_walk.pkl": "85d13aa13bb688faf5cb35dabbb8df0c105b614996b74f8f5035aafdda281dc0",
     "czy/slow_walk_amp_v1.2/normalized/F1_B4_walk_backwards.pkl": "0ba8de827a0eaba66aa0a8c593d6825a7078d53017b282a89c9b9675186c25eb",
     "czy/slow_walk_amp_v1.2/normalized/format_manifest.json": "b4bd434aeb2b91e2943d1a48ac1ab76cb834a820afdbcb3df93c1c29197b0e73"
-  }
+  },
+  "mirrors": [
+    "https://api.github.com/repos/Lee-Weather/amp_reo/releases/assets/665198968"
+  ]
 }

@@ -6,6 +6,8 @@ import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
+import shutil
+import subprocess
 
 from humanoid.amp.assets import ensure_assets
 
@@ -36,10 +38,10 @@ class AssetTests(unittest.TestCase):
 
     def test_download_verification_and_cached_assets(self):
         self.save_manifest()
-        with patch("urllib.request.urlopen", side_effect=lambda *a, **k: self.archive.open("rb")):
+        with patch("humanoid.amp.assets._download_once", side_effect=lambda url, dst: shutil.copyfile(self.archive, dst)):
             ensure_assets(self.root, self.manifest_path)
         self.assertEqual((self.root/self.name).read_bytes(), self.content)
-        with patch("urllib.request.urlopen", side_effect=AssertionError("Must use valid cached assets")):
+        with patch("humanoid.amp.assets._download_once", side_effect=AssertionError("Must use valid cached assets")):
             ensure_assets(self.root, self.manifest_path)
 
     def test_corrupt_download_does_not_overwrite(self):
@@ -48,7 +50,7 @@ class AssetTests(unittest.TestCase):
         target.write_bytes(b"existing data")
         self.manifest["sha256"] = "0"*64
         self.save_manifest()
-        with patch("urllib.request.urlopen", side_effect=lambda *a, **k: self.archive.open("rb")):
+        with patch("humanoid.amp.assets._download_once", side_effect=lambda url, dst: shutil.copyfile(self.archive, dst)):
             with self.assertRaises(ValueError):
                 ensure_assets(self.root, self.manifest_path)
         self.assertEqual(target.read_bytes(), b"existing data")
@@ -56,7 +58,7 @@ class AssetTests(unittest.TestCase):
     def test_reject_unexpected_archive_members(self):
         self.manifest["files"] = {"czy/unexpected": hashlib.sha256(self.content).hexdigest()}
         self.save_manifest()
-        with patch("urllib.request.urlopen", side_effect=lambda *a, **k: self.archive.open("rb")):
+        with patch("humanoid.amp.assets._download_once", side_effect=lambda url, dst: shutil.copyfile(self.archive, dst)):
             with self.assertRaises(ValueError):
                 ensure_assets(self.root, self.manifest_path)
         self.assertFalse((self.root/self.name).exists())
@@ -66,6 +68,20 @@ class AssetTests(unittest.TestCase):
         self.save_manifest()
         with self.assertRaises(ValueError):
             ensure_assets(self.root, self.manifest_path)
+
+    def test_endpoint_timeout_falls_back(self):
+        self.manifest["mirrors"] = ["https://example.com/primary.tar.gz"]
+        self.save_manifest()
+        calls = []
+        def download(url, destination):
+            calls.append(url)
+            if len(calls) == 1:
+                raise subprocess.TimeoutExpired("download", 90)
+            shutil.copyfile(self.archive, destination)
+        with patch("humanoid.amp.assets._download_once", side_effect=download):
+            ensure_assets(self.root, self.manifest_path)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual((self.root/self.name).read_bytes(), self.content)
 
 
 if __name__ == "__main__":
