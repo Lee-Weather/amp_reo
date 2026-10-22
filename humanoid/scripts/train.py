@@ -31,6 +31,11 @@
 # Copyright (c) 2024, AgiBot Inc. All rights reserved.
 
 
+from pathlib import Path
+import sys
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_PROJECT_ROOT))
 from humanoid.envs import *
 from humanoid.utils import get_args, task_registry
 

@@ -4,8 +4,8 @@
 
 ## 输入与模型约定
 
-- URDF：`czy/robots/x1/urdf/X1_29DOF_physically_mirrored.urdf`，网格来自其相对路径 `czy/robots/meshes/`。
-- 轨迹：`czy/slow_walk_amp_v1.2/normalized/*.pkl`，默认加载四条片段，按片段等概率采样。
+- URDF：`resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf`，网格来自其相对路径 `../meshes/`。
+- 轨迹：`resources/motions/slow_walk_amp_v1.2/normalized/*.pkl`，默认加载四条片段，按片段等概率采样。
 - 每条轨迹必须有 `fps`、`dof_names`、`dof_pos`、`root_pos`、`root_rot`。四元数顺序为 **xyzw**。
 - 按仿真器实际关节名重排数据，不能假定 Isaac Gym 的关节顺序等于 MJCF 的顺序。当前 29 个动作覆盖腰 3、双臂 14、双腿 12 个关节。
 - 所有片段按真实时间插值；不跨片段、不把末帧连接回首帧。即使片段标注 `periodic`，也不默认首尾已经平滑对齐。
@@ -32,13 +32,13 @@ python humanoid/scripts/train.py --task=x1_amp --num_envs=4096 --run_name=amp29 
 python humanoid/scripts/train.py --task=x1_amp --num_envs=64 --max_iterations=20 --run_name=amp_smoke --headless
 ```
 
-Flux 云端入口使用独立的 GitHub Release 资源包，保持 `czy/robots/` 和轨迹目录不进入 Git 历史。入口会检查压缩包与67个文件的 SHA256，下载并安装模型和4段规范化轨迹，再执行同一训练流程：
+Flux 云端只配置当前 `amp_reo/main` 仓库。训练需要的 URDF、61个网格及4段规范化轨迹均位于 `resources/`，随代码一并拉取。直接执行训练入口：
 
 ```bash
-gm-run amp_reo/humanoid/scripts/train_flux.py --task=x1_amp --num_envs=4096 --max_iterations=6000 --run_name=amp29_6000 --headless
+gm-run amp_reo/humanoid/scripts/train.py --task=x1_amp --num_envs=4096 --max_iterations=6000 --run_name=amp29_6000 --headless
 ```
 
-资源地址与校验和保存在 `humanoid/amp/assets_manifest.json`。已有文件校验通过时会直接复用。Flux 应选择 Isaac Gym Preview 4 镜像；`hparamsPath` 为 `amp_reo/humanoid/envs/x1/x1_amp_config.py`。
+Flux 应选择 Isaac Gym Preview 4 镜像；`hparamsPath` 为 `amp_reo/humanoid/envs/x1/x1_amp_config.py`。原始 `czy/` 模型和轨迹目录保留在本地并继续被 Git 忽略。
 
 日志和检查点保存在 `logs/x1_amp/exported_data/<时间戳><run_name>/`。包含 TensorBoard、`config.json` 和 `model_<iteration>.pt`。
 

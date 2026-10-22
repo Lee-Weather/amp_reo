@@ -17,8 +17,8 @@ from humanoid.amp.models import ReplayBuffer, RunningNormalizer
 from humanoid.amp.runner import AMPOnPolicyRunner
 
 ROOT = Path(LEGGED_GYM_ROOT_DIR)
-URDF = ROOT / "czy/robots/x1/urdf/X1_29DOF_physically_mirrored.urdf"
-MOTIONS = ROOT / "czy/slow_walk_amp_v1.2/normalized"
+URDF = ROOT / "resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf"
+MOTIONS = ROOT / "resources/motions/slow_walk_amp_v1.2/normalized"
 JOINTS = [j.get("name") for j in ET.parse(URDF).getroot().findall("joint") if j.get("type") != "fixed"]
 KEYS = ["left_ankle_roll_link", "right_ankle_roll_link", "left_knee_pitch_link",
         "right_knee_pitch_link", "left_elbow_yaw_link", "right_elbow_yaw_link"]

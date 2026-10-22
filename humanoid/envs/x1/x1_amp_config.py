@@ -27,7 +27,7 @@ class X1AMPCfg(LeggedRobotCfg):
         episode_length_s = 20.
 
     class amp:
-        motion_dir = "{LEGGED_GYM_ROOT_DIR}/czy/slow_walk_amp_v1.2/normalized"
+        motion_dir = "{LEGGED_GYM_ROOT_DIR}/resources/motions/slow_walk_amp_v1.2/normalized"
         history_steps = 3
         key_body_names = KEY_BODY_NAMES
         # Equal clip probabilities, not equal frame probabilities.
@@ -42,7 +42,7 @@ class X1AMPCfg(LeggedRobotCfg):
         torque_limit = 0.85
 
     class asset(LeggedRobotCfg.asset):
-        file = "{LEGGED_GYM_ROOT_DIR}/czy/robots/x1/urdf/X1_29DOF_physically_mirrored.urdf"
+        file = "{LEGGED_GYM_ROOT_DIR}/resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf"
         name = "x1_amp"
         foot_name = "ankle_roll_link"
         knee_name = "knee_pitch_link"
