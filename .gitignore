@@ -69,3 +69,8 @@ MUJOCO_LOG.TXT
 /czy/robots/
 /czy/slow_walk_amp_v1.2/
 /czy/validation/
+
+# Local replay artifacts and analysis bundles
+/czy/data/
+/czy/analysis/
+/czy/exp1/artifacts/

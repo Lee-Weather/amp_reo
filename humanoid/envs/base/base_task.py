@@ -59,7 +59,7 @@ class BaseTask():
 
         # graphics device for rendering, -1 for no rendering
         self.graphics_device_id = self.sim_device_id
-        if self.headless == True:
+        if self.headless and not getattr(cfg.env, 'enable_camera_sensors', False):
             self.graphics_device_id = -1
 
         self.num_envs = cfg.env.num_envs
@@ -103,6 +103,7 @@ class BaseTask():
         self.gym.prepare_sim(self.sim)
         self.enable_viewer_sync = True
         self.viewer = None
+        self.camera_handle = None
 
         # if running with a viewer, set up keyboard shortcuts and camera
         if self.headless == False:
@@ -115,16 +116,16 @@ class BaseTask():
                 self.viewer, gymapi.KEY_V, "toggle_viewer_sync")
 
             camera_properties = gymapi.CameraProperties()
-            camera_properties.width = 720
-            camera_properties.height = 480
+            camera_properties.width = getattr(cfg.env, 'camera_width', 720)
+            camera_properties.height = getattr(cfg.env, 'camera_height', 480)
             camera_handle = self.gym.create_camera_sensor(
                 self.envs[0], camera_properties)
             self.camera_handle = camera_handle
-        else:
+        elif self.graphics_device_id >= 0:
             # pass
             camera_properties = gymapi.CameraProperties()
-            camera_properties.width = 720
-            camera_properties.height = 480
+            camera_properties.width = getattr(cfg.env, 'camera_width', 720)
+            camera_properties.height = getattr(cfg.env, 'camera_height', 480)
             camera_handle = self.gym.create_camera_sensor(
                 self.envs[0], camera_properties)
             self.camera_handle = camera_handle

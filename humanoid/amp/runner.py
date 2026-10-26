@@ -7,6 +7,7 @@ import torch
 from torch import nn
 
 from .models import ActorCritic, Discriminator, ReplayBuffer
+from .logging import TrainingLog
 
 
 class AMPOnPolicyRunner:
@@ -28,6 +29,7 @@ class AMPOnPolicyRunner:
             raise ValueError("task_reward_weight must be in [0, 1]")
         self.num_steps_per_env = self.cfg["num_steps_per_env"]
         self.current_learning_iteration = 0
+        self.training_log = TrainingLog(env.num_envs, self.device)
         self.writer = None
         if log_dir is not None:
             from torch.utils.tensorboard import SummaryWriter
@@ -49,6 +51,7 @@ class AMPOnPolicyRunner:
                                     env.motion_library.feature_dim, device=self.device)
         obs = env.get_observations().to(self.device)
         critic = env.get_privileged_observations().to(self.device)
+        self.training_log.begin_rollout(obs)
         with torch.no_grad():
             for step in range(steps):
                 # Copy before env.step mutates its state and returns auto-reset observations.
@@ -66,6 +69,8 @@ class AMPOnPolicyRunner:
                 style = self.discriminator.style_reward(amp) * self.disc_cfg["style_reward_scale"] * env.dt
                 weight = self.disc_cfg["task_reward_weight"]
                 reward = weight*task_reward + (1-weight)*style
+                # Report actual returns, never critic bootstrap corrections.
+                self.training_log.record(reward, task_reward, style, dones, info)
                 # Bootstrap time-limit truncation from the pre-reset critic observation.
                 if "time_outs" in info:
                     timeout = info["time_outs"].to(self.device).bool()
@@ -154,9 +159,13 @@ class AMPOnPolicyRunner:
         if init_at_random_ep_len:
             self.env.episode_length_buf.random_(int(self.env.max_episode_length))
         end = self.current_learning_iteration+num_learning_iterations
+        first_iteration = self.current_learning_iteration
+        self.training_log.call_start_time = self.training_log.total_time
         while self.current_learning_iteration < end:
             start = time.time()
             batch = self.collect_rollout()
+            collection_time = time.time()-start
+            learn_start = time.time()
             metrics = self.update_policy(batch)
             metrics.update(self.update_discriminator(batch["amp"]))
             metrics.update(task_reward=batch["task_rewards"].mean().item(),
@@ -164,12 +173,9 @@ class AMPOnPolicyRunner:
                            done_fraction=batch["dones"].mean().item(),
                            episode_length=self.env.episode_length_buf.float().mean().item())
             self.current_learning_iteration += 1
-            metrics["steps_per_second"] = len(batch["obs"])/(time.time()-start)
-            if self.writer:
-                for key, value in metrics.items():
-                    self.writer.add_scalar("AMP/"+key, value, self.current_learning_iteration)
-            print("Learning iteration {}/{} {}".format(self.current_learning_iteration, end,
-                  " ".join("{}={:.5f}".format(k, v) for k, v in metrics.items())), flush=True)
+            learn_time = time.time()-learn_start
+            metrics["steps_per_second"] = len(batch["obs"])/(collection_time+learn_time)
+            self.training_log.log(self, metrics, collection_time, learn_time, end, first_iteration)
             if self.log_dir and self.current_learning_iteration % self.cfg["save_interval"] == 0:
                 self.save(os.path.join(self.log_dir, "model_{}.pt".format(self.current_learning_iteration)))
         if self.log_dir:
@@ -178,12 +184,15 @@ class AMPOnPolicyRunner:
             self.writer.flush()
 
     def _metadata(self):
-        return {"schema_version": 1, "dof_names": list(self.env.dof_names), "num_obs": self.env.num_obs,
+        metadata = {"schema_version": 1, "dof_names": list(self.env.dof_names), "num_obs": self.env.num_obs,
                 "key_body_names": list(self.env.motion_library.key_body_names),
                 "history_steps": self.env.motion_library.history_steps,
                 "policy_dt": self.env.dt,
                 "default_dof_pos": self.env.default_dof_pos.flatten().tolist(),
                 "action_scale": self.env.cfg.control.action_scale}
+        if hasattr(self.env, "checkpoint_control_metadata"):
+            metadata.update(schema_version=2, control=self.env.checkpoint_control_metadata())
+        return metadata
 
     def save(self, path, infos=None):
         torch.save({"model_state_dict": self.actor_critic.state_dict(),

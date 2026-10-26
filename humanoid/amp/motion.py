@@ -97,6 +97,9 @@ class URDFKinematics:
                 required.remove(body)
 
     def key_positions(self, q):
+        return self.key_transforms(q)[0]
+
+    def key_transforms(self, q):
         shape = q.shape[:-1]
         pos = {self.root_name: q.new_zeros(*shape, 3)}
         identity = q.new_zeros(*shape, 4)
@@ -108,17 +111,22 @@ class URDFKinematics:
             if idx is not None:
                 half = q[..., idx:idx+1] / 2
                 rot[body] = quat_mul(rot[body], torch.cat((axis * half.sin(), half.cos()), -1))
-        return torch.stack([pos[b] for b in self.key_body_names], -2)
+        return (torch.stack([pos[b] for b in self.key_body_names], -2),
+                torch.stack([rot[b] for b in self.key_body_names], -2))
 
 
 class MotionLibrary:
     def __init__(self, motion_dir, urdf_path, dof_names, key_body_names, dt=0.02,
-                 history_steps=3, device="cpu", weights=None, limit_tolerance=0.05):
+                 history_steps=3, device="cpu", weights=None, limit_tolerance=0.05, ground_clearance=None):
         if dt <= 0 or history_steps < 2:
             raise ValueError("AMP requires positive dt and at least two history steps")
         self.device, self.dt, self.history_steps = device, dt, history_steps
         self.dof_names, self.key_body_names = list(dof_names), list(key_body_names)
         self.fk = URDFKinematics(urdf_path, self.dof_names, key_body_names, device)
+        self.grounding = None
+        if ground_clearance is not None:
+            from .grounding import FootGrounding
+            self.grounding = FootGrounding(urdf_path, self.fk, ground_clearance)
         paths = sorted(Path(motion_dir).glob("*.pkl"))
         if weights is not None:
             if set(weights) - {p.stem for p in paths}:
@@ -160,6 +168,8 @@ class MotionLibrary:
             if excess > 1e-5:
                 warnings.warn("{}: clamping small joint limit overshoot ({:.4f} rad)".format(path.name, excess))
             q = clamped.cpu().numpy()
+            if self.grounding is not None:
+                pos = self.grounding.align(torch.tensor(pos, device=device), torch.tensor(rot, device=device), clamped).cpu().numpy()
             vel, qvel = np.gradient(pos, 1/fps, axis=0), np.gradient(q, 1/fps, axis=0)
             rt = torch.tensor(rot, device=device)
             rdot = torch.tensor(np.gradient(rot, 1/fps, axis=0), device=device)

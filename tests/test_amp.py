@@ -1,5 +1,7 @@
 """CPU regression checks: python -m unittest discover -s tests -v."""
 import copy
+import contextlib
+import io
 import math
 import pickle
 import tempfile
@@ -156,6 +158,46 @@ class AMPTests(unittest.TestCase):
         batch = runner.collect_rollout()
         expected = 0.5*batch["task_rewards"][-4:] + 0.5*batch["style_rewards"][-4:] + 0.99
         torch.testing.assert_close(batch["returns"][-4:], expected)
+
+    def test_completed_episode_logging_across_rollouts(self):
+        config = runner_config()
+        config["runner"]["num_steps_per_env"] = 2
+        runner = AMPOnPolicyRunner(FakeEnv(self.lib), config)
+        runner.actor_critic.evaluate = lambda x: x[:, 0]
+        runner.discriminator.style_reward = lambda x: torch.zeros(len(x))
+        # An old reset summary is retained by Isaac Gym on non-reset steps.
+        original_step = runner.env.step
+        def step(actions):
+            obs, critic, reward, done, info = original_step(actions)
+            info["episode"] = {"rew_tracking_lin_vel": torch.tensor(1.)}
+            return obs, critic, reward, done, info
+        runner.env.step = step
+        runner.collect_rollout()
+        self.assertFalse(runner.training_log.completed_lengths)
+        self.assertFalse(runner.training_log.episode_infos)
+        runner.collect_rollout()
+        self.assertEqual(list(runner.training_log.completed_lengths), [4.] * 4)
+        torch.testing.assert_close(torch.tensor(list(runner.training_log.returns[0])), torch.full((4,), 0.04))
+        self.assertEqual(len(runner.training_log.episode_infos), 1)
+        self.assertEqual(runner.training_log.lengths.sum().item(), 0.)
+
+    def test_training_log_display_and_tensorboard(self):
+        runner = AMPOnPolicyRunner(FakeEnv(self.lib), runner_config())
+        values = {}
+        runner.writer = SimpleNamespace(add_scalar=lambda key, value, step: values.update({key: float(value)}), flush=lambda: None)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            runner.learn(1)
+        self.assertIn("Mean reward:", output.getvalue())
+        self.assertIn("Mean episode length:", output.getvalue())
+        self.assertIn("AMP disc_loss:", output.getvalue())
+        self.assertIn("ETA:", output.getvalue())
+        self.assertEqual(values["Train/mean_episode_length"], 4.)
+        self.assertEqual(values["Perf/total_timesteps"], 16.)
+        self.assertIn("Loss/value_function", values)
+        self.assertIn("Observation/obs_mean_11", values)
+        self.assertIn("AMP/task_reward", values)
+        self.assertIn("Train/mean_reward/time", values)
 
 
 if __name__ == "__main__":

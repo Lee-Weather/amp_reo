@@ -8,6 +8,17 @@ from humanoid.amp.motion import MotionLibrary, amp_features, quat_inverse_rotate
 
 
 class X1AMPEnv(LeggedRobot):
+    def step(self, actions):
+        if getattr(self.cfg.env, "capture_replay_state", False):
+            self._replay_torque_clips = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+        return super().step(actions)
+
+    def _compute_torques(self, actions):
+        torques = super()._compute_torques(actions)
+        if getattr(self.cfg.env, "capture_replay_state", False):
+            self._replay_torque_clips += (torques.abs() >= self.torque_limits - 1e-6).sum(-1)
+        return torques
+
     def _init_buffers(self):
         super()._init_buffers()
         if self.num_dof != 29 or self.num_actions != self.num_dof:
@@ -23,7 +34,8 @@ class X1AMPEnv(LeggedRobot):
             self.cfg.amp.motion_dir.format(LEGGED_GYM_ROOT_DIR=LEGGED_GYM_ROOT_DIR),
             self.cfg.asset.file.format(LEGGED_GYM_ROOT_DIR=LEGGED_GYM_ROOT_DIR),
             self.dof_names, self.cfg.amp.key_body_names, self.dt, self.cfg.amp.history_steps,
-            self.device, self.cfg.amp.motion_weights, self.cfg.amp.limit_tolerance)
+            self.device, self.cfg.amp.motion_weights, self.cfg.amp.limit_tolerance,
+            ground_clearance=getattr(self.cfg.amp, "ground_clearance", None))
         self.amp_history = torch.zeros(self.num_envs, self.cfg.amp.history_steps,
                                        self.motion_library.feature_dim, device=self.device)
         self._reset_reference = None
@@ -74,6 +86,22 @@ class X1AMPEnv(LeggedRobot):
         if self.cfg.env.send_timeouts:
             self.extras["time_outs"] = self.time_out_buf.clone()
         super().compute_reward()
+        if getattr(self.cfg.env, "capture_replay_state", False):
+            # Snapshot terminal states before the base class resets the actor.
+            self.extras["replay_state"] = {
+                name: value.clone() for name, value in {
+                    "root": self.root_states, "velocity": self.base_lin_vel,
+                    "omega": self.base_ang_vel, "gravity": self.projected_gravity,
+                    "q": self.dof_pos, "dq": self.dof_vel, "torque": self.torques,
+                    "action": self.actions, "contact": self.contact_forces[:, self.feet_indices],
+                    "feet": self.rigid_state[:, self.feet_indices],
+                    "timeout": self.time_out_buf, "episode_step": self.episode_length_buf,
+                    "command": self.commands[:, :3],
+                    "command_observed": self.obs_history[-1][:, :3] / self.commands_scale,
+                    "target": self.default_dof_pos + self.lagged_actions_scaled + self.motor_offsets,
+                    "torque_clip_step": self._replay_torque_clips,
+                }.items()
+            }
 
     def reset_idx(self, env_ids):
         if len(env_ids) == 0:
