@@ -102,6 +102,10 @@ class TrainingLog:
             line("Mean episode style reward", "{:.4f}".format(scalar["AMP/mean_episode_style_reward"]))
         for key in ("task_reward", "style_reward", "disc_loss", "grad_penalty", "expert_score", "policy_score", "entropy", "kl", "done_fraction"):
             line("AMP " + key, "{:.6f}".format(metrics[key]))
+        for key in ("style_score", "kl_max", "kl_early_stop", "policy_updates"):
+            if key in metrics:
+                line("AMP " + key, "{:.6f}".format(metrics[key]))
+        line("PPO learning rate", "{:.8f}".format(runner.optimizer.param_groups[0]["lr"]))
         line("Current episode age (steps)", "{:.2f}".format(metrics["episode_length"]))
         for key in sorted(self.metric_sums):
             if not key.startswith("Control/raw_target_clip_rate/"):

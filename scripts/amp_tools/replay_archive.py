@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 from pathlib import Path
+import shlex
 import subprocess
 import tarfile
 import tempfile
@@ -19,11 +20,21 @@ def main():
     parser.add_argument("--experiment", required=True)
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--resource_source", required=True)
+    parser.add_argument("--task", choices=("x1_amp", "x1_amp_exp11", "x1_amp_exp3"), default="x1_amp")
+    parser.add_argument("--training-task-id", default="TASK_20261022_177")
+    parser.add_argument("--record_dir", type=Path)
+    parser.add_argument("--extra_seeds", type=int, nargs="*", default=[])
+    parser.add_argument("--check_rsi", action="store_true")
     args = parser.parse_args()
     if not args.experiment.startswith("exp_") or any(c not in "exp_0123456789." for c in args.experiment):
         raise ValueError("Use an exp_N archive name")
     model = args.model.resolve()
-    artifacts = ROOT / "czy/exp1/artifacts" / args.experiment
+    import torch
+    iteration = int(torch.load(model, map_location="cpu", weights_only=False)["iter"])
+    if iteration < 0:
+        raise ValueError("Checkpoint iteration must be nonnegative")
+    model_name = "model_{}.pt".format(iteration)
+    artifacts = args.record_dir.resolve() if args.record_dir else ROOT / "czy/exp1/artifacts" / args.experiment
     artifacts.mkdir(parents=True, exist_ok=True)
     state_file = artifacts / "replay_job.json"
     if state_file.exists():
@@ -35,10 +46,17 @@ def main():
     for path in code:
         code_hash.update(path.relative_to(ROOT).as_posix().encode())
         code_hash.update(path.read_bytes())
-    state = {"experiment": args.experiment, "task_id": "TASK_20261022_177", "server_dir": remote,
+    primary_output = "logs/replay/standing_seed5"
+    checks = [{"seed": seed, "reset_mode": "standing", "output": "logs/replay/standing_seed"+str(seed)}
+              for seed in args.extra_seeds]
+    if args.check_rsi:
+        checks.append({"seed": 5, "reset_mode": "rsi", "output": "logs/replay/rsi_seed5"})
+    state = {"experiment": args.experiment, "task_id": args.training_task_id, "task": args.task, "server_dir": remote,
+             "checkpoint_iteration": iteration, "checkpoint_name": model_name,
              "created_at": now.isoformat(), "checkpoint_sha256": hashlib.sha256(model.read_bytes()).hexdigest(),
              "code_sha256": code_hash.hexdigest(), "profile": [0, .4, .6, 0, .4, 0],
-             "stage_seconds": 10, "steps": 3000, "video": "1920x1080@25fps"}
+             "stage_seconds": 10, "steps": 3000, "video": "1920x1080@25fps",
+             "primary_output": primary_output, "checks": checks}
     def run(command):
         subprocess.run(command, check=True)
     with tempfile.TemporaryDirectory(prefix="x1_amp_replay_") as temp:
@@ -47,21 +65,29 @@ def main():
             for path in code:
                 stream.add(path, arcname=path.relative_to(ROOT).as_posix())
             stream.add(ROOT / "setup.py", arcname="setup.py")
-            stream.add(model, arcname="logs/x1_amp/exported_data/gm_play/model_6000.pt")
+            stream.add(model, arcname="checkpoints/"+model_name)
         script = Path(temp) / "run_replay.sh"
-        script.write_text("\n".join([
-            "#!/bin/bash", "set -e", "cd " + remote, "tar -xzf code_model.tar.gz",
-            "cp -a " + args.resource_source + "/resources .",
+        base_command = ("python -u humanoid/scripts/play_amp.py --task="+args.task+
+                        " --headless --num_envs=1 --checkpoint_path=checkpoints/"+model_name)
+        lines = [
+            "#!/bin/bash", "set -e", "cd " + shlex.quote(remote), "tar -xzf code_model.tar.gz",
+            "cp -a " + shlex.quote(args.resource_source + "/resources") + " .",
+            "rm -f code_model.tar.gz",
             "source /home/robot/Anaconda/etc/profile.d/conda.sh", "conda activate F1",
-            "export PYTHONPATH=" + remote,
-            "exec xvfb-run -a python -u humanoid/scripts/play_amp.py --task=x1_amp --headless --num_envs=1 --seed=5 --checkpoint_path=logs/x1_amp/exported_data/gm_play/model_6000.pt --output_dir=logs/x1_amp/play_output/latest_play",
-            ""]), encoding="utf-8", newline="\n")
+            "export PYTHONPATH=" + shlex.quote(remote),
+            "xvfb-run -a " + base_command + " --seed=5 --reset_mode=standing --output_dir=" + primary_output + " > replay.log 2>&1"]
+        for check in checks:
+            lines.append(base_command + " --no_video --seed=" + str(check["seed"]) +
+                         " --reset_mode=" + check["reset_mode"] + " --output_dir=" + check["output"] +
+                         " > " + Path(check["output"]).name + ".log 2>&1")
+        lines.extend(["printf 'REPLAY_SUITE_OK\\n'", ""])
+        script.write_text("\n".join(lines), encoding="utf-8", newline="\n")
         run([SSH, "-o", "BatchMode=yes", HOST, "mkdir -p " + remote])
         for path in (archive, script):
             run([SCP, "-o", "BatchMode=yes", str(path), HOST + ":" + remote + "/" + path.name])
         state_file.write_text(json.dumps(state, indent=2), encoding="utf-8")
         run([SSH, "-o", "BatchMode=yes", HOST,
-             "nohup bash " + remote + "/run_replay.sh > " + remote + "/replay.log 2>&1 < /dev/null &"])
+             "nohup bash " + remote + "/run_replay.sh > " + remote + "/replay_suite.log 2>&1 < /dev/null &"])
     print(json.dumps(state, indent=2))
 
 

@@ -5,6 +5,7 @@ import time
 
 import torch
 from torch import nn
+from torch.distributions import Normal, kl_divergence
 
 from .models import ActorCritic, Discriminator, ReplayBuffer
 from .logging import TrainingLog
@@ -21,6 +22,13 @@ class AMPOnPolicyRunner:
         self.discriminator = Discriminator(lib.feature_dim, lib.history_steps,
                                             self.disc_cfg["hidden_dims"]).to(device)
         self.optimizer = torch.optim.Adam(self.actor_critic.parameters(), lr=self.alg_cfg["learning_rate"])
+        if self.alg_cfg.get("kl_check") == "minibatch":
+            minimum = self.alg_cfg.get("min_learning_rate", 1e-5)
+            maximum = self.alg_cfg.get("max_learning_rate", self.alg_cfg["learning_rate"])
+            if not 0 < minimum <= self.alg_cfg["learning_rate"] <= maximum:
+                raise ValueError("Invalid adaptive PPO learning-rate bounds")
+            if self.alg_cfg.get("desired_kl", 0) <= 0:
+                raise ValueError("Minibatch KL checks require positive desired_kl")
         self.disc_optimizer = torch.optim.Adam(self.discriminator.network.parameters(),
                                                lr=self.disc_cfg["learning_rate"],
                                                weight_decay=self.disc_cfg["weight_decay"])
@@ -45,7 +53,10 @@ class AMPOnPolicyRunner:
         data = {"obs": torch.empty(steps, n, env.num_obs, device=self.device),
                 "critic_obs": torch.empty(steps, n, env.num_privileged_obs, device=self.device),
                 "actions": torch.empty(steps, n, env.num_actions, device=self.device)}
-        for name in ("log_prob", "values", "rewards", "dones", "task_rewards", "style_rewards"):
+        if self.alg_cfg.get("kl_check") == "minibatch":
+            for name in ("old_mean", "old_std"):
+                data[name] = torch.empty_like(data["actions"])
+        for name in ("log_prob", "values", "rewards", "dones", "task_rewards", "style_rewards", "style_scores"):
             data[name] = torch.empty(steps, n, device=self.device)
         data["amp"] = torch.empty(steps, n, env.motion_library.history_steps,
                                     env.motion_library.feature_dim, device=self.device)
@@ -58,6 +69,9 @@ class AMPOnPolicyRunner:
                 data["obs"][step].copy_(obs)
                 data["critic_obs"][step].copy_(critic)
                 distribution = model.distribution(obs)
+                if "old_mean" in data:
+                    data["old_mean"][step].copy_(distribution.loc)
+                    data["old_std"][step].copy_(distribution.scale)
                 actions = distribution.sample()
                 data["actions"][step].copy_(actions)
                 data["log_prob"][step].copy_(distribution.log_prob(actions).sum(-1))
@@ -66,7 +80,8 @@ class AMPOnPolicyRunner:
                 obs, critic = obs.to(self.device), critic.to(self.device)
                 amp = info["amp_obs"].to(self.device)
                 task_reward, dones = task_reward.to(self.device), dones.to(self.device)
-                style = self.discriminator.style_reward(amp) * self.disc_cfg["style_reward_scale"] * env.dt
+                style_score = self.discriminator.style_reward(amp)
+                style = style_score * self.disc_cfg["style_reward_scale"] * env.dt
                 weight = self.disc_cfg["task_reward_weight"]
                 reward = weight*task_reward + (1-weight)*style
                 # Report actual returns, never critic bootstrap corrections.
@@ -81,6 +96,7 @@ class AMPOnPolicyRunner:
                 data["amp"][step].copy_(amp)
                 data["task_rewards"][step].copy_(task_reward)
                 data["style_rewards"][step].copy_(style)
+                data["style_scores"][step].copy_(style_score)
             last_value = model.evaluate(critic)
             advantage = torch.zeros(n, device=self.device)
             data["returns"] = torch.empty_like(data["values"])
@@ -96,6 +112,8 @@ class AMPOnPolicyRunner:
 
     def update_policy(self, batch):
         cfg, model = self.alg_cfg, self.actor_critic
+        if cfg.get("kl_check") == "minibatch":
+            return self._update_policy_minibatch(batch)
         n = len(batch["obs"])
         if n < cfg["num_mini_batches"]:
             raise ValueError("Rollout smaller than num_mini_batches")
@@ -128,6 +146,77 @@ class AMPOnPolicyRunner:
             if cfg.get("desired_kl") and kl > 1.5*cfg["desired_kl"]:
                 break
         return {key: x/count for key, x in totals.items()}
+
+    def _update_policy_minibatch(self, batch):
+        """Check exact KL(old || current) before each update; adapt LR once.
+
+        A step can still overshoot. The check prevents subsequent steps from
+        continuing after that overshoot; final KL is measured over the rollout.
+        """
+        cfg, model = self.alg_cfg, self.actor_critic
+        n = len(batch["obs"])
+        if n < cfg["num_mini_batches"]:
+            raise ValueError("Rollout smaller than num_mini_batches")
+        target = cfg["desired_kl"]
+        totals = {"value_loss": 0., "surrogate_loss": 0., "entropy": 0.}
+        count, maximum_kl, stopped = 0, 0., False
+        for _ in range(cfg["num_learning_epochs"]):
+            for ids in torch.tensor_split(torch.randperm(n, device=self.device), cfg["num_mini_batches"]):
+                distribution = model.distribution(batch["obs"][ids])
+                with torch.no_grad():
+                    old = Normal(batch["old_mean"][ids], batch["old_std"][ids])
+                    kl = kl_divergence(old, distribution).sum(-1).mean().clamp(min=0)
+                    if not torch.isfinite(kl):
+                        raise FloatingPointError("Non-finite PPO KL")
+                    maximum_kl = max(maximum_kl, kl.item())
+                if kl.item() > 1.5*target:
+                    stopped = True
+                    break
+                log_prob = distribution.log_prob(batch["actions"][ids]).sum(-1)
+                ratio = (log_prob-batch["log_prob"][ids]).exp()
+                advantage = batch["advantages"][ids]
+                surrogate = torch.maximum(-advantage*ratio,
+                                           -advantage*ratio.clamp(1-cfg["clip_param"], 1+cfg["clip_param"])).mean()
+                value = model.evaluate(batch["critic_obs"][ids])
+                clipped = batch["values"][ids]+(value-batch["values"][ids]).clamp(-cfg["clip_param"], cfg["clip_param"])
+                value_loss = torch.maximum((value-batch["returns"][ids]).square(),
+                                             (clipped-batch["returns"][ids]).square()).mean()
+                entropy = distribution.entropy().sum(-1).mean()
+                loss = surrogate+cfg["value_loss_coef"]*value_loss-cfg["entropy_coef"]*entropy
+                if not torch.isfinite(loss):
+                    raise FloatingPointError("Non-finite PPO loss")
+                self.optimizer.zero_grad()
+                loss.backward()
+                nn.utils.clip_grad_norm_(model.parameters(), cfg["max_grad_norm"])
+                self.optimizer.step()
+                for key, value in zip(totals, (value_loss, surrogate, entropy)):
+                    totals[key] += value.item()
+                count += 1
+            if stopped:
+                break
+        # Includes the final parameter update, even if it was the last minibatch.
+        final_kl = 0.
+        with torch.no_grad():
+            for ids in torch.tensor_split(torch.arange(n, device=self.device), cfg["num_mini_batches"]):
+                current = model.distribution(batch["obs"][ids])
+                old = Normal(batch["old_mean"][ids], batch["old_std"][ids])
+                kl = kl_divergence(old, current).sum(-1).mean().clamp(min=0)
+                if not torch.isfinite(kl):
+                    raise FloatingPointError("Non-finite final PPO KL")
+                final_kl += kl.item()*len(ids)/n
+                maximum_kl = max(maximum_kl, kl.item())
+        if cfg.get("schedule") == "adaptive":
+            for group in self.optimizer.param_groups:
+                lr = group["lr"]
+                if maximum_kl > 1.5*target:
+                    lr /= 1.5
+                elif maximum_kl < .5*target:
+                    lr *= 1.5
+                group["lr"] = min(cfg.get("max_learning_rate", cfg["learning_rate"]),
+                                  max(cfg.get("min_learning_rate", 1e-5), lr))
+        result = {key: value/max(count, 1) for key, value in totals.items()}
+        result.update(kl=final_kl, kl_max=maximum_kl, kl_early_stop=float(stopped), policy_updates=count)
+        return result
 
     def update_discriminator(self, amp):
         cfg, disc = self.disc_cfg, self.discriminator
@@ -170,6 +259,7 @@ class AMPOnPolicyRunner:
             metrics.update(self.update_discriminator(batch["amp"]))
             metrics.update(task_reward=batch["task_rewards"].mean().item(),
                            style_reward=batch["style_rewards"].mean().item(),
+                           style_score=batch["style_scores"].mean().item(),
                            done_fraction=batch["dones"].mean().item(),
                            episode_length=self.env.episode_length_buf.float().mean().item())
             self.current_learning_iteration += 1

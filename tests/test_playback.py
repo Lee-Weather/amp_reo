@@ -65,6 +65,8 @@ class PlaybackTests(unittest.TestCase):
             with open(Path(tmp)/"isaac_diag.csv") as stream:
                 row = next(csv.DictReader(stream))
             self.assertAlmostEqual(float(row["command_x"]), .4)
+            self.assertAlmostEqual(float(row["style_score"]), .5)
+            self.assertAlmostEqual(float(row["style_reward"]), .02)
             self.assertEqual(float(row["command_requested"]), .6)
             self.assertEqual(float(row["foot_force_l"]), 20.)
             self.assertEqual(float(row["foot_force_r"]), 30.)

@@ -30,9 +30,13 @@ def main():
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_exp11"):
-        raise ValueError("Use --task=x1_amp or --task=x1_amp_exp11")
+    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3"):
+        raise ValueError("Use --task=x1_amp, --task=x1_amp_exp11 or --task=x1_amp_exp3")
     cfg, train_cfg = task_registry.get_cfgs(args.task)
+    # The shared helper applies --seed only to train_cfg, not env_cfg.
+    # Set it before make_env() seeds the simulator and reset perturbations.
+    if args.seed is not None:
+        cfg.seed = args.seed
     cfg.env.num_envs = args.num_envs or 1
     if cfg.env.num_envs != 1:
         raise ValueError("Diagnostic playback requires --num_envs=1")
@@ -45,7 +49,7 @@ def main():
     cfg.noise.add_noise = False
     cfg.domain_rand.push_robots = False
     cfg.amp.reference_state_initialization = play.reset_mode == "rsi"
-    shared_buffer = args.task == "x1_amp_exp11"
+    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3")
     if shared_buffer:
         cfg.amp.rsi_probability = 1. if play.reset_mode == "rsi" else 0.
         cfg.amp.stand_buffer_seconds = play.stand_buffer_seconds
@@ -100,6 +104,10 @@ def main():
         "checkpoint": runner.current_learning_iteration, "load_run": args.load_run,
         "checkpoint_path": os.path.abspath(play.checkpoint_path) if play.checkpoint_path else None,
         "stand_buffer_seconds": play.stand_buffer_seconds,
+        "style_reward_scale": runner.disc_cfg["style_reward_scale"],
+        "task_reward_weight": runner.disc_cfg["task_reward_weight"],
+        "tracking_lin_sigma": getattr(cfg.rewards, "tracking_lin_sigma", cfg.rewards.tracking_sigma),
+        "tracking_ang_sigma": cfg.rewards.tracking_sigma,
         "pushes": cfg.domain_rand.push_robots, "noise": cfg.noise.add_noise,
         "reference_state_initialization": cfg.amp.reference_state_initialization,
         "reset_mode": play.reset_mode, "policy_metadata": runner._metadata(),

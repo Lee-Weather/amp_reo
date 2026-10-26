@@ -3,6 +3,13 @@ from .x1_amp_config import X1AMPCfg, X1AMPCfgPPO
 
 
 class X1AMPExp11Cfg(X1AMPCfg):
+    class commands(X1AMPCfg.commands):
+        # Train forward/backward motion before adding lateral and yaw commands.
+        class ranges(X1AMPCfg.commands.ranges):
+            lin_vel_x = [-0.2, 0.65]
+            lin_vel_y = [0., 0.]
+            ang_vel_yaw = [0., 0.]
+
     class control(X1AMPCfg.control):
         clip_pd_targets = True
 

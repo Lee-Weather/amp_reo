@@ -10,6 +10,7 @@ import tempfile
 
 import cv2
 import numpy as np
+from analyze_replay import load_context, evaluate_csv
 
 ROOT = Path(__file__).resolve().parents[2]
 SSH = "C:/Windows/System32/OpenSSH/ssh.exe"
@@ -17,28 +18,72 @@ SCP = "C:/Windows/System32/OpenSSH/scp.exe"
 HOST = "robot@10.12.201.5"
 
 
+def collect_checks(state, remote, temp, context):
+    reports = []
+    for index, check in enumerate(state.get("checks", [])):
+        case_dir = temp / ("check_"+str(index))
+        case_dir.mkdir()
+        for name in ("isaac_diag.csv", "replay_metadata.json"):
+            subprocess.run([SCP, "-o", "BatchMode=yes", HOST + ":" + remote + "/" + check["output"] + "/" + name,
+                            str(case_dir/name)], check=True)
+        metadata = json.loads((case_dir/"replay_metadata.json").read_text())
+        assert metadata["checkpoint"] == context["iteration"] and metadata["captured_steps"] == 3000
+        assert metadata["seed"] == check["seed"] and metadata["reset_mode"] == check["reset_mode"]
+        report = evaluate_csv(case_dir/"isaac_diag.csv", context)
+        assert report["rows"] == 3000
+        reports.append(dict(seed=check["seed"], reset_mode=check["reset_mode"], evaluation=report))
+    return reports
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment", required=True)
     parser.add_argument("--model", type=Path, required=True)
+    parser.add_argument("--record_dir", type=Path)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--primary_only", action="store_true", help="Archive the main trio while auxiliary checks run")
+    mode.add_argument("--checks_only", action="store_true", help="Add finished auxiliary checks to an existing report")
     args = parser.parse_args()
-    artifacts = ROOT / "czy/exp1/artifacts" / args.experiment
+    artifacts = args.record_dir.resolve() if args.record_dir else ROOT / "czy/exp1/artifacts" / args.experiment
     state = json.loads((artifacts / "replay_job.json").read_text())
+    context = load_context(args.model)
+    iteration = state.get("checkpoint_iteration", 6000)
+    assert context["iteration"] == iteration
+    model_name = "model_{}.pt".format(iteration)
     remote = state["server_dir"]
     result = subprocess.run([SSH, "-o", "BatchMode=yes", HOST, "tail -n 1 " + remote + "/replay.log"],
                             check=True, capture_output=True, text=True)
     if "Replay files closed: 1500 frames" not in result.stdout:
         raise RuntimeError("Replay has not finished successfully; inspect the existing job, do not restart")
     destination = ROOT / "czy/data" / args.experiment
-    if destination.exists():
+    if not args.checks_only and destination.exists() and any(p.name != model_name for p in destination.iterdir()):
         raise FileExistsError("Preserve existing replay: " + str(destination))
+    existing_model = destination / model_name
+    if existing_model.exists() and hashlib.sha256(existing_model.read_bytes()).hexdigest() != state["checkpoint_sha256"]:
+        raise FileExistsError("Existing archive checkpoint differs from the replay model")
+    if state.get("checks") and not args.primary_only:
+        completed = subprocess.run([SSH, "-o", "BatchMode=yes", HOST,
+                                    "tail -n 1 " + remote + "/replay_suite.log"], check=True, capture_output=True, text=True)
+        if "REPLAY_SUITE_OK" not in completed.stdout:
+            raise RuntimeError("Auxiliary replay checks have not finished")
+    if args.checks_only:
+        summary_path = artifacts / "replay_summary.json"
+        summary = json.loads(summary_path.read_text())
+        assert hashlib.sha256(args.model.read_bytes()).hexdigest() == summary["checkpoint_sha256"]
+        with tempfile.TemporaryDirectory(prefix="x1_amp_checks_") as temp:
+            summary["auxiliary_checks"] = collect_checks(state, remote, Path(temp), context)
+        summary["checks_pending"] = []
+        summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        print("Auxiliary checks added: " + str(len(summary["auxiliary_checks"])))
+        return
     with tempfile.TemporaryDirectory(prefix="x1_amp_collect_") as temp:
         temp = Path(temp)
         for name in ("isaac_diag.csv", "play_output.mp4", "replay_metadata.json"):
-            subprocess.run([SCP, "-o", "BatchMode=yes", HOST + ":" + remote + "/logs/x1_amp/play_output/latest_play/" + name, str(temp / name)], check=True)
+            output = state.get("primary_output", "logs/x1_amp/play_output/latest_play")
+            subprocess.run([SCP, "-o", "BatchMode=yes", HOST + ":" + remote + "/" + output + "/" + name, str(temp / name)], check=True)
         subprocess.run([SCP, "-o", "BatchMode=yes", HOST + ":" + remote + "/replay.log", str(temp / "replay.log")], check=True)
         metadata = json.loads((temp / "replay_metadata.json").read_text())
-        assert metadata["captured_steps"] == 3000 and metadata["checkpoint"] == 6000
+        assert metadata["captured_steps"] == 3000 and metadata["checkpoint"] == iteration
         assert metadata["video_frames"] == 1500 and len(metadata["segments"]) == 6
         with (temp / "isaac_diag.csv").open() as stream:
             rows = list(csv.DictReader(stream))
@@ -74,26 +119,23 @@ def main():
                        mean_style_reward=float(numeric["style_reward"].mean()),
                        torque_clip_count=int(numeric["clip_count"][-1]), checkpoint_sha256=model_hash,
                        segments=metadata["segments"])
-        destination.mkdir(parents=True)
-        shutil.copy2(args.model, destination / "model_6000.pt")
+        summary["evaluation"] = evaluate_csv(temp / "isaac_diag.csv", context)
+        if "style_score" in numeric:
+            summary["mean_style_score"] = float(numeric["style_score"].mean())
+        summary["auxiliary_checks"] = [] if args.primary_only else collect_checks(state, remote, temp, context)
+        summary["checks_pending"] = state.get("checks", []) if args.primary_only else []
+        destination.mkdir(parents=True, exist_ok=True)
+        if args.model.resolve() != (destination / model_name).resolve():
+            shutil.copy2(args.model, destination / model_name)
         for name in ("isaac_diag.csv", "play_output.mp4"):
             shutil.copy2(temp / name, destination / name)
         for name in ("replay_metadata.json", "replay.log"):
             shutil.copy2(temp / name, artifacts / name)
         summary["file_bytes"] = {path.name: path.stat().st_size for path in destination.iterdir()}
         (artifacts / "replay_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    assert sorted(p.name for p in destination.iterdir()) == ["isaac_diag.csv", "model_6000.pt", "play_output.mp4"]
-    note = ROOT / "czy/exp1/exp1.md"
-    text = note.read_text(encoding="utf-8")
-    text = text.replace("完整回放结果待生成后补充。", "完整回放已完成，结果如下。")
-    text += "\n| 段 | 请求vx | 实际施加vx均值 | 实际vx均值 | 跟踪RMSE | 重置（超时） |\n| --- | --- | --- | --- | --- | --- |\n"
-    for segment in summary["segments"]:
-        text += "| {stage} | {requested:.2f} | {average_command:.3f} | {average_vx:.3f} | {rmse_vx:.3f} | {resets}（{timeouts}） |\n".format(**segment)
-    text += "\n验证：CSV共3000行、全部数值有限，观测与施加指令最大误差{:.2g}；MP4为1920×1080、25fps、1500帧，全部逐帧解码通过。共{}次重置，其中{}次超时、{}次非超时终止。平均任务奖励{:.6f}、平均AMP风格奖励{:.6f}（均为混合前）。\n".format(summary["command_observation_max_error"], summary["resets"], summary["timeouts"], summary["non_timeout_terminations"], summary["mean_task_reward"], summary["mean_style_reward"])
-    text += "\n最新三件套：`czy/data/{}/`，仅model_6000.pt、play_output.mp4、isaac_diag.csv。回放元数据、日志、摘要及部署信息放在 `czy/exp1/artifacts/{}/`。模型与旧版相同，SHA256为`{}`。服务器目录：`{}`。\n".format(args.experiment, args.experiment, model_hash, remote)
-    text += "\n**本次回放结论：⚠️部分达标。** 三件套交付与完整流程验证完成。步态质量应按上表分段比较指令与实际速度；AMP风格奖励仍偏低，不能视为参考步态已收敛。未新增训练，旧版固定速度回放结果保留，和最新分段结果不直接混算。\n"
-    note.write_text(text, encoding="utf-8")
-    print(json.dumps(summary, indent=2))
+    assert sorted(p.name for p in destination.iterdir()) == ["isaac_diag.csv", model_name, "play_output.mp4"]
+    print(json.dumps({key: value for key, value in summary.items() if key not in ("evaluation", "auxiliary_checks")}, indent=2))
+    print("Detailed evaluation: " + str(artifacts / "replay_summary.json"))
 
 
 if __name__ == "__main__":

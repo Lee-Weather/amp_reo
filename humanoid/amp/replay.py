@@ -50,12 +50,12 @@ class ReplayRecorder:
     def write(self, step, reward, done, info, requested=0., stage=0):
         env = self.env
         state = {k: v[0].detach().cpu().numpy().reshape(-1) for k, v in info["replay_state"].items()}
-        style = (self.runner.discriminator.style_reward(info["amp_obs"])
-                 * self.runner.disc_cfg["style_reward_scale"] * env.dt)[0].item()
+        style_score = self.runner.discriminator.style_reward(info["amp_obs"])[0].item()
+        style = style_score * self.runner.disc_cfg["style_reward_scale"] * env.dt
         weight = self.runner.disc_cfg["task_reward_weight"]
         row = dict(step=step, time_s=(step + 1) * env.dt, done=int(done[0].item()),
                    timeout=int(state["timeout"][0]), episode_step=int(state["episode_step"][0]),
-                   task_reward=reward[0].item(), style_reward=style,
+                   task_reward=reward[0].item(), style_reward=style, style_score=style_score,
                    mixed_reward=weight * reward[0].item() + (1 - weight) * style)
         for key, labels in (("root", ["x", "y", "z", "qx", "qy", "qz", "qw", "world_vx", "world_vy", "world_vz", "world_wx", "world_wy", "world_wz"]),
                             ("velocity", ["vx", "vy", "vz"]), ("omega", ["wx", "wy", "wz"]),
