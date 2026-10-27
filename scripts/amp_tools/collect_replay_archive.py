@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -64,6 +65,20 @@ def main():
                             check=True, capture_output=True, text=True)
     if "Replay files closed: 1500 frames" not in result.stdout:
         raise RuntimeError("Replay has not finished successfully; inspect the existing job, do not restart")
+    if state.get("checkpoint_sha256") is None:
+        if state.get("training_backend") != "ssh_server":
+            raise ValueError("Missing expected checkpoint hash")
+        prepared = subprocess.run([SSH, "-o", "BatchMode=yes", HOST,
+                                   "cat " + shlex.quote(remote + "/prepared_checkpoint.json")],
+                                  check=True, capture_output=True, text=True)
+        manifest = json.loads(prepared.stdout)
+        digest = hashlib.sha256(args.model.read_bytes()).hexdigest()
+        assert manifest["iteration"] == iteration
+        assert manifest["source_training_dir"] == state["dependency_dir"]
+        assert manifest["sha256"] == digest and manifest["bytes"] == args.model.stat().st_size
+        state.update(checkpoint_sha256=digest, phase="primary_replay_finished",
+                     prepared_checkpoint=manifest)
+        (artifacts / "replay_job.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
     destination = ROOT / "czy/data" / args.experiment
     if not args.checks_only and destination.exists() and any(p.name != model_name for p in destination.iterdir()):
         raise FileExistsError("Preserve existing replay: " + str(destination))

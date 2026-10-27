@@ -7,6 +7,7 @@
 | `flux_ops.py` | 调用已安装的Flux CLI，对返回的凭据与签名URL脱敏 |
 | `flux_status.py` | 按指定任务状态文件查询训练状态，更新旁边的脱敏日志 |
 | `server_status.py` | 查询记录的201.5训练进程、实际轮数、恢复优化器凭据和保存记录 |
+| `replay_dependency.py` | 在服务器等待指定训练进程结束，核对最终保存凭据后准备回放副本 |
 | `launch_fixed_amp.py` | 用输入输出同目录规则提交训练，核对账号、源模型和远端提交 |
 | `fetch_amp_checkpoint.py` | 下载实际训练模型，对照保存凭据校验大小、哈希、轮数和模型约定 |
 | `fetch_server_checkpoint.py` | 按服务器保存凭据取回恢复模型，核对双方优化器步数及归一化器延续 |
@@ -101,3 +102,5 @@ exp1.5候选任务`x1_amp_exp15`保持相同控制与观测约定，增加速度
 任务186于7263附近被平台终止，原因未确认；已取回实际7200并在201.5从7200完整恢复剩余800轮到8000。当前查询命令是`python scripts/amp_tools/server_status.py --state czy/exp1/exp1.5_training_recovery.json`；旧exp1.5_training.json记录云端状态6，不能代替服务器进程状态。恢复使用`--resume`保留双方Adam状态，CHECKPOINT_RESTORED确认原step4000/800和学习率；后续服务器模型按实际保存记录经SCP取回并核对哈希，不期待旧云端模型列表出现8000。
 
 先刷新服务器状态，再用`python scripts/amp_tools/fetch_server_checkpoint.py --state czy/exp1/exp1.5_training_recovery.json --reference-model czy/exp1/exp1.5_evaluation/recovery/model_7200.pt --output-dir czy/data/exp1.5 --iteration 8000`取回最终模型。工具要求实际训练进程结束、存在最终保存凭据，验证文件大小/hash、iter、控制元数据、完整恢复来源和权重有限性，并要求双方优化器计数与归一化器count相对7200均增加；不会用重新清空优化器的模型冒充完整恢复。中途7300已经按此规则验证通过。最后照原流程回放并补齐严格三件套。
+
+exp1.5最终回放已排队：状态为`czy/exp1/exp1.5_evaluation/replay_job.json`，服务器`/home/robot/czy/exp1/exp_20261027_131606`，等待恢复训练PID3078307。训练仍存活时不启动GPU回放；进程结束还必须有SERVER_RECOVERY_OK和8000保存凭据，且源文件大小/hash一致才复制模型并录视频。训练异常退出则中止回放，不把中期模型当最终模型。不要再调用replay_archive.py重复部署；完成后取回实际8000，再用collect_replay_archive.py的primary_only/checks_only分阶段收集。排队时checkpoint_sha256为空是因为最终文件尚不存在，收集器会在主视频完成后读取prepared_checkpoint.json，并与下载模型及训练来源逐项核对后填入，不能手填猜测哈希。
