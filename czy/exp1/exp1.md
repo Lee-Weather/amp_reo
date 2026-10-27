@@ -1447,3 +1447,8 @@ GPU预检通过：/home/robot/czy/exp1/exp_20261027_163718，launcher3182664已�
 正式训练已实际启动：/home/robot/czy/exp1/exp_20261027_164846，launcher PID3187411，代码4c67c68f3911bc5b779a9b708e846e706b56b720，humanoid/setup哈希与上述预检完全一致。WARM_START_OK已核对真实9000来源；首轮查询已到9011/10000，实际新增1,081,344步=11×4096×24，约3.45秒/更新，ETA约3584秒。该早期阶段仍有完成回合截尾偏差，不能由短期反向bonus均值认定学会后退。当前状态入口[exp1.7_training.json](exp1.7_training.json)。
 
 最终10000回放已排队到/home/robot/czy/exp1/exp_20261027_164952，launcher PID3188064，实测存活且仅WAITING_FOR_RECORDED_TRAINING。需原训练进程退出、SERVER_TRAINING_OK、最终10000保存记录和文件大小/hash一致、GPU空闲才执行主60秒站姿视频、RSI60秒和站姿-0.2/0.1/0.65、RSI-0.2/0.1各20秒；六项辅助检查均seed5，不重复部署。状态入口exp1.7_evaluation/replay_job.json，最终仍收集严格三件套及完整指标后判断，不以9005预检替代10000成果。
+
+
+16:57正式任务首个model_9100已实际取回校验：10,777,032字节，SHA256=578a72bea116c4e2f5656c4767569bdd6636063562050e5670efb63f4ae13879；控制元数据及真实9000来源匹配，权重有限、normalizer count增加，新Adam actor2000/discriminator400，证明保存与SCP取回链路有效。文件位于exp1.7_evaluation/interim，不作为最终10000成果，正式训练未中断。
+
+只读训练快照截至9099：最新反向运动指令(abs vx>0.05且负)占21.86%，最后20更新均值19.61%，与原1.6约12.5%的曝光相比确实提高；不冒充30%实际时间。最近20更新后退绝对vx误差0.13872m/s，慢前进0.05792m/s，KL均值0.01209、KL_max均值0.01455。原runner滚动完成回合长度均值790.35步=15.807秒，最新单点697.88步；早期完成组成仍在变化，新奖励/采样也改变了难度，不能以reward绝对值与父实验直接比较。反向均速与bonus包含RSI/恢复瞬态，仍无证据声称学会连续后退；移动mean-abs wz=0.22397rad/s也不是周期净偏航。详见early_training_summary.json，最终仍用固定命令GPU回放判断。

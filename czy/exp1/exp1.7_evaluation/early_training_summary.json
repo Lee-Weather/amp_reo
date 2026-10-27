@@ -1,0 +1,43 @@
+{
+  "last_iteration": 9099,
+  "scope": "Early stochastic training aggregates; not fixed-command replay acceptance",
+  "limits": [
+    "Completed-episode windows overlap and early termination composition is still changing.",
+    "Mean negative vx and progress bonus can include RSI transients; they do not prove maintained backward walking.",
+    "Instantaneous mean-abs yaw rate is not cycle-averaged yaw drift."
+  ],
+  "metrics": {
+    "Train/mean_reward": {
+      "last": 10.244973182678223,
+      "last20_mean": 12.101596450805664
+    },
+    "Train/mean_episode_length": {
+      "last": 697.8800048828125,
+      "last20_mean": 790.3460021972656
+    },
+    "Commands/backward_applied_fraction": {
+      "last": 0.2185770720243454,
+      "last20_mean": 0.1961313933134079
+    },
+    "Tracking/backward_abs_vx_error": {
+      "last": 0.12642802298069,
+      "last20_mean": 0.1387199643999338
+    },
+    "Tracking/slow_forward_abs_vx_error": {
+      "last": 0.0499759204685688,
+      "last20_mean": 0.05791702922433615
+    },
+    "Tracking/moving_abs_yaw_rate": {
+      "last": 0.21510422229766846,
+      "last20_mean": 0.2239685669541359
+    },
+    "AMP/kl": {
+      "last": 0.013855984434485435,
+      "last20_mean": 0.012092726863920688
+    },
+    "AMP/kl_max": {
+      "last": 0.01398344524204731,
+      "last20_mean": 0.014552836818620563
+    }
+  }
+}
