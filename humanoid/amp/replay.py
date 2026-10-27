@@ -52,10 +52,14 @@ class ReplayRecorder:
         state = {k: v[0].detach().cpu().numpy().reshape(-1) for k, v in info["replay_state"].items()}
         style_score = self.runner.discriminator.style_reward(info["amp_obs"])[0].item()
         style = style_score * self.runner.disc_cfg["style_reward_scale"] * env.dt
+        style_raw = style
+        multiplier = float(info["amp_style_multiplier"][0]) if "amp_style_multiplier" in info else 1.
+        style *= multiplier
         weight = self.runner.disc_cfg["task_reward_weight"]
         row = dict(step=step, time_s=(step + 1) * env.dt, done=int(done[0].item()),
                    timeout=int(state["timeout"][0]), episode_step=int(state["episode_step"][0]),
                    task_reward=reward[0].item(), style_reward=style, style_score=style_score,
+                   style_reward_raw=style_raw, amp_style_multiplier=multiplier,
                    mixed_reward=weight * reward[0].item() + (1 - weight) * style)
         for key, labels in (("root", ["x", "y", "z", "qx", "qy", "qz", "qw", "world_vx", "world_vy", "world_vz", "world_wx", "world_wy", "world_wz"]),
                             ("velocity", ["vx", "vy", "vz"]), ("omega", ["wx", "wy", "wz"]),

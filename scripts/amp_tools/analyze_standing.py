@@ -49,8 +49,8 @@ def analyze(csv_path):
             "pitch_mean_deg": float(pitch[mask].mean()), "pitch_p95_p05_deg": span(pitch[mask]),
             "root_height_p95_p05_mm": 1000*span(data["z"][mask]),
             "yaw_change_deg": float(np.rad2deg(yaw[mask][-1]-yaw[mask][0])),
-            "left_contact_over_20N_fraction": float((data["foot0_contact_n"][mask] > 20).mean()),
-            "right_contact_over_20N_fraction": float((data["foot1_contact_n"][mask] > 20).mean()),
+            "left_contact_over_20N_fraction": float((data["foot_force_l"][mask] > 20).mean()),
+            "right_contact_over_20N_fraction": float((data["foot_force_r"][mask] > 20).mean()),
             "joints": joints,
         }
         masks.append(mask)

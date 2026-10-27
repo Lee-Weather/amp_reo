@@ -30,7 +30,7 @@ def main():
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14"):
+    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15"):
         raise ValueError("Use a registered x1_amp task")
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     # The shared helper applies --seed only to train_cfg, not env_cfg.
@@ -49,7 +49,7 @@ def main():
     cfg.noise.add_noise = False
     cfg.domain_rand.push_robots = False
     cfg.amp.reference_state_initialization = play.reset_mode == "rsi"
-    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14")
+    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15")
     if shared_buffer:
         cfg.amp.rsi_probability = 1. if play.reset_mode == "rsi" else 0.
         cfg.amp.stand_buffer_seconds = play.stand_buffer_seconds
@@ -99,6 +99,7 @@ def main():
     output_dir = play.output_dir or os.path.join(
         LEGGED_GYM_ROOT_DIR, "logs", train_cfg.runner.experiment_name, "play_output",
         datetime.now().strftime("%Y%m%d_%H%M%S_%f"))
+    dynamic_tracking = hasattr(cfg.rewards, "tracking_min_std")
     recorder = ReplayRecorder(env, runner, output_dir, render=render, metadata={
         "task": args.task, "seed": cfg.seed, "profile": profile, "steps": total_steps,
         "checkpoint": runner.current_learning_iteration, "load_run": args.load_run,
@@ -106,7 +107,12 @@ def main():
         "stand_buffer_seconds": play.stand_buffer_seconds,
         "style_reward_scale": runner.disc_cfg["style_reward_scale"],
         "task_reward_weight": runner.disc_cfg["task_reward_weight"],
-        "tracking_lin_sigma": getattr(cfg.rewards, "tracking_lin_sigma", cfg.rewards.tracking_sigma),
+        "tracking_lin_sigma": None if dynamic_tracking else getattr(cfg.rewards, "tracking_lin_sigma", cfg.rewards.tracking_sigma),
+        "tracking_lin_rule": ({"type": "speed_dependent_std_squared",
+                               "minimum_std": cfg.rewards.tracking_min_std,
+                               "maximum_std": cfg.rewards.tracking_max_std,
+                               "maximum_speed": cfg.rewards.tracking_max_speed} if dynamic_tracking else {"type": "fixed_denominator"}),
+        "standing_style_multiplier": getattr(cfg.amp, "standing_style_multiplier", 1.),
         "tracking_ang_sigma": cfg.rewards.tracking_sigma,
         "pushes": cfg.domain_rand.push_robots, "noise": cfg.noise.add_noise,
         "reference_state_initialization": cfg.amp.reference_state_initialization,

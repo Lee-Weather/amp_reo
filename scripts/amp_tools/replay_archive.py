@@ -3,6 +3,7 @@ import argparse
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import shlex
@@ -21,12 +22,20 @@ def main():
     parser.add_argument("--experiment", required=True)
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--resource_source", required=True)
-    parser.add_argument("--task", choices=("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14"), default="x1_amp")
+    parser.add_argument("--task", choices=("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15"), default="x1_amp")
     parser.add_argument("--training-task-id", default="TASK_20261022_177")
     parser.add_argument("--record_dir", type=Path)
     parser.add_argument("--extra_seeds", type=int, nargs="*", default=[])
     parser.add_argument("--check_rsi", action="store_true")
+    parser.add_argument("--check_speeds", type=float, nargs="*", default=[],
+                        help="Additional constant-vx checks with standing reset and seed=5")
+    parser.add_argument("--speed_check_steps", type=int, default=1000,
+                        help="Steps per constant-speed check (default: 20 seconds at 50 Hz)")
     args = parser.parse_args()
+    if args.speed_check_steps < 1000:
+        raise ValueError("Constant-speed checks require at least 1000 steps")
+    if any(not math.isfinite(vx) or not -.2 <= vx <= .65 for vx in args.check_speeds):
+        raise ValueError("Speed checks must stay within the trained vx range [-0.2, 0.65]")
     if not re.fullmatch(r"exp[1-9][0-9]*(?:\.[1-9][0-9]*)?|exp_[0-9]+(?:\.[0-9]+)?", args.experiment):
         raise ValueError("Use an experiment name such as exp1.4 (or a historical exp_N name)")
     model = args.model.resolve()
@@ -52,6 +61,10 @@ def main():
               for seed in args.extra_seeds]
     if args.check_rsi:
         checks.append({"seed": 5, "reset_mode": "rsi", "output": "logs/replay/rsi_seed5"})
+    for index, vx in enumerate(args.check_speeds):
+        checks.append({"seed": 5, "reset_mode": "standing", "vx": vx,
+                       "steps": args.speed_check_steps,
+                       "output": "logs/replay/speed_check_{}".format(index)})
     state = {"experiment": args.experiment, "task_id": args.training_task_id, "task": args.task, "server_dir": remote,
              "checkpoint_iteration": iteration, "checkpoint_name": model_name,
              "created_at": now.isoformat(), "checkpoint_sha256": hashlib.sha256(model.read_bytes()).hexdigest(),
@@ -78,8 +91,10 @@ def main():
             "export PYTHONPATH=" + shlex.quote(remote),
             "xvfb-run -a " + base_command + " --seed=5 --reset_mode=standing --output_dir=" + primary_output + " > replay.log 2>&1"]
         for check in checks:
+            speed_options = (" --vx=" + str(check["vx"]) + " --steps=" + str(check["steps"])) if "vx" in check else ""
             lines.append(base_command + " --no_video --seed=" + str(check["seed"]) +
                          " --reset_mode=" + check["reset_mode"] + " --output_dir=" + check["output"] +
+                         speed_options +
                          " > " + Path(check["output"]).name + ".log 2>&1")
         lines.extend(["printf 'REPLAY_SUITE_OK\\n'", ""])
         script.write_text("\n".join(lines), encoding="utf-8", newline="\n")

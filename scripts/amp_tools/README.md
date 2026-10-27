@@ -6,12 +6,15 @@
 | --- | --- |
 | `flux_ops.py` | 调用已安装的Flux CLI，对返回的凭据与签名URL脱敏 |
 | `flux_status.py` | 按指定任务状态文件查询训练状态，更新旁边的脱敏日志 |
+| `launch_fixed_amp.py` | 用输入输出同目录规则提交训练，核对账号、源模型和远端提交 |
+| `fetch_amp_checkpoint.py` | 下载实际训练模型，对照保存凭据校验大小、哈希、轮数和模型约定 |
 | `fetch_replay_curves.py` | 获取指定训练任务的AMP曲线，保存到明确指定的附件路径 |
 | `replay_archive.py` | 在201.5服务器新目录部署当前代码并启动完整回放 |
 | `collect_replay_archive.py` | 取回完成的回放，校验视频/CSV/模型并归档、生成诊断汇总 |
 | `analyze_replay.py` | 共用CSV评估：过渡段剔除、速度、姿态、终止及原始/有效目标限位 |
 | `analyze_gait.py` | 离线对照参考与策略的同腿周期、关节摆幅、碰撞脚底高度、PD目标与实际运动 |
 | `analyze_standing.py` | 验证后段零指令，量化姿态/膝踝/PD目标晃动并出图 |
+| `analyze_amp_features.py` | 重建并验证CSV的AMP历史，检查冻结判别器对各类特征的敏感度 |
 
 Flux工具使用本机已安装CLI，继续从已忽略的 `czy/skills/flux-cli/api_key.json` 读取凭据，不将凭据复制到本目录。SSH工具使用Windows自带OpenSSH和密钥登录。
 
@@ -40,6 +43,8 @@ python scripts/amp_tools/collect_replay_archive.py --experiment exp_1.1 --model 
 
 上述部署命令不可对已有任务重复执行。`--primary_only`可在辅助验证期间先取回主三件套，完成后用`--checks_only`补齐同一报告；辅助CSV在临时目录处理后删除，服务器保留原始证据。允许交付目录预先存在同一模型，拒绝覆盖已有回放。笔记依据实际诊断结果更新，不预设“部分达标”。速度稳态窗口剔除指令切换、重置、缓冲结束后2秒；姿态统计剔除回合前100步、终止步和根高度≤0.45m样本。
 
+可追加`--check_speeds -0.2 0.1 0.65`检查后退、慢走和速度上限，各用seed5站姿初始化、恒速1000步（20秒）、不录视频。`--speed_check_steps`可增加时长，不能少于1000步。收集工具按记录的步数验证元数据和CSV；主视频及六段回放保持不变。这些检查的速度指标见各自`evaluation.segments`与`walking`，不能套用0.4/0.6专用指标；摔倒次数仍按完整记录计算。
+
 部署脚本使用系统临时目录打包，取回工具也使用系统临时目录校验，结束后自动清理。已有任务状态或归档时会拒绝覆盖，不要重复启动。
 
 结果位置：
@@ -48,7 +53,7 @@ python scripts/amp_tools/collect_replay_archive.py --experiment exp_1.1 --model 
 - `czy/exp1/{实验编号}_evaluation/`：诊断图、训练曲线、元数据、日志和摘要。
 - `czy/exp1/{实验编号}_training.json/log`：训练状态和脱敏日志。
 
-已清理的artifacts目录不再恢复。当前归档为exp1.2（原exp_2）与exp1.3（原exp_3）；下一轮exp1.4，未经用户明确同意不得进入exp2。后续只用seed=5；不传`--extra_seeds`，`--check_rsi`也只检查seed=5。技术task名x1_amp_exp3保留，历史启动命令/分支不因标签变化而改写。
+已清理的artifacts目录不再恢复。当前实验exp1.4，下一轮exp1.5；当前归档还包括exp1.2（原exp_2）与exp1.3（原exp_3），未经用户明确同意不得进入exp2。后续只用seed=5；不传`--extra_seeds`，`--check_rsi`也只检查seed=5。技术task名x1_amp_exp3保留，历史启动命令/分支不因标签变化而改写。
 
 原 `czy/validation/` 已清空；部署压缩包、短测导出模型、参考工程快照和一次性脚本不保留。
 
@@ -80,9 +85,13 @@ python scripts/amp_tools/analyze_standing.py --csv czy/data/exp1.3/isaac_diag.cs
 
 输出standing_analysis.json/png，P95-P05为摆幅，不是姿态均值偏移；工具拒绝非零指令或包含重置的时间窗。换回放时间表时需调整窗口。
 
+判别器诊断可用`python scripts/amp_tools/analyze_amp_features.py --model <模型> --csv <CSV> --output_dir <实验附件目录>`，仅适用于当前29DOF、2mm脚底对齐方案。它先核对重建风格分数与CSV记录，再将静止/行走样本分别与匹配指令的真实参考比较。输出`amp_feature_analysis.json`；特征替换可能破坏物理一致性，局部梯度或分数变化只说明判别器敏感度，不能证明某个训练改动有效。
 
-exp1.4独立任务`x1_amp_exp14`：每次重采样20%精确零指令，0.5秒渐增静止代价，真实低运动专家混合与指令匹配RSI；继承29DOF/50Hz和原PPO KL保护。正式热启动以exp1.3/model_6000为源，初始学习率经GPU验证修正为1e-5，双方优化器重建；新增1000轮到model_7000。状态文件为czy/exp1/exp1.4_training.json。
+
+exp1.4独立任务`x1_amp_exp14`：每次重采样20%精确零指令，0.5秒渐增静止代价，真实低运动专家混合与指令匹配RSI；继承29DOF/50Hz和原PPO KL保护。正式热启动以exp1.3/model_6000为源，初始学习率经GPU验证修正为1e-5，双方优化器重建；新增1000轮到model_7000。原任务120完成但模型未取回，保留czy/exp1/exp1.4_training.json；修复交付路径后的正式重试为TASK_20261027_166，状态文件czy/exp1/exp1.4_training_retry1.json，不能混用两次任务的模型和结果。
 
 `--warm_start`与`--resume`互斥；前者继承权重和iter、新建优化器，后者恢复完整优化器状态。指定`--warm_start_sha256`核对源模型；云端临时URL回退只保存在运行参数内，日志与状态文件必须脱敏。
 
 云端固定checkpoint目录：训练可显式传`--checkpoint_dir=/workspace/amp_reo/logs/x1_amp_exp14/exported_data/upload_check`，并将`--warm_start`指向同目录的model_6000.pt。平台`checkPointMountPath`也设为对应的仓库相对目录。该目录只允许已有输入模型，拒绝覆盖既有训练结果；不要把不同任务都输出到同一个旧目录。CHECKPOINT_INPUT_READY为输入副本事件，CHECKPOINT_SAVED为本地保存，只有实际模型列表和下载验证才证明上传成功。
+
+exp1.5候选任务`x1_amp_exp15`保持相同控制与观测约定，增加速度相关跟踪容差、零速腿部约束和移动脚底拖地代价；零指令的AMP乘数在0.5秒内降到0.2。`style_score`仍是原始判别器分数，`style_reward`为实际门控后的风格贡献，CSV另有`style_reward_raw`和`amp_style_multiplier`；主runner原有回合日志不变。35项CPU检查及6100→6102的4096环境GPU接口预检通过，最终源模型和步态验收尚待完成；不能把预检模型当正式训练源或最终成果。

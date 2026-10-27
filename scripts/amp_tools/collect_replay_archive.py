@@ -28,11 +28,17 @@ def collect_checks(state, remote, temp, context):
             subprocess.run([SCP, "-o", "BatchMode=yes", HOST + ":" + remote + "/" + check["output"] + "/" + name,
                             str(case_dir/name)], check=True)
         metadata = json.loads((case_dir/"replay_metadata.json").read_text())
-        assert metadata["checkpoint"] == context["iteration"] and metadata["captured_steps"] == 3000
+        expected_steps = check.get("steps", 3000)
+        assert metadata["checkpoint"] == context["iteration"] and metadata["captured_steps"] == expected_steps
         assert metadata["seed"] == check["seed"] and metadata["reset_mode"] == check["reset_mode"]
+        if "vx" in check:
+            assert len(metadata["profile"]) == 1
+            assert metadata["profile"][0][0] == expected_steps
+            assert abs(metadata["profile"][0][1] - check["vx"]) < 1e-6
         report = evaluate_csv(case_dir/"isaac_diag.csv", context)
-        assert report["rows"] == 3000
-        reports.append(dict(seed=check["seed"], reset_mode=check["reset_mode"], evaluation=report))
+        assert report["rows"] == expected_steps
+        reports.append(dict(seed=check["seed"], reset_mode=check["reset_mode"],
+                            steps=expected_steps, vx=check.get("vx"), evaluation=report))
     return reports
 
 

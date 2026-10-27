@@ -84,6 +84,8 @@ class AMPOnPolicyRunner:
                 task_reward, dones = task_reward.to(self.device), dones.to(self.device)
                 style_score = self.discriminator.style_reward(amp)
                 style = style_score * self.disc_cfg["style_reward_scale"] * env.dt
+                if "amp_style_multiplier" in info:
+                    style = style * info["amp_style_multiplier"].to(self.device)
                 weight = self.disc_cfg["task_reward_weight"]
                 reward = weight*task_reward + (1-weight)*style
                 # Report actual returns, never critic bootstrap corrections.
