@@ -1,0 +1,177 @@
+{
+  "passed": true,
+  "iteration": 9005,
+  "metadata_matches_source": true,
+  "weights_finite": true,
+  "optimizer_steps": {
+    "optimizer_state_dict": [
+      100.0,
+      100.0
+    ],
+    "disc_optimizer_state_dict": [
+      20.0,
+      20.0
+    ]
+  },
+  "metrics": {
+    "AMP/kl": [
+      {
+        "step": 9001,
+        "value": 0.00675212312489748
+      },
+      {
+        "step": 9002,
+        "value": 0.007582972291857004
+      },
+      {
+        "step": 9003,
+        "value": 0.007173533551394939
+      },
+      {
+        "step": 9004,
+        "value": 0.006597417406737804
+      },
+      {
+        "step": 9005,
+        "value": 0.008623849600553513
+      }
+    ],
+    "AMP/kl_max": [
+      {
+        "step": 9001,
+        "value": 0.00799671933054924
+      },
+      {
+        "step": 9002,
+        "value": 0.008201071992516518
+      },
+      {
+        "step": 9003,
+        "value": 0.011132821440696716
+      },
+      {
+        "step": 9004,
+        "value": 0.008680567145347595
+      },
+      {
+        "step": 9005,
+        "value": 0.010011320933699608
+      }
+    ],
+    "AMP/kl_early_stop": [
+      {
+        "step": 9001,
+        "value": 0.0
+      },
+      {
+        "step": 9002,
+        "value": 0.0
+      },
+      {
+        "step": 9003,
+        "value": 0.0
+      },
+      {
+        "step": 9004,
+        "value": 0.0
+      },
+      {
+        "step": 9005,
+        "value": 0.0
+      }
+    ],
+    "Policy/moving_selected_raw_target_noise_std_deg": [
+      {
+        "step": 9001,
+        "value": 3.5809876918792725
+      },
+      {
+        "step": 9002,
+        "value": 3.5809874534606934
+      },
+      {
+        "step": 9003,
+        "value": 3.580986499786377
+      },
+      {
+        "step": 9004,
+        "value": 3.580986499786377
+      },
+      {
+        "step": 9005,
+        "value": 3.580986499786377
+      }
+    ],
+    "Gait/lowest_point_speed": [
+      {
+        "step": 9001,
+        "value": 0.3309096097946167
+      },
+      {
+        "step": 9002,
+        "value": 0.3399713635444641
+      },
+      {
+        "step": 9003,
+        "value": 0.26727887988090515
+      },
+      {
+        "step": 9004,
+        "value": 0.16955745220184326
+      },
+      {
+        "step": 9005,
+        "value": 0.32846859097480774
+      }
+    ],
+    "Gait/com_speed": [
+      {
+        "step": 9001,
+        "value": 0.31740596890449524
+      },
+      {
+        "step": 9002,
+        "value": 0.3323918282985687
+      },
+      {
+        "step": 9003,
+        "value": 0.2775132656097412
+      },
+      {
+        "step": 9004,
+        "value": 0.16860203444957733
+      },
+      {
+        "step": 9005,
+        "value": 0.3204995095729828
+      }
+    ],
+    "Tracking/backward_progress_bonus": [
+      {
+        "step": 9001,
+        "value": 0.7137764692306519
+      },
+      {
+        "step": 9002,
+        "value": 0.6699848771095276
+      },
+      {
+        "step": 9003,
+        "value": 0.4599904417991638
+      },
+      {
+        "step": 9004,
+        "value": 0.4193214178085327
+      },
+      {
+        "step": 9005,
+        "value": 0.5440233945846558
+      }
+    ]
+  },
+  "checkpoint_path": "/home/robot/czy/exp1/exp_20261027_163718/logs/x1_amp_exp17/exported_data/2026-10-27_16-40-09exp1.7_preflight/model_9005.pt",
+  "sha256": "96e23339e68d1540d820ba36dab43543053824e61884cbbf5e2bc025e3dee0ce",
+  "code_sha256": "dd03f67f41c59f2ddece2aa8a04213e01845d8fc12fa79a1afbe50787318d84c",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_163718",
+  "scope": "Five updates verify numerical/interface behavior, not walking improvement"
+}

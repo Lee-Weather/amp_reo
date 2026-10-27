@@ -1,0 +1,61 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "vx": 0.0,
+      "steps": 150,
+      "errors": {
+        "backward_progress": 0.0,
+        "tracking_lin_vel": 4.410743713378906e-06,
+        "tracking_ang_vel": 4.708766937255859e-06,
+        "point_speed": 0.0,
+        "feet_scuff": 0.0
+      },
+      "non_timeout_terminations": 0,
+      "selection_precision_disagreements": 172,
+      "quaternion_norm_max_error": 1.645084155565968e-07
+    },
+    {
+      "vx": -0.2,
+      "steps": 150,
+      "errors": {
+        "backward_progress": 1.4002768569110202e-06,
+        "tracking_lin_vel": 4.798173904418945e-06,
+        "tracking_ang_vel": 4.708766937255859e-06,
+        "point_speed": 1.7732488815421638e-08,
+        "feet_scuff": 3.814305501136095e-08
+      },
+      "non_timeout_terminations": 0,
+      "selection_precision_disagreements": 114,
+      "quaternion_norm_max_error": 1.5223023552835002e-07
+    },
+    {
+      "vx": 0.4,
+      "steps": 150,
+      "errors": {
+        "backward_progress": 0.0,
+        "tracking_lin_vel": 4.708766937255859e-06,
+        "tracking_ang_vel": 4.708766937255859e-06,
+        "point_speed": 2.592819190461171e-07,
+        "feet_scuff": 2.061061410874032e-06
+      },
+      "non_timeout_terminations": 0,
+      "selection_precision_disagreements": 41,
+      "quaternion_norm_max_error": 1.858201530424708e-07
+    }
+  ],
+  "foot_com_local": [
+    [
+      0.00017155999375972897,
+      -0.02524694986641407,
+      -0.00019936000171583146
+    ],
+    [
+      0.00017155999375972897,
+      0.02524694986641407,
+      -0.00019936000171583146
+    ]
+  ],
+  "checkpoint": 9005,
+  "scope": "GPU runtime reward and kinematics consistency only; not gait acceptance"
+}

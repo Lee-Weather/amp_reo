@@ -1,0 +1,85 @@
+{
+  "experiment": "exp1.7",
+  "backend": "ssh_server",
+  "host": "robot@10.12.201.5",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_163718",
+  "source_iteration": 9000,
+  "source_checkpoint_sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
+  "source_model": "czy/data/exp1.6/model_9000.pt",
+  "target_iteration": 9005,
+  "max_iterations": 5,
+  "num_envs": 4096,
+  "seed": 5,
+  "task": "x1_amp_exp17",
+  "resume_mode": "warm_start_fresh_optimizers",
+  "preflight": true,
+  "branch": "codex/exp1-7",
+  "commit": "a6cdf552668be5289add74b894ad1f30a50822f0",
+  "code_sha256": "dd03f67f41c59f2ddece2aa8a04213e01845d8fc12fa79a1afbe50787318d84c",
+  "command": "python -u humanoid/scripts/train.py --task=x1_amp_exp17 --headless --num_envs=4096 --seed=5 --max_iterations=5 --run_name=exp1.7_preflight --warm_start=checkpoints/model_9000.pt --warm_start_sha256=9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
+  "log_file": "train.log",
+  "success_marker": "SERVER_TRAINING_OK",
+  "resource_source": "/home/robot/czy/exp1/exp_20261026_151157/resources",
+  "phase": "completed_training",
+  "launch_pid": "3182664",
+  "launched_at": "2026-10-27T16:37:21.747043+08:00",
+  "status": {
+    "phase": "completed_training",
+    "process_alive": false,
+    "iteration": 9005,
+    "target_iteration": 9005,
+    "eta_seconds": 0.0,
+    "new_timesteps": 491520,
+    "restored_checkpoint": null,
+    "saved_checkpoints": [
+      {
+        "iteration": 9005,
+        "path": "/home/robot/czy/exp1/exp_20261027_163718/logs/x1_amp_exp17/exported_data/2026-10-27_16-40-09exp1.7_preflight/model_9005.pt",
+        "bytes": 10777096,
+        "sha256": "96e23339e68d1540d820ba36dab43543053824e61884cbbf5e2bc025e3dee0ce"
+      }
+    ],
+    "log_tail": [
+      "      Tracking/moving_abs_yaw_rate: 0.245108",
+      "Tracking/slow_forward_abs_vx_error: 0.041493",
+      "          Tracking/slow_forward_vx: 0.113545",
+      "        Tracking/zero_abs_vx_error: 0.026698",
+      "                  Tracking/zero_vx: 0.002319",
+      "--------------------------------------------------------------------------------",
+      "                   Total timesteps: 491520",
+      "                    Iteration time: 3.63s",
+      "                        Total time: 17.40s",
+      "                               ETA: 0.0s",
+      "CHECKPOINT_SAVED {\"iteration\": 9005, \"path\": \"/home/robot/czy/exp1/exp_20261027_163718/logs/x1_amp_exp17/exported_data/2026-10-27_16-40-09exp1.7_preflight/model_9005.pt\", \"bytes\": 10777096, \"sha256\": \"96e23339e68d1540d820ba36dab43543053824e61884cbbf5e2bc025e3dee0ce\"}",
+      "SERVER_TRAINING_OK"
+    ],
+    "observed_at": "2026-10-27T16:39:08.702307+08:00"
+  },
+  "verified_checkpoints": {
+    "9005": {
+      "iteration": 9005,
+      "sha256": "96e23339e68d1540d820ba36dab43543053824e61884cbbf5e2bc025e3dee0ce",
+      "bytes": 10777096,
+      "path": "czy/exp1/exp1.7_evaluation/preflight/model_9005.pt",
+      "metadata_matches_source": true,
+      "weights_finite": true,
+      "original_training_origin_retained": false,
+      "training_mode": "warm_start_fresh_optimizers",
+      "training_origin_verified": true,
+      "optimizer_counters": {
+        "optimizer_state_dict": {
+          "minimum": 100.0,
+          "maximum": 100.0,
+          "state_count": 17
+        },
+        "disc_optimizer_state_dict": {
+          "minimum": 20.0,
+          "maximum": 20.0,
+          "state_count": 6
+        }
+      },
+      "normalizer_count_increased": true,
+      "verified_at": "2026-10-27T16:48:19.772505+08:00"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_163718",
+  "launch_pid": "3185927",
+  "phase": "completed",
+  "model": "/home/robot/czy/exp1/exp_20261027_163718/logs/x1_amp_exp17/exported_data/2026-10-27_16-40-09exp1.7_preflight/model_9005.pt",
+  "previous_terminal_pid": "3184506",
+  "previous_failure": "Reference compared a different material vertex under float32/float64 near-ties; verifying identical production-selected vertex now"
+}
