@@ -26,10 +26,10 @@
   "status": {
     "phase": "running",
     "process_alive": true,
-    "iteration": 10101,
+    "iteration": 10239,
     "target_iteration": 11000,
-    "eta_seconds": 3151.9,
-    "new_timesteps": 9928704,
+    "eta_seconds": 2798.2,
+    "new_timesteps": 23494656,
     "restored_checkpoint": null,
     "saved_checkpoints": [
       {
@@ -37,23 +37,29 @@
         "path": "/home/robot/czy/exp1/exp_20261027_183624/logs/x1_amp_exp18/exported_data/2026-10-27_18-39-14exp1.8/model_10100.pt",
         "bytes": 10777160,
         "sha256": "cb90028ac6e5089d6b364dae58b037a700c01385fb94a18ce08b9fa61bbe0dd7"
+      },
+      {
+        "iteration": 10200,
+        "path": "/home/robot/czy/exp1/exp_20261027_183624/logs/x1_amp_exp18/exported_data/2026-10-27_18-39-14exp1.8/model_10200.pt",
+        "bytes": 10777160,
+        "sha256": "845412feaefe4c918be1ef94d1f0d33aae8b37a99c081d30a6684ad770e93891"
       }
     ],
     "log_tail": [
-      "     Tracking/lateral_abs_velocity: 0.042388",
-      "     Tracking/linear_tolerance_m_s: 0.143498",
-      "      Tracking/moving_abs_yaw_rate: 0.200392",
-      "Tracking/slow_forward_abs_vx_error: 0.051782",
-      "          Tracking/slow_forward_vx: 0.134280",
-      "        Tracking/zero_abs_vx_error: 0.032323",
-      "                  Tracking/zero_vx: 0.014147",
+      "     Tracking/lateral_abs_velocity: 0.041269",
+      "     Tracking/linear_tolerance_m_s: 0.142730",
+      "      Tracking/moving_abs_yaw_rate: 0.198947",
+      "Tracking/slow_forward_abs_vx_error: 0.051502",
+      "          Tracking/slow_forward_vx: 0.121459",
+      "        Tracking/zero_abs_vx_error: 0.030799",
+      "                  Tracking/zero_vx: 0.009328",
       "--------------------------------------------------------------------------------",
-      "                   Total timesteps: 9928704",
-      "                    Iteration time: 3.74s",
-      "                        Total time: 354.11s",
-      "                               ETA: 3151.9s"
+      "                   Total timesteps: 23494656",
+      "                    Iteration time: 3.79s",
+      "                        Total time: 878.81s",
+      "                               ETA: 2798.2s"
     ],
-    "observed_at": "2026-10-27T18:43:06.072440+08:00"
+    "observed_at": "2026-10-27T18:52:14.862004+08:00"
   },
   "verified_checkpoints": {
     "10100": {

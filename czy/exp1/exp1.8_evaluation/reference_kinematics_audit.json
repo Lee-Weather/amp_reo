@@ -1,0 +1,275 @@
+{
+  "source_iteration": 10000,
+  "source_model_sha256": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+  "resource_sha256": {
+    "resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf": "f45f8b3bffd95d1d3b664a78901e58f40168d9787c8364b9e1e95b587627c5c9",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B1_stand_to_walk.pkl": "b52e494467fff02d7476713b28d4e45d29ab5fe8f174e7c48b53f8ccf78e6da0",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B2_walk_to_stand.pkl": "c0ac857c3fe663eafd5d533811e7cd4fc3bd538b397b8bb160fdeda7f300751a",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B3_continuous_walk.pkl": "85d13aa13bb688faf5cb35dabbb8df0c105b614996b74f8f5035aafdda281dc0",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B4_walk_backwards.pkl": "0ba8de827a0eaba66aa0a8c593d6825a7078d53017b282a89c9b9675186c25eb",
+    "resources/robots/x1_29/meshes/left_ankle_roll.STL": "6346fce8cc33295fa00d61852c7415e356dabf634b99eb8a4f10b9d41e66f901",
+    "resources/robots/x1_29/meshes/right_ankle_roll_physically_mirrored.STL": "c369b3d3ea578c19e18c1d46fa767a48631f0e34b577f1b423a8ef2b3227f7ce"
+  },
+  "clips": {
+    "F1_B1_stand_to_walk": {
+      "frames": 311,
+      "duration_s": 6.199999809265137,
+      "epsilon_sensitivity_max_m_s": 2.8421633091468834e-07,
+      "groups": {
+        "moving": {
+          "samples": 244,
+          "mean_reference_local_vx": 0.421167402486102,
+          "feet": {
+            "left": {
+              "near_floor_samples": 121,
+              "near_floor_fraction": 0.4959016393442623,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.015895758281387732,
+                0.03501137396458823,
+                0.4138962985194662
+              ],
+              "point_speed_above_010_fraction": 0.19834710743801653
+            },
+            "right": {
+              "near_floor_samples": 203,
+              "near_floor_fraction": 0.8319672131147541,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.008750116772728108,
+                0.05198860506247453,
+                1.3845127014256564
+              ],
+              "point_speed_above_010_fraction": 0.33004926108374383
+            }
+          }
+        },
+        "matched_forward_06": {
+          "samples": 108,
+          "mean_reference_local_vx": 0.5324301819980255,
+          "feet": {
+            "left": {
+              "near_floor_samples": 63,
+              "near_floor_fraction": 0.5833333333333334,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.021985114696006374,
+                0.06174157183208766,
+                0.5781639692175253
+              ],
+              "point_speed_above_010_fraction": 0.31746031746031744
+            },
+            "right": {
+              "near_floor_samples": 103,
+              "near_floor_fraction": 0.9537037037037037,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.01648149938035588,
+                0.09384177768530952,
+                0.7230567841271229
+              ],
+              "point_speed_above_010_fraction": 0.4563106796116505
+            }
+          }
+        }
+      }
+    },
+    "F1_B2_walk_to_stand": {
+      "frames": 284,
+      "duration_s": 5.659999847412109,
+      "epsilon_sensitivity_max_m_s": 2.807789245551362e-07,
+      "groups": {
+        "moving": {
+          "samples": 220,
+          "mean_reference_local_vx": 0.4658149646456521,
+          "feet": {
+            "left": {
+              "near_floor_samples": 129,
+              "near_floor_fraction": 0.5863636363636363,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.010588645612424528,
+                0.046147180079666256,
+                0.6489852175204164
+              ],
+              "point_speed_above_010_fraction": 0.24031007751937986
+            },
+            "right": {
+              "near_floor_samples": 195,
+              "near_floor_fraction": 0.8863636363636364,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.007999185087830698,
+                0.07845942604393573,
+                2.1502151852859845
+              ],
+              "point_speed_above_010_fraction": 0.4256410256410256
+            }
+          }
+        },
+        "matched_forward_06": {
+          "samples": 145,
+          "mean_reference_local_vx": 0.5482163243190886,
+          "feet": {
+            "left": {
+              "near_floor_samples": 90,
+              "near_floor_fraction": 0.6206896551724138,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.027486604696417796,
+                0.06423947632969848,
+                0.802207103236077
+              ],
+              "point_speed_above_010_fraction": 0.3111111111111111
+            },
+            "right": {
+              "near_floor_samples": 134,
+              "near_floor_fraction": 0.9241379310344827,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.011600667677238876,
+                0.09669549786749806,
+                2.016953699950249
+              ],
+              "point_speed_above_010_fraction": 0.5
+            }
+          }
+        }
+      }
+    },
+    "F1_B3_continuous_walk": {
+      "frames": 381,
+      "duration_s": 7.599999904632568,
+      "epsilon_sensitivity_max_m_s": 2.895306909778128e-07,
+      "groups": {
+        "moving": {
+          "samples": 368,
+          "mean_reference_local_vx": 0.6129073753244542,
+          "feet": {
+            "left": {
+              "near_floor_samples": 252,
+              "near_floor_fraction": 0.6847826086956522,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.025373950146267053,
+                0.059958833726754084,
+                0.8538476728938467
+              ],
+              "point_speed_above_010_fraction": 0.2857142857142857
+            },
+            "right": {
+              "near_floor_samples": 267,
+              "near_floor_fraction": 0.7255434782608695,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.006335747942449878,
+                0.07377952385503118,
+                1.1950662874583367
+              ],
+              "point_speed_above_010_fraction": 0.3782771535580524
+            }
+          }
+        },
+        "matched_forward_06": {
+          "samples": 368,
+          "mean_reference_local_vx": 0.6129073753244542,
+          "feet": {
+            "left": {
+              "near_floor_samples": 252,
+              "near_floor_fraction": 0.6847826086956522,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.025373950146267053,
+                0.059958833726754084,
+                0.8538476728938467
+              ],
+              "point_speed_above_010_fraction": 0.2857142857142857
+            },
+            "right": {
+              "near_floor_samples": 267,
+              "near_floor_fraction": 0.7255434782608695,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.006335747942449878,
+                0.07377952385503118,
+                1.1950662874583367
+              ],
+              "point_speed_above_010_fraction": 0.3782771535580524
+            }
+          }
+        }
+      }
+    },
+    "F1_B4_walk_backwards": {
+      "frames": 377,
+      "duration_s": 7.519999980926514,
+      "epsilon_sensitivity_max_m_s": 2.7842426297830514e-07,
+      "groups": {
+        "moving": {
+          "samples": 291,
+          "mean_reference_local_vx": -0.3513951672425932,
+          "feet": {
+            "left": {
+              "near_floor_samples": 182,
+              "near_floor_fraction": 0.6254295532646048,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.0079676877264233,
+                0.04575509187376727,
+                0.5890391536465838
+              ],
+              "point_speed_above_010_fraction": 0.2032967032967033
+            },
+            "right": {
+              "near_floor_samples": 225,
+              "near_floor_fraction": 0.7731958762886598,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.006527838995235604,
+                0.03371190425328077,
+                0.9349850287161133
+              ],
+              "point_speed_above_010_fraction": 0.27111111111111114
+            }
+          }
+        },
+        "matched_backward_02": {
+          "samples": 130,
+          "mean_reference_local_vx": -0.24473851770880728,
+          "feet": {
+            "left": {
+              "near_floor_samples": 75,
+              "near_floor_fraction": 0.5769230769230769,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.0075334152545057835,
+                0.024831536080328533,
+                0.11835590737486762
+              ],
+              "point_speed_above_010_fraction": 0.09333333333333334
+            },
+            "right": {
+              "near_floor_samples": 81,
+              "near_floor_fraction": 0.6230769230769231,
+              "point_horizontal_speed_p05_p50_p95_m_s": [
+                0.006333258609084082,
+                0.019706392974924,
+                0.3306357657712117
+              ],
+              "point_speed_above_010_fraction": 0.09876543209876543
+            }
+          }
+        }
+      }
+    }
+  },
+  "method": "Double precision directional FK derivative of the fixed current-lowest collision vertex along reference root origin velocity, world angular velocity and joint dq.",
+  "root_velocity_convention": "Reference root velocity comes from the derivative of root_pos, so it is origin velocity; do not apply Gym COM subtraction.",
+  "limits": [
+    "Near floor <=1cm is a geometric selection, not observed contact or measured physical slip.",
+    "No forces or dynamics are reconstructed. A lowest mesh vertex can differ from a solver contact patch.",
+    "Grounding and small joint-limit clamping match the production MotionLibrary.",
+    "Each reference has different speeds and phases; this is not a controlled causal comparison or policy acceptance."
+  ],
+  "selection": {
+    "near_floor_max_height_m": 0.01,
+    "horizontal_speed_threshold_m_s": 0.1,
+    "boundary_exclusion_s": 0.12,
+    "quantile_probabilities": [
+      0.05,
+      0.5,
+      0.95
+    ]
+  },
+  "resource_verification": {
+    "training_dir": "/home/robot/czy/exp1/exp_20261027_183624",
+    "files": 7,
+    "all_remote_resource_hashes_match": true,
+    "training_code_sha256": "9958cd54c31ad759739ba2aaa9eff481c0ca07609128787e4bb81f87715b93cf"
+  }
+}
