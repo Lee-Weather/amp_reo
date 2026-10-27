@@ -42,6 +42,22 @@ class ReplayDependencyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 module.prepare_checkpoint(root, False, 8000, destination)
 
+    def test_formal_training_uses_its_recorded_log_and_completion_marker(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root/"model_9000.pt"
+            source.write_bytes(b"formal final checkpoint")
+            receipt = dict(iteration=9000, path=str(source), bytes=source.stat().st_size,
+                           sha256=hashlib.sha256(source.read_bytes()).hexdigest())
+            (root/"train.log").write_text("CHECKPOINT_SAVED "+json.dumps(receipt)+"\nSERVER_TRAINING_OK\n")
+            destination = root/"play/model_9000.pt"
+            self.assertIsNone(module.prepare_checkpoint(root, True, 9000, destination,
+                                                       "train.log", "SERVER_TRAINING_OK"))
+            result = module.prepare_checkpoint(root, False, 9000, destination,
+                                               "train.log", "SERVER_TRAINING_OK")
+            self.assertEqual(result["iteration"], 9000)
+            self.assertEqual(destination.read_bytes(), source.read_bytes())
+
 
 if __name__ == "__main__":
     unittest.main()
