@@ -1,0 +1,14 @@
+{
+  "training_dir": "/home/robot/czy/exp1/exp_20261027_164846",
+  "resource_files": 5,
+  "all_resource_sha256_match": true,
+  "local_production_code_matches_training": true,
+  "code_sha256": "dd03f67f41c59f2ddece2aa8a04213e01845d8fc12fa79a1afbe50787318d84c",
+  "resource_sha256": {
+    "resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf": "f45f8b3bffd95d1d3b664a78901e58f40168d9787c8364b9e1e95b587627c5c9",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B1_stand_to_walk.pkl": "b52e494467fff02d7476713b28d4e45d29ab5fe8f174e7c48b53f8ccf78e6da0",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B2_walk_to_stand.pkl": "c0ac857c3fe663eafd5d533811e7cd4fc3bd538b397b8bb160fdeda7f300751a",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B3_continuous_walk.pkl": "85d13aa13bb688faf5cb35dabbb8df0c105b614996b74f8f5035aafdda281dc0",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B4_walk_backwards.pkl": "0ba8de827a0eaba66aa0a8c593d6825a7078d53017b282a89c9b9675186c25eb"
+  }
+}
