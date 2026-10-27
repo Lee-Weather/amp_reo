@@ -7,6 +7,13 @@ def tracking_denominator(command_vx, minimum_std=.08, maximum_std=.30, maximum_s
     return (minimum_std+(maximum_std-minimum_std)*fraction).square()
 
 
+def style_multiplier(command_vx, actual_vx, stand_gate, standing_floor=.2, motion_threshold=.05):
+    """Keep quiet AMP at zero; moving AMP requires progress in the requested direction."""
+    standing = 1-(1-standing_floor)*stand_gate
+    progress = (actual_vx*command_vx.sign()/command_vx.abs().clamp(min=motion_threshold)).clamp(0, 1)
+    return standing*torch.where(command_vx.abs() > motion_threshold, progress, torch.ones_like(progress))
+
+
 def sole_heights(feet_state, vertices, ground_height):
     """Lowest collision vertex in world z, relative to the plane for each foot."""
     heights = []

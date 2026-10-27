@@ -1,7 +1,7 @@
 """The control and observation conventions remain compatible with exp1.4."""
 import torch
 
-from humanoid.amp.gait_rewards import tracking_denominator, sole_heights, scuff_cost
+from humanoid.amp.gait_rewards import tracking_denominator, sole_heights, scuff_cost, style_multiplier
 from .x1_amp_exp14_env import X1AMPExp14Env
 
 
@@ -25,13 +25,15 @@ class X1AMPExp15Env(X1AMPExp14Env):
         self.sole_height = sole_heights(feet, self.sole_vertices, self.env_origins[:, 2])
         self.foot_horizontal_speed = feet[:, :, 7:9].norm(dim=-1)
         super().compute_reward()
-        # Clone before auto-reset changes stand_gate. Moving commands retain
-        # their original AMP contribution; exact zero ramps to the floor.
-        multiplier = 1-(1-self.cfg.amp.standing_style_multiplier)*self.stand_gate
+        # Clone before auto-reset changes velocities/stand_gate. The signed
+        # speed fraction prevents a stationary policy earning full moving AMP.
+        multiplier = style_multiplier(self.commands[:, 0], self.base_lin_vel[:, 0],
+                                      self.stand_gate, self.cfg.amp.standing_style_multiplier)
         self.extras["amp_style_multiplier"] = multiplier.clone()
         zero = self.commands[:, :3].abs().amax(-1) <= 1e-6
         metrics = self.extras["training_metrics"]
         metrics["AMP/standing_style_multiplier"] = multiplier[zero]
+        metrics["AMP/moving_style_multiplier"] = multiplier[self.commands[:, 0].abs() > .05]
         metrics["Standing/leg_joint_speed_rms"] = self.dof_vel[zero][:, self.leg_indices].square().mean(-1).sqrt()
         metrics["Gait/scuff_cost"] = self._reward_feet_scuff()[~zero]
         metrics["Tracking/linear_tolerance_m_s"] = self._tracking_denominator().sqrt()

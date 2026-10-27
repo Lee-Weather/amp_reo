@@ -2,7 +2,7 @@
 import unittest
 import torch
 
-from humanoid.amp.gait_rewards import tracking_denominator, sole_heights, scuff_cost
+from humanoid.amp.gait_rewards import tracking_denominator, sole_heights, scuff_cost, style_multiplier
 from humanoid.amp.runner import AMPOnPolicyRunner
 from test_amp import FakeEnv, library, runner_config
 from test_exp3 import definitions, experiment_config
@@ -35,6 +35,13 @@ class Exp15Tests(unittest.TestCase):
         self.assertAlmostEqual(float(heights[0, 0]), -.1, places=6)
         feet[:, :, 2] += .3
         torch.testing.assert_close(sole_heights(feet, [mesh, mesh], torch.full((2,), .3)), heights)
+
+    def test_moving_style_requires_signed_progress_and_never_rewards_overspeed(self):
+        commands = torch.tensor([0., .4, -.2, .1, .4, -.2, .01, .4])
+        actual = torch.tensor([0., 0., 0., .05, .6, -.2, 0., -.2])
+        gate = torch.tensor([1., 0., 0., 0., 0., 0., 0., 0.])
+        torch.testing.assert_close(style_multiplier(commands, actual, gate),
+                                   torch.tensor([.2, 0., 0., .5, 1., 1., 1., 0.]))
 
     def test_scuff_cost_distinguishes_swing_support_and_zero_command(self):
         height = torch.tensor([[0., 0.], [.02, 0.], [0., 0.], [0., 0.]])

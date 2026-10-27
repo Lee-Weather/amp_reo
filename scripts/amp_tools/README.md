@@ -94,4 +94,4 @@ exp1.4独立任务`x1_amp_exp14`：每次重采样20%精确零指令，0.5秒渐
 
 云端固定checkpoint目录：训练可显式传`--checkpoint_dir=/workspace/amp_reo/logs/x1_amp_exp14/exported_data/upload_check`，并将`--warm_start`指向同目录的model_6000.pt。平台`checkPointMountPath`也设为对应的仓库相对目录。该目录只允许已有输入模型，拒绝覆盖既有训练结果；不要把不同任务都输出到同一个旧目录。CHECKPOINT_INPUT_READY为输入副本事件，CHECKPOINT_SAVED为本地保存，只有实际模型列表和下载验证才证明上传成功。
 
-exp1.5候选任务`x1_amp_exp15`保持相同控制与观测约定，增加速度相关跟踪容差、零速腿部约束和移动脚底拖地代价；零指令的AMP乘数在0.5秒内降到0.2。`style_score`仍是原始判别器分数，`style_reward`为实际门控后的风格贡献，CSV另有`style_reward_raw`和`amp_style_multiplier`；主runner原有回合日志不变。35项CPU检查及6100→6102的4096环境GPU接口预检通过，最终源模型和步态验收尚待完成；不能把预检模型当正式训练源或最终成果。
+exp1.5候选任务`x1_amp_exp15`保持相同控制与观测约定，增加速度相关跟踪容差、零速腿部约束和移动脚底拖地代价；零指令的AMP乘数在0.5秒内降到0.2。abs(vx指令)>0.05时另乘指令方向的实际速度/指令速度并限制为[0,1]，避免原地获取完整运动AMP奖励，不为超速加分。`style_score`仍是原始判别器分数，`style_reward`为实际门控后的风格贡献，CSV另有`style_reward_raw`和`amp_style_multiplier`；主runner原有回合日志不变。早期候选的35项CPU检查及6100→6102的4096环境GPU接口预检已通过；新增运动门控后须重新检查，不能把旧代码预检说成当前代码GPU通过，也不能把预检模型当正式训练源或最终成果。
