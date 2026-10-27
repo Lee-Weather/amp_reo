@@ -1,0 +1,52 @@
+{
+  "experiment": "exp1.6",
+  "purpose": "CPU-only deterministic same-command comparison; not final GPU acceptance",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_145737",
+  "training_dir": "/home/robot/czy/exp1/exp_20261027_142839",
+  "training_pid": "3119394",
+  "code_sha256": "8c2826374a7758056f45607085fdb1f2c2edf253e422405c29ce631110df408f",
+  "sim_device": "cpu",
+  "pipeline": "cpu",
+  "rl_device": "cpu",
+  "num_threads": 1,
+  "checks": [
+    {
+      "iteration": 8000,
+      "vx": -0.2,
+      "seed": 5,
+      "reset_mode": "standing",
+      "steps": 1000,
+      "output": "logs/cpu_8000_reverse"
+    },
+    {
+      "iteration": 8000,
+      "vx": 0.1,
+      "seed": 5,
+      "reset_mode": "standing",
+      "steps": 1000,
+      "output": "logs/cpu_8000_slow"
+    },
+    {
+      "iteration": 8400,
+      "vx": -0.2,
+      "seed": 5,
+      "reset_mode": "standing",
+      "steps": 1000,
+      "output": "logs/cpu_8400_reverse"
+    },
+    {
+      "iteration": 8400,
+      "vx": 0.1,
+      "seed": 5,
+      "reset_mode": "standing",
+      "steps": 1000,
+      "output": "logs/cpu_8400_slow"
+    }
+  ],
+  "checkpoint_sha256": {
+    "8000": "48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1",
+    "8400": "557355a1bc23b3dc914ec5168a2e8f79b53dbb021fb6fa6844d176c497006fd8"
+  },
+  "phase": "completed_and_analyzed",
+  "launch_pid": "3134991"
+}

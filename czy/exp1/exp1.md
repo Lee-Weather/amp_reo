@@ -1299,3 +1299,19 @@ abs(cmd_vx)>0.05时，在原有沿指令进展门控上乘exp(-((vx-cmd_vx)/0.12
 已用真实exp1.5/8000三件套核验该工具：复现静止通过、速度/右脚高度/第二次刹停失败，周期平均wz=0.03435753rad/s与原结果一致；原验收报告保留，新验证结果在acceptance_tool_validation.json。另加重置中断持续判据、平面范数而非单轴速度、缺失RSI条件、原地后退不能通过以及无周期等回归，当前完整50项CPU检查通过。修改只涉及离线工具与收集器，无需对未改的训练算法重复GPU短训。
 
 最终收集全部辅助检查后执行：`python scripts/amp_tools/summarize_amp_acceptance.py --model czy/data/exp1.6/model_9000.pt --csv czy/data/exp1.6/isaac_diag.csv --record-dir czy/exp1/exp1.6_evaluation --criteria-version exp1.6`。没有视觉复核记录时accepted保持false；应先核对数值及视频，再补充绑定哈希的visual_review.json，不能为获得通过而降低本轮标准。
+
+
+#### 8000与8400同条件CPU恒速中途对照
+
+CPU诊断目录/home/robot/czy/exp1/exp_20261027_145737，launcher PID3134991已结束，CPU_COMPARE_OK。复制正式训练的同一humanoid代码及已校验8000/8400模型；8400保存SHA256=557355a1bc23b3dc914ec5168a2e8f79b53dbb021fb6fa6844d176c497006fd8。四项均seed5、单环境、站姿初始化、每项1000步/20秒、关闭噪声推力，显式sim_device=cpu/pipeline=cpu/rl_device=cpu/num_threads=1、OMP/MKL单线程且CUDA_VISIBLE_DEVICES为空。各日志均实际确认Physics Device=cpu、GPU Pipeline disabled；GPU查询仅见正式训练PID3119433（约5497MiB），本次对照未占训练GPU。
+
+| CPU模型 | 指令vx | 稳态mean vx | RMSE | 非超时终止 |
+| --- | --- | --- | --- | --- |
+| 8000 | -0.2 | -0.000129 | 0.19996 | 0 |
+| 8400 | -0.2 | +0.000083 | 0.20015 | 0 |
+| 8000 | +0.1 | +0.017616 | 0.09803 | 0 |
+| 8400 | +0.1 | +0.102024 | 0.04690 | 0 |
+
+四项各825个稳态样本，实际施加与观测指令误差均0；沿用共享analyze_replay的切换/缓冲到期后剔除2秒口径。0.1慢速在此同CPU对照下已有明显响应，8400满足本轮慢速均值与RMSE数值条件，但这不是GPU验收或步态自然度通过。-0.2仍几乎静止，不能用平均训练负速度或无跌倒冒充学会后退；真正困难仍未解决。CPU与GPU有物理差异，只比较这两模型的同CPU变化，不能把0.102直接填为最终GPU结果。
+
+状态[cpu_compare_8000_8400.json](exp1.6_evaluation/cpu_compare_8000_8400.json)、精简结果[cpu_compare_8000_8400_summary.json](exp1.6_evaluation/cpu_compare_8000_8400_summary.json)。原始CSV和日志只留服务器，未增加最终三件套文件。分析读取已知哈希模型时，服务器PyTorch1.12不支持weights_only参数，按兼容接口去掉该关键字后继续分析原文件，未重跑仿真；记录了原分析函数及兼容代码哈希。

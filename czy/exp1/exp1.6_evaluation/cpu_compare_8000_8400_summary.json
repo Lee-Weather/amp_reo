@@ -1,0 +1,99 @@
+{
+  "alive": false,
+  "complete": true,
+  "cases": [
+    {
+      "rows": 1000,
+      "resets": 0,
+      "timeouts": 0,
+      "non_timeout_terminations": 0,
+      "walking": {
+        "samples": 825,
+        "mean_command": -0.20000000298023224,
+        "mean_vx": -0.00012888323754547552,
+        "mean_abs_vx": 0.0043105504383934064,
+        "rmse_vx": 0.19995750275884225,
+        "mean_abs_vy": 0.010080266606543745,
+        "mean_abs_yaw_rate": 0.01131726969379639
+      },
+      "command_observation_max_error": 0.0,
+      "stable_minimum_height": 0.6222766637802124,
+      "iteration": 8000,
+      "command_vx": -0.2,
+      "cpu_physics_verified": true,
+      "cpu_pipeline_verified": true
+    },
+    {
+      "rows": 1000,
+      "resets": 0,
+      "timeouts": 0,
+      "non_timeout_terminations": 0,
+      "walking": {
+        "samples": 825,
+        "mean_command": 0.10000000149011612,
+        "mean_vx": 0.017616092080161527,
+        "mean_abs_vx": 0.019466748988582395,
+        "rmse_vx": 0.09802978635473791,
+        "mean_abs_vy": 0.009560241570231455,
+        "mean_abs_yaw_rate": 0.041555954509001986
+      },
+      "command_observation_max_error": 0.0,
+      "stable_minimum_height": 0.6102570295333862,
+      "iteration": 8000,
+      "command_vx": 0.1,
+      "cpu_physics_verified": true,
+      "cpu_pipeline_verified": true
+    },
+    {
+      "rows": 1000,
+      "resets": 0,
+      "timeouts": 0,
+      "non_timeout_terminations": 0,
+      "walking": {
+        "samples": 825,
+        "mean_command": -0.20000000298023224,
+        "mean_vx": 8.347895819800518e-05,
+        "mean_abs_vx": 0.004030836881399658,
+        "rmse_vx": 0.20014541631136687,
+        "mean_abs_vy": 0.005906840701337029,
+        "mean_abs_yaw_rate": 0.016158251698401398
+      },
+      "command_observation_max_error": 0.0,
+      "stable_minimum_height": 0.618671178817749,
+      "iteration": 8400,
+      "command_vx": -0.2,
+      "cpu_physics_verified": true,
+      "cpu_pipeline_verified": true
+    },
+    {
+      "rows": 1000,
+      "resets": 0,
+      "timeouts": 0,
+      "non_timeout_terminations": 0,
+      "walking": {
+        "samples": 825,
+        "mean_command": 0.10000000149011612,
+        "mean_vx": 0.10202380632812326,
+        "mean_abs_vx": 0.10202380632812326,
+        "rmse_vx": 0.04689984661671076,
+        "mean_abs_vy": 0.02235978892811214,
+        "mean_abs_yaw_rate": 0.12323102669818609
+      },
+      "command_observation_max_error": 0.0,
+      "stable_minimum_height": 0.6030348539352417,
+      "iteration": 8400,
+      "command_vx": 0.1,
+      "cpu_physics_verified": true,
+      "cpu_pipeline_verified": true
+    }
+  ],
+  "scope": "CPU comparison only; physics differs from GPU and does not replace final GPU acceptance",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_145737",
+  "checkpoint_sha256": {
+    "8000": "48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1",
+    "8400": "557355a1bc23b3dc914ec5168a2e8f79b53dbb021fb6fa6844d176c497006fd8"
+  },
+  "analysis_code_sha256": "22a5eada5abd5b598b2503888e7db1c768db816ed309d30a9aacab73c4d062e8",
+  "runtime_analysis_code_sha256": "a56d300bcd2f7df7ca9cf52379007bc02909005b3ad816c51b15477be7201272",
+  "compatibility": "PyTorch1.12 reader omits unsupported weights_only keyword for verified trusted checkpoints"
+}

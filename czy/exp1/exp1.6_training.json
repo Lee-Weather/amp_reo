@@ -26,10 +26,10 @@
   "status": {
     "phase": "running",
     "process_alive": true,
-    "iteration": 8368,
+    "iteration": 8504,
     "target_iteration": 9000,
-    "eta_seconds": 2417.7,
-    "new_timesteps": 36175872,
+    "eta_seconds": 1922.5,
+    "new_timesteps": 49545216,
     "restored_checkpoint": null,
     "saved_checkpoints": [
       {
@@ -49,23 +49,35 @@
         "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8300.pt",
         "bytes": 10776904,
         "sha256": "1f9402f74e75a8f67ff0fd107684ace732986ac9ad604cd04938c433e1b8ec16"
+      },
+      {
+        "iteration": 8400,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8400.pt",
+        "bytes": 10776904,
+        "sha256": "557355a1bc23b3dc914ec5168a2e8f79b53dbb021fb6fa6844d176c497006fd8"
+      },
+      {
+        "iteration": 8500,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8500.pt",
+        "bytes": 10776904,
+        "sha256": "1d4d869f14650bd947a619c20de2b7176aa504a05060c4003cb3b4c2d24c590f"
       }
     ],
     "log_tail": [
-      "     Tracking/forward_abs_vx_error: 0.088716",
-      "               Tracking/forward_vx: 0.398876",
-      "     Tracking/linear_tolerance_m_s: 0.152154",
-      "Tracking/slow_forward_abs_vx_error: 0.057291",
-      "          Tracking/slow_forward_vx: 0.114939",
-      "        Tracking/zero_abs_vx_error: 0.041401",
-      "                  Tracking/zero_vx: 0.016908",
+      "     Tracking/forward_abs_vx_error: 0.097913",
+      "               Tracking/forward_vx: 0.402598",
+      "     Tracking/linear_tolerance_m_s: 0.145772",
+      "Tracking/slow_forward_abs_vx_error: 0.058116",
+      "          Tracking/slow_forward_vx: 0.116837",
+      "        Tracking/zero_abs_vx_error: 0.038520",
+      "                  Tracking/zero_vx: 0.014130",
       "--------------------------------------------------------------------------------",
-      "                   Total timesteps: 36175872",
-      "                    Iteration time: 3.83s",
-      "                        Total time: 1407.78s",
-      "                               ETA: 2417.7s"
+      "                   Total timesteps: 49545216",
+      "                    Iteration time: 3.89s",
+      "                        Total time: 1953.56s",
+      "                               ETA: 1922.5s"
     ],
-    "observed_at": "2026-10-27T14:53:35.968438+08:00"
+    "observed_at": "2026-10-27T15:03:00.345587+08:00"
   },
   "verified_checkpoints": {
     "8100": {
