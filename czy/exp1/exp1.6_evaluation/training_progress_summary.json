@@ -1,0 +1,121 @@
+{
+  "observed_at": "2026-10-27T15:04:00.159037+08:00",
+  "last_iteration": 8515,
+  "scope": "Stochastic training aggregates, not constant-command replay acceptance",
+  "windows": {
+    "early_after_initial_horizon": {
+      "iterations": [
+        8101,
+        8200
+      ],
+      "metrics": {
+        "Train/mean_reward": {
+          "mean": 14.649698505401611,
+          "samples": 100
+        },
+        "Train/mean_episode_length": {
+          "mean": 873.7693023681641,
+          "samples": 100
+        },
+        "AMP/kl": {
+          "mean": 0.012306721350178122,
+          "samples": 100
+        },
+        "AMP/kl_max": {
+          "mean": 0.015726781785488128,
+          "samples": 100
+        },
+        "Tracking/backward_abs_vx_error": {
+          "mean": 0.14311934061348439,
+          "samples": 100
+        },
+        "Tracking/slow_forward_abs_vx_error": {
+          "mean": 0.07510267414152622,
+          "samples": 100
+        },
+        "Tracking/forward_abs_vx_error": {
+          "mean": 0.10467758461833,
+          "samples": 100
+        },
+        "Tracking/zero_abs_vx_error": {
+          "mean": 0.04386039786040783,
+          "samples": 100
+        },
+        "Commands/backward_applied_fraction": {
+          "mean": 0.12736440427601337,
+          "samples": 100
+        },
+        "Commands/slow_forward_applied_fraction": {
+          "mean": 0.13834574811160563,
+          "samples": 100
+        },
+        "Commands/forward_applied_fraction": {
+          "mean": 0.4101130273938179,
+          "samples": 100
+        },
+        "Commands/zero_applied_fraction": {
+          "mean": 0.23086568728089332,
+          "samples": 100
+        }
+      }
+    },
+    "latest100": {
+      "iterations": [
+        8416,
+        8515
+      ],
+      "metrics": {
+        "Train/mean_reward": {
+          "mean": 16.643239822387695,
+          "samples": 100
+        },
+        "Train/mean_episode_length": {
+          "mean": 919.8562969970703,
+          "samples": 100
+        },
+        "AMP/kl": {
+          "mean": 0.01144034651108086,
+          "samples": 100
+        },
+        "AMP/kl_max": {
+          "mean": 0.01396146446466446,
+          "samples": 100
+        },
+        "Tracking/backward_abs_vx_error": {
+          "mean": 0.14105316676199436,
+          "samples": 100
+        },
+        "Tracking/slow_forward_abs_vx_error": {
+          "mean": 0.06284272249788046,
+          "samples": 100
+        },
+        "Tracking/forward_abs_vx_error": {
+          "mean": 0.08799631528556347,
+          "samples": 100
+        },
+        "Tracking/zero_abs_vx_error": {
+          "mean": 0.041412981748580935,
+          "samples": 100
+        },
+        "Commands/backward_applied_fraction": {
+          "mean": 0.12501922965049744,
+          "samples": 100
+        },
+        "Commands/slow_forward_applied_fraction": {
+          "mean": 0.13807831272482873,
+          "samples": 100
+        },
+        "Commands/forward_applied_fraction": {
+          "mean": 0.4066710504889488,
+          "samples": 100
+        },
+        "Commands/zero_applied_fraction": {
+          "mean": 0.2373422299325466,
+          "samples": 100
+        }
+      }
+    }
+  },
+  "averaging": "Arithmetic mean of per-update logged values; completed-episode logger uses overlapping rolling windows, not100 independent episodes.",
+  "limits": "Exposure within each command bin and policy exploration can vary; constant-command frozen-policy GPU replay remains authoritative."
+}
