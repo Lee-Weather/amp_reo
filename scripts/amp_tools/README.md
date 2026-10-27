@@ -115,3 +115,8 @@ exp1.6正式状态：czy/exp1/exp1.6_training.json，源8000、目标9000，代�
 
 
 完整验收用summarize_amp_acceptance.py，指定model/csv/record-dir及criteria-version=exp1.6；输入应是完成收集的严格三件套及replay_summary/replay_metadata。脚本重新计算真实脚底、完整周期偏航/侧向速度、静止摆幅和持续0.2秒刹停确认，并检查全部站姿/RSI/速度条件、收集哈希及文件数量。生成acceptance_summary.json；未完成视频自然度复核时accepted始终false。复核JSON通过--visual-review指定，须含status=passed、checkpoint_sha256、video_sha256及具体observations，且哈希匹配当前视频与模型。旧报告缺少新收集哈希时只标记证据缺失，不把旧文件判为损坏。
+
+
+exp1.6已正常完成9000并收集完整三件套及六项辅助检查，见czy/exp1/exp1.6_evaluation/acceptance_summary.json；accepted=false，后退仍停住且正向有持续偏航。原训练/回放句柄均已结束，不要重启已完成的任务。下一轮编号exp1.7，待实现方案和预检；保留9000为候选续训源、8000为安静站姿基准。
+
+fetch_server_curves.py现通过远程临时JSON文件及校验SCP快照取数，避免大体积SSH stdout超时。默认不导出960个Observation逐维tag，可用--include-observations包含；原服务器TensorBoard日志完整保留，原runner展示不变。临时快照校验取回后按确切路径清理，不增加最终三件套文件。

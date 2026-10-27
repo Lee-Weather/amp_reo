@@ -1,0 +1,11 @@
+{
+  "status": "not_accepted",
+  "checkpoint_sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
+  "video_sha256": "9a6d988b5a604b616423a369fd077f4980805138d68329b990d3e8f85fd8fe21",
+  "review_scope": "Sampled full-scene frames at5/15/25/35/45/55s and12 close frames24.00 through25.32s, supported by full CSV; not an exhaustive frame-by-frame video review.",
+  "observations": [
+    "Forward steps and distinct foot swings are visible, but the right swing remains brief and close to the floor.",
+    "The six measured cycles in23.6-29.8s all have negative mean body yaw rate; quaternion heading changes-44.13deg in6.18s. This is sustained turning, not only oscillatory pelvis motion.",
+    "Forward velocity and right-foot peak clearance improve, but backward and straight-line motion must still meet all quantitative gates."
+  ]
+}

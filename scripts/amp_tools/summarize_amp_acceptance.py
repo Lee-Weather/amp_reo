@@ -133,6 +133,10 @@ def main():
     cycles = int(mask.sum())//count if count else 0
     bias = {k:float(abs(data[k][mask][:count*cycles].reshape(cycles,count).mean(1)).mean())
             for k in ("vy","wz")} if cycles >= 2 else {}
+    cycle_values = {k:data[k][mask][:count*cycles].reshape(cycles,count).mean(1).tolist()
+                    for k in ("vy","wz")} if cycles >= 2 else {}
+    x,y,z,w = (data[k][mask] for k in ("qx","qy","qz","qw"))
+    yaw = np.unwrap(np.arctan2(2*(w*z+x*y), 1-2*(y*y+z*z)))
     braking = braking_report(data, dt)
     auxiliary = auxiliary_gates(summary.get("auxiliary_checks", []), args.criteria_version)
     criteria = dict(primary_no_falls=evaluation["non_timeout_terminations"] == 0,
@@ -165,6 +169,8 @@ def main():
                   gait_summary=gait, foot_fk_max_error_m=fk_error,
                   cycle_diagnostic=dict(period_s=period, samples_per_cycle=count, cycles=cycles,
                                         omitted_samples=int(mask.sum())-count*cycles, mean_abs_cycle_average=bias,
+                                        cycle_averages=cycle_values,
+                                        root_yaw_change_deg=float(np.rad2deg(yaw[-1]-yaw[0])),
                                         definition="Body-frame rates averaged over nonoverlapping complete measured-cycle bins"))
     output = args.output or args.record_dir/"acceptance_summary.json"
     output.write_text(json.dumps(result, indent=2)+"\n", encoding="utf-8")

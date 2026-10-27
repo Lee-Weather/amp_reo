@@ -20,16 +20,16 @@
   "log_file": "train.log",
   "success_marker": "SERVER_TRAINING_OK",
   "resource_source": "/home/robot/czy/exp1/exp_20261026_151157/resources",
-  "phase": "running",
+  "phase": "completed_training",
   "launch_pid": "3119394",
   "launched_at": "2026-10-27T14:28:42.564811+08:00",
   "status": {
-    "phase": "running",
-    "process_alive": true,
-    "iteration": 8504,
+    "phase": "completed_training",
+    "process_alive": false,
+    "iteration": 9000,
     "target_iteration": 9000,
-    "eta_seconds": 1922.5,
-    "new_timesteps": 49545216,
+    "eta_seconds": 0.0,
+    "new_timesteps": 98304000,
     "restored_checkpoint": null,
     "saved_checkpoints": [
       {
@@ -61,23 +61,59 @@
         "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8500.pt",
         "bytes": 10776904,
         "sha256": "1d4d869f14650bd947a619c20de2b7176aa504a05060c4003cb3b4c2d24c590f"
+      },
+      {
+        "iteration": 8600,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8600.pt",
+        "bytes": 10776904,
+        "sha256": "9b177fff756d54989a4611eac9c045bcd07302e1ce5b693871972f82f5b1e934"
+      },
+      {
+        "iteration": 8700,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8700.pt",
+        "bytes": 10776904,
+        "sha256": "abf99aea42ed90e4934e16d7a22cb55aa4f26bff71190e950a10f0c28696961e"
+      },
+      {
+        "iteration": 8800,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8800.pt",
+        "bytes": 10776904,
+        "sha256": "543f8b99fdab8648a06b686e04742f7e8a154f2a1983b351af47d38c0dac8183"
+      },
+      {
+        "iteration": 8900,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8900.pt",
+        "bytes": 10776904,
+        "sha256": "749b8c8984fd4a2a62c6d548e06fbf02794a5616192285b45cea7bb4a1516db5"
+      },
+      {
+        "iteration": 9000,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_9000.pt",
+        "bytes": 10776904,
+        "sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7"
+      },
+      {
+        "iteration": 9000,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_9000.pt",
+        "bytes": 10776904,
+        "sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7"
       }
     ],
     "log_tail": [
-      "     Tracking/forward_abs_vx_error: 0.097913",
-      "               Tracking/forward_vx: 0.402598",
-      "     Tracking/linear_tolerance_m_s: 0.145772",
-      "Tracking/slow_forward_abs_vx_error: 0.058116",
-      "          Tracking/slow_forward_vx: 0.116837",
-      "        Tracking/zero_abs_vx_error: 0.038520",
-      "                  Tracking/zero_vx: 0.014130",
+      "Tracking/slow_forward_abs_vx_error: 0.055691",
+      "          Tracking/slow_forward_vx: 0.119399",
+      "        Tracking/zero_abs_vx_error: 0.040386",
+      "                  Tracking/zero_vx: 0.014035",
       "--------------------------------------------------------------------------------",
-      "                   Total timesteps: 49545216",
-      "                    Iteration time: 3.89s",
-      "                        Total time: 1953.56s",
-      "                               ETA: 1922.5s"
+      "                   Total timesteps: 98304000",
+      "                    Iteration time: 4.19s",
+      "                        Total time: 3969.97s",
+      "                               ETA: 0.0s",
+      "CHECKPOINT_SAVED {\"iteration\": 9000, \"path\": \"/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_9000.pt\", \"bytes\": 10776904, \"sha256\": \"9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7\"}",
+      "CHECKPOINT_SAVED {\"iteration\": 9000, \"path\": \"/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_9000.pt\", \"bytes\": 10776904, \"sha256\": \"9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7\"}",
+      "SERVER_TRAINING_OK"
     ],
-    "observed_at": "2026-10-27T15:03:00.345587+08:00"
+    "observed_at": "2026-10-27T15:38:07.558407+08:00"
   },
   "verified_checkpoints": {
     "8100": {
@@ -104,6 +140,37 @@
       },
       "normalizer_count_increased": true,
       "verified_at": "2026-10-27T14:36:17.112536+08:00"
+    },
+    "9000": {
+      "iteration": 9000,
+      "sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
+      "bytes": 10776904,
+      "path": "czy/data/exp1.6/model_9000.pt",
+      "metadata_matches_source": true,
+      "weights_finite": true,
+      "original_training_origin_retained": false,
+      "training_mode": "warm_start_fresh_optimizers",
+      "training_origin_verified": true,
+      "optimizer_counters": {
+        "optimizer_state_dict": {
+          "minimum": 19953.0,
+          "maximum": 19953.0,
+          "state_count": 17
+        },
+        "disc_optimizer_state_dict": {
+          "minimum": 4000.0,
+          "maximum": 4000.0,
+          "state_count": 6
+        }
+      },
+      "normalizer_count_increased": true,
+      "verified_at": "2026-10-27T15:38:32.183901+08:00"
     }
+  },
+  "evaluation": {
+    "phase": "completed_not_accepted",
+    "report": "czy/exp1/exp1.6_evaluation/acceptance_summary.json",
+    "trio": "czy/data/exp1.6",
+    "accepted": false
   }
 }

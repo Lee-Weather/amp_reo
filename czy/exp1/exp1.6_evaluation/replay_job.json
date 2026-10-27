@@ -7,7 +7,7 @@
   "server_dir": "/home/robot/czy/exp1/exp_20261027_142902",
   "checkpoint_iteration": 9000,
   "checkpoint_name": "model_9000.pt",
-  "checkpoint_sha256": null,
+  "checkpoint_sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
   "code_sha256": "8c2826374a7758056f45607085fdb1f2c2edf253e422405c29ce631110df408f",
   "code_hash_definition": "SHA256 of sorted humanoid/*.py plus setup.py, with NUL separators",
   "profile": [
@@ -64,9 +64,18 @@
       "output": "logs/replay/rsi_speed_check_1"
     }
   ],
-  "phase": "waiting_for_training",
+  "phase": "completed_and_collected",
   "dependency_pid": "3119394",
   "dependency_dir": "/home/robot/czy/exp1/exp_20261027_142839",
   "created_at": "2026-10-27T14:29:02.764075+08:00",
-  "launch_pid": "3119884"
+  "launch_pid": "3119884",
+  "prepared_checkpoint": {
+    "iteration": 9000,
+    "sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
+    "bytes": 10776904,
+    "source_training_dir": "/home/robot/czy/exp1/exp_20261027_142839",
+    "source_checkpoint": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_9000.pt"
+  },
+  "completion_marker_verified": "REPLAY_SUITE_OK",
+  "all_auxiliary_checks_collected": true
 }

@@ -1,0 +1,50 @@
+{
+  "status": "evidence_based_directions_not_implemented",
+  "next_experiment": "exp1.7",
+  "source_recommendation": {
+    "mode": "warm_start_fresh_optimizers",
+    "model": "czy/data/exp1.6/model_9000.pt",
+    "sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
+    "reason": "Preserve newly learned low-speed/forward tracking and improved right-foot peak clearance; keep8000 as standing benchmark. Full restart discards verified capabilities."
+  },
+  "priorities": [
+    {
+      "problem": "Backward rest remains a stable policy outcome",
+      "evidence": "Standing and RSI at-0.2 settle to0.00020/0.00127m/s with zero falls. The-0.2 reference pool has153 nonquiet B4 windows. Thus failure is not only standing initiation or absent/quiet references.",
+      "candidate": "Test a bounded signed backward-progress task bonus and sufficient backward exposure; align expert sampling with requested direction/speed while retaining real coherent histories. Keep the entire command range and forward/zero acceptance gates."
+    },
+    {
+      "problem": "Persistent turning while forward vx tracks correctly",
+      "evidence": "Six complete forward gait cycles all have negative mean wz; abs cycle mean0.1343rad/s, quaternion heading change-44.13deg over6.18s.",
+      "candidate": "Separate lateral-velocity and yaw tracking tolerances from the speed-dependent vx tolerance; test stronger motion yaw/side constraints without restricting natural oscillation solely by instantaneous mean-abs metrics."
+    },
+    {
+      "problem": "Right swing remains brief despite sufficient peak height",
+      "evidence": "Right sole P95=23.18mm but below1cm89.03% of forward window; criterion<=85% still fails.",
+      "candidate": "Audit scuff kinematics: current penalty uses foot-link origin velocity, which can penalize legitimate rolling even if its lowest contact point is nearly stationary. Verify this on real recorded q/dq/root states before increasing clearance/scuff weights; then consider flight-duration shaping if needed."
+    },
+    {
+      "problem": "Zero-command knee oscillation regresses within passing threshold",
+      "evidence": "All zero windows pass3deg, but max knee span rises from0.055deg to2.271deg. First brake confirms2.06s, beyond2s.",
+      "candidate": "Preserve8000 quiet-policy behavior as benchmark; test targeted static damping/retention without slowing braking or changing PD/observations."
+    }
+  ],
+  "invariants": {
+    "num_envs": 4096,
+    "seed": 5,
+    "vx": [
+      -0.2,
+      0.65
+    ],
+    "vy": 0,
+    "wz": 0,
+    "no_new_lpf": true,
+    "control_and_observation_conventions_unchanged": true,
+    "no_exp2_without_user_approval": true
+  },
+  "limits": [
+    "These are candidate mechanisms, not proven individual causes; no exp1.7 training has started.",
+    "Do not use quiet-RSI filtering as the sole purported fix for-0.2: those candidates are already nonquiet and final RSI still stops.",
+    "A complete candidate must pass CPU consistency checks and actual9000-source GPU preflight before its formal run."
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "iteration": 9000,
+  "seed": 5,
+  "scope": "Deterministic GPU playback",
+  "criterion": "Planar norm <=0.02m/s, abs wz <=0.03rad/s for 0.2s of consecutive control samples in one episode",
+  "required_samples": 10,
+  "stops": [
+    {
+      "stage": 3,
+      "stop_command_time_s": 30.00000142492354,
+      "entry_time_for_02s_hold_s": 1.8800000892952085,
+      "confirmation_time_s": 2.0600000978447497,
+      "qualifying_fraction": 0.814,
+      "never_confirmed": false
+    },
+    {
+      "stage": 5,
+      "stop_command_time_s": 50.000002374872565,
+      "entry_time_for_02s_hold_s": 1.6200000769458711,
+      "confirmation_time_s": 1.8000000854954123,
+      "qualifying_fraction": 0.84,
+      "never_confirmed": false
+    }
+  ]
+}
