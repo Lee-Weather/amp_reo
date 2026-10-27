@@ -1,0 +1,68 @@
+{
+  "passed": true,
+  "checkpoint": 10005,
+  "cases": [
+    {
+      "case": "zero",
+      "stages": [
+        [
+          0.0,
+          150
+        ]
+      ],
+      "errors": {
+        "backward_progress": 0.0,
+        "stand_dof_vel": 2.047651768213865e-07,
+        "stand_pose": 5.73459339806015e-07,
+        "leg_gate": 0.0
+      },
+      "non_timeout_terminations": 0,
+      "pending_steps": 0,
+      "minimum_leg_gate": 1.0,
+      "negative_bonus_steps": 0
+    },
+    {
+      "case": "reverse",
+      "stages": [
+        [
+          -0.2,
+          400
+        ]
+      ],
+      "errors": {
+        "backward_progress": 7.729788491062095e-06,
+        "stand_dof_vel": 1.9667967523367968e-07,
+        "stand_pose": 3.234255022271926e-07,
+        "leg_gate": 0.0
+      },
+      "non_timeout_terminations": 0,
+      "pending_steps": 0,
+      "minimum_leg_gate": 1.0,
+      "negative_bonus_steps": 83
+    },
+    {
+      "case": "braking",
+      "stages": [
+        [
+          0.4,
+          250
+        ],
+        [
+          0.0,
+          250
+        ]
+      ],
+      "errors": {
+        "backward_progress": 0.0,
+        "stand_dof_vel": 4.1252784712558256e-07,
+        "stand_pose": 1.2405744373444882e-06,
+        "leg_gate": 7.566101978273565e-08
+      },
+      "non_timeout_terminations": 0,
+      "pending_steps": 118,
+      "minimum_leg_gate": 1.2504902269304559e-09,
+      "negative_bonus_steps": 0
+    }
+  ],
+  "scope": "GPU reward consistency and short fixed-command stability, not full gait acceptance"
+}

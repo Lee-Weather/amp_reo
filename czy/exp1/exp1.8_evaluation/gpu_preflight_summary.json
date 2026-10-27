@@ -1,0 +1,56 @@
+{
+  "passed_numerical_checks": true,
+  "source_iteration": 10000,
+  "preflight_iteration": 10005,
+  "iterations": 5,
+  "sampled_transitions": 491520,
+  "simulated_seconds_per_environment": 2.4,
+  "code_commit": "5910f5c8d912dd9cb5c7e1c00c7860199a855d70",
+  "code_sha256": "9958cd54c31ad759739ba2aaa9eff481c0ca07609128787e4bb81f87715b93cf",
+  "checkpoint_validation": {
+    "iteration": 10005,
+    "sha256": "63d570e9bce35122457c8640e0f7fef0a9844c1b2ea023582cb459c824af626d",
+    "bytes": 10777160,
+    "path": "czy/exp1/exp1.8_evaluation/interim/model_10005.pt",
+    "metadata_matches_source": true,
+    "weights_finite": true,
+    "original_training_origin_retained": false,
+    "training_mode": "warm_start_fresh_optimizers",
+    "training_origin_verified": true,
+    "optimizer_counters": {
+      "optimizer_state_dict": {
+        "minimum": 100.0,
+        "maximum": 100.0,
+        "state_count": 17
+      },
+      "disc_optimizer_state_dict": {
+        "minimum": 20.0,
+        "maximum": 20.0,
+        "state_count": 6
+      }
+    },
+    "normalizer_count_increased": true,
+    "verified_at": "2026-10-27T18:31:51.759307+08:00"
+  },
+  "kl": [
+    0.007925459183752537,
+    0.0056915865279734135,
+    0.0074410345405340195,
+    0.009484556503593922,
+    0.008356167003512383
+  ],
+  "kl_max": [
+    0.016825366765260696,
+    0.007514752447605133,
+    0.009509162977337837,
+    0.010615214705467224,
+    0.012409678660333157
+  ],
+  "scope": "Five-update numerical/interface preflight only, not full walking acceptance",
+  "early_completed_episode_length_steps": 87.04000091552734,
+  "early_completed_episode_reward": -1.1115100383758545,
+  "limits": [
+    "Only 2.4 seconds per environment; completed-episode statistics select early failures and do not estimate full-horizon stability.",
+    "Runtime reward verification and formal full-range replay remain required."
+  ]
+}

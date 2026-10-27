@@ -1,0 +1,15 @@
+{
+  "experiment": "exp1.8",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_183012",
+  "model_iteration": 10005,
+  "checkpoint_sha256": "63d570e9bce35122457c8640e0f7fef0a9844c1b2ea023582cb459c824af626d",
+  "training_code_sha256": "9958cd54c31ad759739ba2aaa9eff481c0ca07609128787e4bb81f87715b93cf",
+  "verifier_sha256": "062a1121102cac6dd060be2e46a36013c85a7c8885e411a0bc32515a646a8dd5",
+  "phase": "completed_and_verified",
+  "launch_pid": "3231144",
+  "report_receipt": {
+    "bytes": 1520,
+    "sha256": "56552bfd93f9e7ecdc9aa89c8bf0567a1fc6eb6c7813f4e93793b5519f640fa5"
+  },
+  "process_terminal_observed": true
+}
