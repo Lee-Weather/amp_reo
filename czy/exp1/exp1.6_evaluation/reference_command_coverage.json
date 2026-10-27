@@ -1,0 +1,298 @@
+{
+  "source_model": "czy/data/exp1.5/model_8000.pt",
+  "source_iteration": 8000,
+  "scope": "Reference distribution audit only; no physics, training or policy success inference",
+  "settings": {
+    "speed_tolerance": 0.15,
+    "expert_standing_probability": 0.2,
+    "quiet_root_speed": 0.05,
+    "quiet_angular_speed": 0.3,
+    "quiet_joint_speed": 0.2,
+    "clip_prior": "Equal clip weights, same as exp1.4 through exp1.6"
+  },
+  "approximation": "Reference grid endpoints approximate continuous expert time sampling; RSI discrete endpoint probabilities are exact for this sampler.",
+  "clips": {
+    "F1_B1_stand_to_walk": {
+      "candidate_windows": 309,
+      "quiet_windows": 33,
+      "duration_s": 6.199999809265137,
+      "local_vx_quantiles": [
+        0.004604780115187168,
+        0.007265737280249596,
+        0.3994673788547516,
+        0.6009144902229309,
+        0.6175287365913391
+      ]
+    },
+    "F1_B2_walk_to_stand": {
+      "candidate_windows": 282,
+      "quiet_windows": 37,
+      "duration_s": 5.659999847412109,
+      "local_vx_quantiles": [
+        -0.010465419851243496,
+        -0.007705729734152555,
+        0.45947226881980896,
+        0.6472301304340362,
+        0.6696475744247437
+      ]
+    },
+    "F1_B3_continuous_walk": {
+      "candidate_windows": 379,
+      "quiet_windows": 0,
+      "duration_s": 7.599999904632568,
+      "local_vx_quantiles": [
+        0.4839388132095337,
+        0.5074816584587097,
+        0.6107448935508728,
+        0.7237995982170105,
+        0.7356414794921875
+      ]
+    },
+    "F1_B4_walk_backwards": {
+      "candidate_windows": 375,
+      "quiet_windows": 69,
+      "duration_s": 7.519999980926514,
+      "local_vx_quantiles": [
+        -0.6123873591423035,
+        -0.5434260606765747,
+        -0.308115154504776,
+        0.003789503639563922,
+        0.010852830484509468
+      ]
+    }
+  },
+  "commands": {
+    "-0.2": {
+      "candidate_windows": 153,
+      "weighted_mean_reference_vx": -0.2551668882369995,
+      "quiet_probability": 0.0,
+      "root_abs_vx_below_005_probability": 0.0,
+      "expert_mixture_matching_speed_mass": 0.08160001039505005,
+      "clips": {
+        "F1_B1_stand_to_walk": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        },
+        "F1_B2_walk_to_stand": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        },
+        "F1_B3_continuous_walk": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        },
+        "F1_B4_walk_backwards": {
+          "probability": 1.0,
+          "eligible_windows": 153,
+          "longest_endpoint_run_s": 1.24
+        }
+      }
+    },
+    "-0.1": {
+      "candidate_windows": 144,
+      "weighted_mean_reference_vx": -0.07237691432237625,
+      "quiet_probability": 0.49347564578056335,
+      "root_abs_vx_below_005_probability": 0.6230801343917847,
+      "expert_mixture_matching_speed_mass": 0.18110686540603638,
+      "clips": {
+        "F1_B1_stand_to_walk": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        },
+        "F1_B2_walk_to_stand": {
+          "probability": 0.32282179594039917,
+          "eligible_windows": 38,
+          "longest_endpoint_run_s": 0.74
+        },
+        "F1_B3_continuous_walk": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        },
+        "F1_B4_walk_backwards": {
+          "probability": 0.6771782040596008,
+          "eligible_windows": 106,
+          "longest_endpoint_run_s": 0.8
+        }
+      }
+    },
+    "0.0": {
+      "candidate_windows": 139,
+      "weighted_mean_reference_vx": 0.0003666047705337405,
+      "quiet_probability": 1.0,
+      "root_abs_vx_below_005_probability": 1.0,
+      "expert_mixture_matching_speed_mass": 0.2844003438949585,
+      "clips": {
+        "F1_B1_stand_to_walk": {
+          "probability": 0.25307032465934753,
+          "eligible_windows": 33,
+          "longest_endpoint_run_s": 0.64
+        },
+        "F1_B2_walk_to_stand": {
+          "probability": 0.3109125792980194,
+          "eligible_windows": 37,
+          "longest_endpoint_run_s": 0.68
+        },
+        "F1_B3_continuous_walk": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        },
+        "F1_B4_walk_backwards": {
+          "probability": 0.43601706624031067,
+          "eligible_windows": 69,
+          "longest_endpoint_run_s": 1.36
+        }
+      }
+    },
+    "0.1": {
+      "candidate_windows": 173,
+      "weighted_mean_reference_vx": 0.07511148601770401,
+      "quiet_probability": 0.38607704639434814,
+      "root_abs_vx_below_005_probability": 0.6115478873252869,
+      "expert_mixture_matching_speed_mass": 0.2142798900604248,
+      "clips": {
+        "F1_B1_stand_to_walk": {
+          "probability": 0.5147776007652283,
+          "eligible_windows": 89,
+          "longest_endpoint_run_s": 1.48
+        },
+        "F1_B2_walk_to_stand": {
+          "probability": 0.3422415256500244,
+          "eligible_windows": 54,
+          "longest_endpoint_run_s": 0.68
+        },
+        "F1_B3_continuous_walk": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        },
+        "F1_B4_walk_backwards": {
+          "probability": 0.1429809033870697,
+          "eligible_windows": 30,
+          "longest_endpoint_run_s": 0.52
+        }
+      }
+    },
+    "0.2": {
+      "candidate_windows": 100,
+      "weighted_mean_reference_vx": 0.21777799725532532,
+      "quiet_probability": 0.0,
+      "root_abs_vx_below_005_probability": 0.0,
+      "expert_mixture_matching_speed_mass": 0.06720374524593353,
+      "clips": {
+        "F1_B1_stand_to_walk": {
+          "probability": 0.5778688788414001,
+          "eligible_windows": 60,
+          "longest_endpoint_run_s": 0.48
+        },
+        "F1_B2_walk_to_stand": {
+          "probability": 0.42213112115859985,
+          "eligible_windows": 40,
+          "longest_endpoint_run_s": 0.64
+        },
+        "F1_B3_continuous_walk": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        },
+        "F1_B4_walk_backwards": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        }
+      }
+    },
+    "0.4": {
+      "candidate_windows": 394,
+      "weighted_mean_reference_vx": 0.45532363653182983,
+      "quiet_probability": 0.0,
+      "root_abs_vx_below_005_probability": 0.0,
+      "expert_mixture_matching_speed_mass": 0.2513394355773926,
+      "clips": {
+        "F1_B1_stand_to_walk": {
+          "probability": 0.4583856165409088,
+          "eligible_windows": 178,
+          "longest_endpoint_run_s": 1.02
+        },
+        "F1_B2_walk_to_stand": {
+          "probability": 0.3442549407482147,
+          "eligible_windows": 122,
+          "longest_endpoint_run_s": 0.64
+        },
+        "F1_B3_continuous_walk": {
+          "probability": 0.19735953211784363,
+          "eligible_windows": 94,
+          "longest_endpoint_run_s": 0.2
+        },
+        "F1_B4_walk_backwards": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        }
+      }
+    },
+    "0.6": {
+      "candidate_windows": 632,
+      "weighted_mean_reference_vx": 0.5811099410057068,
+      "quiet_probability": 0.0,
+      "root_abs_vx_below_005_probability": 0.0,
+      "expert_mixture_matching_speed_mass": 0.3727398216724396,
+      "clips": {
+        "F1_B1_stand_to_walk": {
+          "probability": 0.18753811717033386,
+          "eligible_windows": 108,
+          "longest_endpoint_run_s": 0.44
+        },
+        "F1_B2_walk_to_stand": {
+          "probability": 0.27589455246925354,
+          "eligible_windows": 145,
+          "longest_endpoint_run_s": 1.84
+        },
+        "F1_B3_continuous_walk": {
+          "probability": 0.5365674495697021,
+          "eligible_windows": 379,
+          "longest_endpoint_run_s": 7.56
+        },
+        "F1_B4_walk_backwards": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "candidate_windows": 545,
+      "weighted_mean_reference_vx": 0.6003959774971008,
+      "quiet_probability": 0.0,
+      "root_abs_vx_below_005_probability": 0.0,
+      "expert_mixture_matching_speed_mass": 0.31520771980285645,
+      "clips": {
+        "F1_B1_stand_to_walk": {
+          "probability": 0.14373838901519775,
+          "eligible_windows": 70,
+          "longest_endpoint_run_s": 0.34
+        },
+        "F1_B2_walk_to_stand": {
+          "probability": 0.23850083351135254,
+          "eligible_windows": 106,
+          "longest_endpoint_run_s": 0.46
+        },
+        "F1_B3_continuous_walk": {
+          "probability": 0.6177607774734497,
+          "eligible_windows": 369,
+          "longest_endpoint_run_s": 5.36
+        },
+        "F1_B4_walk_backwards": {
+          "probability": 0.0,
+          "eligible_windows": 0,
+          "longest_endpoint_run_s": 0.0
+        }
+      }
+    }
+  }
+}

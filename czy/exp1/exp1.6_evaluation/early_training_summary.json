@@ -1,0 +1,60 @@
+{
+  "scope": "Training aggregates through iteration8089; stochastic 4096-env rollouts, not deterministic walking acceptance.",
+  "limitations": [
+    "The first20 updates span9.6 seconds, below the20-second episode horizon; early completed-episode statistics preferentially include failures. Do not compare those averages as an unbiased survival trend.",
+    "Episode command groups refer to the applied command at termination, not a constant-command episode. Commands can change within an episode.",
+    "Signed vx includes recovery and falling motion. Constant-command GPU replay is required to prove stable backward or slow walking."
+  ],
+  "metrics": {
+    "Train/mean_episode_length": {
+      "first20_mean": 218.6294557571411,
+      "last20_mean": 837.6994995117187,
+      "last_step": 8089
+    },
+    "AMP/kl": {
+      "first20_mean": 0.010739181097596884,
+      "last20_mean": 0.011943831853568555,
+      "last_step": 8089
+    },
+    "AMP/kl_max": {
+      "first20_mean": 0.013908622227609158,
+      "last20_mean": 0.015007387287914753,
+      "last_step": 8089
+    },
+    "Commands/backward_applied_fraction": {
+      "first20_mean": 0.12103983946144581,
+      "last20_mean": 0.12457530163228511,
+      "last_step": 8089
+    },
+    "Tracking/backward_abs_vx_error": {
+      "first20_mean": 0.15916805043816568,
+      "last20_mean": 0.1503653082996607,
+      "last_step": 8089
+    },
+    "Episode/backward_non_timeout_fraction": {
+      "first20_mean": 1.0,
+      "last20_mean": 0.7721075948094949,
+      "last_step": 8089
+    },
+    "Episode/backward_completed_length": {
+      "first20_mean": 275.1882688522339,
+      "last20_mean": 654.191798400879,
+      "last_step": 8089
+    },
+    "Tracking/slow_forward_abs_vx_error": {
+      "first20_mean": 0.09626743979752064,
+      "last20_mean": 0.08371714241802693,
+      "last_step": 8089
+    },
+    "Episode/slow_forward_non_timeout_fraction": {
+      "first20_mean": 1.0,
+      "last20_mean": 0.1889285746961832,
+      "last_step": 8089
+    },
+    "Tracking/zero_abs_vx_error": {
+      "first20_mean": 0.04579221364110708,
+      "last20_mean": 0.044774458184838294,
+      "last_step": 8089
+    }
+  }
+}

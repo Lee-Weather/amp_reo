@@ -26,26 +26,60 @@
   "status": {
     "phase": "running",
     "process_alive": true,
-    "iteration": 8019,
+    "iteration": 8108,
     "target_iteration": 9000,
-    "eta_seconds": 3491.3,
-    "new_timesteps": 1867776,
+    "eta_seconds": 3278.7,
+    "new_timesteps": 10616832,
     "restored_checkpoint": null,
-    "saved_checkpoints": [],
-    "log_tail": [
-      "     Tracking/forward_abs_vx_error: 0.133753",
-      "               Tracking/forward_vx: 0.437028",
-      "     Tracking/linear_tolerance_m_s: 0.152838",
-      "Tracking/slow_forward_abs_vx_error: 0.091248",
-      "          Tracking/slow_forward_vx: 0.079648",
-      "        Tracking/zero_abs_vx_error: 0.032606",
-      "                  Tracking/zero_vx: 0.001060",
-      "--------------------------------------------------------------------------------",
-      "                   Total timesteps: 1867776",
-      "                    Iteration time: 3.52s",
-      "                        Total time: 67.62s",
-      "                               ETA: 3491.3s"
+    "saved_checkpoints": [
+      {
+        "iteration": 8100,
+        "path": "/home/robot/czy/exp1/exp_20261027_142839/logs/x1_amp_exp16/exported_data/2026-10-27_14-31-29exp1.6/model_8100.pt",
+        "bytes": 10776904,
+        "sha256": "674fcdab256aefdeae56886600507f17923cdbd1a2c3672cb8d5aa6818a7eb2d"
+      }
     ],
-    "observed_at": "2026-10-27T14:30:20.880272+08:00"
+    "log_tail": [
+      "     Tracking/forward_abs_vx_error: 0.102065",
+      "               Tracking/forward_vx: 0.434216",
+      "     Tracking/linear_tolerance_m_s: 0.152678",
+      "Tracking/slow_forward_abs_vx_error: 0.070653",
+      "          Tracking/slow_forward_vx: 0.087134",
+      "        Tracking/zero_abs_vx_error: 0.035361",
+      "                  Tracking/zero_vx: 0.011169",
+      "--------------------------------------------------------------------------------",
+      "                   Total timesteps: 10616832",
+      "                    Iteration time: 4.12s",
+      "                        Total time: 396.97s",
+      "                               ETA: 3278.7s"
+    ],
+    "observed_at": "2026-10-27T14:36:06.764951+08:00"
+  },
+  "verified_checkpoints": {
+    "8100": {
+      "iteration": 8100,
+      "sha256": "674fcdab256aefdeae56886600507f17923cdbd1a2c3672cb8d5aa6818a7eb2d",
+      "bytes": 10776904,
+      "path": "czy/exp1/exp1.6_evaluation/interim/model_8100.pt",
+      "metadata_matches_source": true,
+      "weights_finite": true,
+      "original_training_origin_retained": false,
+      "training_mode": "warm_start_fresh_optimizers",
+      "training_origin_verified": true,
+      "optimizer_counters": {
+        "optimizer_state_dict": {
+          "minimum": 1984.0,
+          "maximum": 1984.0,
+          "state_count": 17
+        },
+        "disc_optimizer_state_dict": {
+          "minimum": 400.0,
+          "maximum": 400.0,
+          "state_count": 6
+        }
+      },
+      "normalizer_count_increased": true,
+      "verified_at": "2026-10-27T14:36:17.112536+08:00"
+    }
   }
 }
