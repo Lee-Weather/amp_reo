@@ -1286,3 +1286,16 @@ abs(cmd_vx)>0.05时，在原有沿指令进展门控上乘exp(-((vx-cmd_vx)/0.12
 本轮继续原1000更新，不在运行途中改变奖励或采样。若9000回放仍不能慢速/后退，下轮exp1.7优先核查非零慢速RSI的静止过滤、速度相关匹配带宽和专家速度分布匹配；需要先检查整个[-0.2,0.65]指令网格都有参考候选，再做实际源模型GPU预检，不能无证据删轨迹或把重新计时的轨迹直接当物理可行。
 
 训练曲线已只读提取到training_curves_server.json，当前快照截止8089。最后20更新分组绝对vx误差：后退0.1504、慢前进0.0837、零速0.0448m/s；这些含初始化、切换、恢复和随机探索，不等于确定性恒速回放。特别是首次20更新只有9.6秒，短于20秒回合上限，早期完成回合统计必然偏向先失败者，不能把Mean episode length从218到838简单解释为无偏稳定性提升。Episode分组按终止时指令归类，回合中允许换速，也不能据此声称连续后退存活了多少秒。数值与限制见[early_training_summary.json](exp1.6_evaluation/early_training_summary.json)。
+
+
+#### 验收汇总工具准备与训练状态
+
+训练仍为同一任务，14:53实际到8368/9000，新增36,175,872步，本轮完成368/1000更新，保存记录到8300，进程存活，ETA约2418秒。未调整当前humanoid代码、训练奖励或GPU进程，也未重复部署回放。
+
+新增scripts/amp_tools/summarize_amp_acceptance.py，对取回的实际模型、3000行CSV、回放元数据和辅助检查统一应用既定exp1.5/exp1.6标准。重新计算零速窗口、真实碰撞网格脚底几何、完整周期均值与两次停止持续判据；刹停区分进入时间和连续0.2秒确认时间，不能跨重置拼接静止样本；站姿缓冲导致的零实际指令不冒充用户停止事件。没有检测到周期时使用None，不用零信号的谱峰冒充步态。
+
+收集工具新增三件套文件SHA256，以及辅助CSV哈希/无噪声无推扰条件；验收报告区分numeric_criteria_passed、visual_review_passed和accepted。视频自然度复核需给出与实际模型及视频哈希绑定的观察记录，不能因数字通过自动宣称姿态自然。exp1.5旧收集报告没有新增的文件哈希字段，在新工具中对应artifact_hashes_bound=false，只表示缺少该新证据字段，不表示旧三件套损坏；旧物理验收结论不改写。
+
+已用真实exp1.5/8000三件套核验该工具：复现静止通过、速度/右脚高度/第二次刹停失败，周期平均wz=0.03435753rad/s与原结果一致；原验收报告保留，新验证结果在acceptance_tool_validation.json。另加重置中断持续判据、平面范数而非单轴速度、缺失RSI条件、原地后退不能通过以及无周期等回归，当前完整50项CPU检查通过。修改只涉及离线工具与收集器，无需对未改的训练算法重复GPU短训。
+
+最终收集全部辅助检查后执行：`python scripts/amp_tools/summarize_amp_acceptance.py --model czy/data/exp1.6/model_9000.pt --csv czy/data/exp1.6/isaac_diag.csv --record-dir czy/exp1/exp1.6_evaluation --criteria-version exp1.6`。没有视觉复核记录时accepted保持false；应先核对数值及视频，再补充绑定哈希的visual_review.json，不能为获得通过而降低本轮标准。

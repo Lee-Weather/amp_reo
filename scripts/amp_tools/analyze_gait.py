@@ -64,9 +64,10 @@ def metrics(q, local_feet, soles, vx, names, dt, forces=None):
         output["force_double_support_fraction"] = float((forces > 20).all(-1).mean())
     periods = [output["joints"][s+"_hip_pitch_joint"]["frequency"]["median_period_s"]
                for s in ("left", "right")]
-    period = float(np.median([p for p in periods if p is not None]))
+    measured = [p for p in periods if p is not None]
+    period = float(np.median(measured)) if measured else None
     output["same_leg_cycle_period_s"] = period
-    output["trunk_forward_distance_per_same_leg_cycle_m"] = float(vx.mean()*period)
+    output["trunk_forward_distance_per_same_leg_cycle_m"] = float(vx.mean()*period) if period else None
     return output
 
 
@@ -181,7 +182,7 @@ def plot_comparison(data, q, local, soles, names, reference, report, output):
     axes[2, 0].legend()
     stages = ["B3参考", "策略0.4指令", "策略0.6指令"]
     items = [report["reference_clips"]["F1_B3_continuous_walk"], report["policy_windows"]["cmd04_first"], report["policy_windows"]["cmd06"]]
-    axes[2, 1].bar(stages, [1/r["same_leg_cycle_period_s"] for r in items], color=["#2a9377", "#b34b69", "#b34b69"])
+    axes[2, 1].bar(stages, [1/r["same_leg_cycle_period_s"] if r["same_leg_cycle_period_s"] else np.nan for r in items], color=["#2a9377", "#b34b69", "#b34b69"])
     axes[2, 1].set(ylabel="Hz（同腿周期）", title="同腿关节运动周期")
     suffix = "_evaluation"
     experiment = output.name[:-len(suffix)] if output.name.endswith(suffix) else output.name

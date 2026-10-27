@@ -112,3 +112,6 @@ exp1.5的8000模型和最终三件套已取回，主/RSI均无跌倒，但后退
 
 
 exp1.6正式状态：czy/exp1/exp1.6_training.json，源8000、目标9000，代码dea3d4f；server_status.py按该文件轮询同一进程。最终回放已通过queue_server_replay.py排队，状态czy/exp1/exp1.6_evaluation/replay_job.json；禁止重复部署。工具复制正式训练的代码，等待记录的launcher退出、成功标记、保存凭据和GPU空闲后执行主六段视频/RSI及五项恒速检查。训练完成后先按真实8000参考取回9000，再用collect_replay_archive.py分阶段收集，最终czy/data/exp1.6只保留模型、视频、CSV三项。
+
+
+完整验收用summarize_amp_acceptance.py，指定model/csv/record-dir及criteria-version=exp1.6；输入应是完成收集的严格三件套及replay_summary/replay_metadata。脚本重新计算真实脚底、完整周期偏航/侧向速度、静止摆幅和持续0.2秒刹停确认，并检查全部站姿/RSI/速度条件、收集哈希及文件数量。生成acceptance_summary.json；未完成视频自然度复核时accepted始终false。复核JSON通过--visual-review指定，须含status=passed、checkpoint_sha256、video_sha256及具体observations，且哈希匹配当前视频与模型。旧报告缺少新收集哈希时只标记证据缺失，不把旧文件判为损坏。

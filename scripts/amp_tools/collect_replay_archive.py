@@ -32,6 +32,8 @@ def collect_checks(state, remote, temp, context):
         expected_steps = check.get("steps", 3000)
         assert metadata["checkpoint"] == context["iteration"] and metadata["captured_steps"] == expected_steps
         assert metadata["seed"] == check["seed"] and metadata["reset_mode"] == check["reset_mode"]
+        assert metadata["policy_metadata"] == context["metadata"]
+        assert not metadata["noise"] and not metadata["pushes"]
         if "vx" in check:
             assert len(metadata["profile"]) == 1
             assert metadata["profile"][0][0] == expected_steps
@@ -39,7 +41,9 @@ def collect_checks(state, remote, temp, context):
         report = evaluate_csv(case_dir/"isaac_diag.csv", context)
         assert report["rows"] == expected_steps
         reports.append(dict(seed=check["seed"], reset_mode=check["reset_mode"],
-                            steps=expected_steps, vx=check.get("vx"), evaluation=report))
+                            steps=expected_steps, vx=check.get("vx"), evaluation=report,
+                            csv_sha256=hashlib.sha256((case_dir/"isaac_diag.csv").read_bytes()).hexdigest(),
+                            replay_conditions={k:metadata[k] for k in ("seed","noise","pushes","reset_mode")}))
     return reports
 
 
@@ -108,6 +112,8 @@ def main():
         subprocess.run([SCP, "-o", "BatchMode=yes", HOST + ":" + remote + "/replay.log", str(temp / "replay.log")], check=True)
         metadata = json.loads((temp / "replay_metadata.json").read_text())
         assert metadata["captured_steps"] == 3000 and metadata["checkpoint"] == iteration
+        assert metadata["policy_metadata"] == context["metadata"]
+        assert not metadata["noise"] and not metadata["pushes"]
         assert metadata["video_frames"] == 1500 and len(metadata["segments"]) == 6
         with (temp / "isaac_diag.csv").open() as stream:
             rows = list(csv.DictReader(stream))
@@ -156,6 +162,7 @@ def main():
         for name in ("replay_metadata.json", "replay.log"):
             shutil.copy2(temp / name, artifacts / name)
         summary["file_bytes"] = {path.name: path.stat().st_size for path in destination.iterdir()}
+        summary["file_sha256"] = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in destination.iterdir()}
         (artifacts / "replay_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     assert sorted(p.name for p in destination.iterdir()) == ["isaac_diag.csv", model_name, "play_output.mp4"]
     print(json.dumps({key: value for key, value in summary.items() if key not in ("evaluation", "auxiliary_checks")}, indent=2))
