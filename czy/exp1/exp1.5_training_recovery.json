@@ -1,0 +1,168 @@
+{
+  "experiment": "exp1.5",
+  "backend": "ssh_server",
+  "host": "robot@10.12.201.5",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_125714",
+  "source_cloud_task": "TASK_20261027_186",
+  "source_iteration": 7200,
+  "source_checkpoint_sha256": "05e4c425f14622fcac0cdc60b93ee6339d426136bd6d549920612fa68c74f44e",
+  "target_iteration": 8000,
+  "max_iterations": 800,
+  "num_envs": 4096,
+  "seed": 5,
+  "task": "x1_amp_exp15",
+  "resume_mode": "full_weights_normalizer_both_optimizer_states",
+  "branch": "codex/exp1-5",
+  "commit": "a6f548103f27a7ffa9767c9497f1ade7dff0b916",
+  "code_sha256": "2a05e08f4e0b06ad621aff094b5e6274584942ada1b630ab063e7f2429b1b12a",
+  "command": "python -u humanoid/scripts/train.py --task=x1_amp_exp15 --headless --num_envs=4096 --seed=5 --max_iterations=800 --run_name=exp1.5_recovery --resume --load_run=recovery_from7200 --checkpoint=7200",
+  "phase": "completed_training",
+  "resource_source": "/home/robot/czy/exp1/exp_20261026_151157/resources",
+  "launch_pid": "3078307",
+  "launched_at": "2026-10-27T12:57:18.713257+08:00",
+  "status": {
+    "phase": "completed_training",
+    "process_alive": false,
+    "iteration": 8000,
+    "target_iteration": 8000,
+    "eta_seconds": 0.0,
+    "new_timesteps": 78643200,
+    "restored_checkpoint": {
+      "iteration": 7200,
+      "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/recovery_from7200/model_7200.pt",
+      "optimizers": {
+        "actor_critic": {
+          "state_count": 17,
+          "minimum_step": 4000.0,
+          "maximum_step": 4000.0
+        },
+        "discriminator": {
+          "state_count": 6,
+          "minimum_step": 800.0,
+          "maximum_step": 800.0
+        }
+      },
+      "learning_rate": 3.375000000000001e-05
+    },
+    "saved_checkpoints": [
+      {
+        "iteration": 7300,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_7300.pt",
+        "bytes": 10776968,
+        "sha256": "1811479ce9b909a9706490529a76bb61c741c55451d7675d8bb790086a6047bf"
+      },
+      {
+        "iteration": 7400,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_7400.pt",
+        "bytes": 10776968,
+        "sha256": "704c4bb648679adab8054b2c13f411d43d9a2a3f1d3dfebc304cd3a2c2d28f95"
+      },
+      {
+        "iteration": 7500,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_7500.pt",
+        "bytes": 10776968,
+        "sha256": "118e8799c567b41ff8a202dc3fd75ffb39583460ff5f320664addbb19e3330a9"
+      },
+      {
+        "iteration": 7600,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_7600.pt",
+        "bytes": 10776968,
+        "sha256": "1b0f34d4484fc39ca5c58f220954d1274d8119317cad934d969845e33e1920cb"
+      },
+      {
+        "iteration": 7700,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_7700.pt",
+        "bytes": 10776968,
+        "sha256": "8b53fee325a5aca2de460cfb7fce0310dde66db2afcba4d1baeaabec080487d1"
+      },
+      {
+        "iteration": 7800,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_7800.pt",
+        "bytes": 10776968,
+        "sha256": "153cc16a60ac4e9d9197c68bc17abb991eeef0257537e399fabea8c1450060d3"
+      },
+      {
+        "iteration": 7900,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_7900.pt",
+        "bytes": 10776968,
+        "sha256": "189404bb8de81757de2d1ecff0149c8f0af0f119a2f41abfd9554a907e02f9d6"
+      },
+      {
+        "iteration": 8000,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_8000.pt",
+        "bytes": 10776968,
+        "sha256": "48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1"
+      },
+      {
+        "iteration": 8000,
+        "path": "/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_8000.pt",
+        "bytes": 10776968,
+        "sha256": "48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1"
+      }
+    ],
+    "log_tail": [
+      "             Standing/linear_speed: 0.064418",
+      "                 Standing/pose_rms: 0.136376",
+      "             Stop/pending_fraction: 0.109853",
+      "     Tracking/linear_tolerance_m_s: 0.151346",
+      "--------------------------------------------------------------------------------",
+      "                   Total timesteps: 78643200",
+      "                    Iteration time: 3.90s",
+      "                        Total time: 3139.49s",
+      "                               ETA: 0.0s",
+      "CHECKPOINT_SAVED {\"iteration\": 8000, \"path\": \"/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_8000.pt\", \"bytes\": 10776968, \"sha256\": \"48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1\"}",
+      "CHECKPOINT_SAVED {\"iteration\": 8000, \"path\": \"/home/robot/czy/exp1/exp_20261027_125714/logs/x1_amp_exp15/exported_data/2026-10-27_13-00-00exp1.5_recovery/model_8000.pt\", \"bytes\": 10776968, \"sha256\": \"48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1\"}",
+      "SERVER_RECOVERY_OK"
+    ],
+    "observed_at": "2026-10-27T13:54:11.511939+08:00"
+  },
+  "verified_checkpoints": {
+    "7300": {
+      "iteration": 7300,
+      "sha256": "1811479ce9b909a9706490529a76bb61c741c55451d7675d8bb790086a6047bf",
+      "bytes": 10776968,
+      "path": "czy/exp1/exp1.5_evaluation/recovery/model_7300.pt",
+      "metadata_matches_source": true,
+      "weights_finite": true,
+      "original_training_origin_retained": true,
+      "optimizer_counters": {
+        "optimizer_state_dict": {
+          "minimum": 5992.0,
+          "maximum": 5992.0,
+          "state_count": 17
+        },
+        "disc_optimizer_state_dict": {
+          "minimum": 1200.0,
+          "maximum": 1200.0,
+          "state_count": 6
+        }
+      },
+      "normalizer_count_increased": true,
+      "verified_at": "2026-10-27T13:06:17.600301+08:00"
+    },
+    "8000": {
+      "iteration": 8000,
+      "sha256": "48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1",
+      "bytes": 10776968,
+      "path": "czy/data/exp1.5/model_8000.pt",
+      "metadata_matches_source": true,
+      "weights_finite": true,
+      "original_training_origin_retained": true,
+      "optimizer_counters": {
+        "optimizer_state_dict": {
+          "minimum": 19992.0,
+          "maximum": 19992.0,
+          "state_count": 17
+        },
+        "disc_optimizer_state_dict": {
+          "minimum": 4000.0,
+          "maximum": 4000.0,
+          "state_count": 6
+        }
+      },
+      "normalizer_count_increased": true,
+      "verified_at": "2026-10-27T13:54:58.573109+08:00"
+    }
+  },
+  "queued_replay_state": "czy/exp1/exp1.5_evaluation/replay_job.json"
+}

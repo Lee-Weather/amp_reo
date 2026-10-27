@@ -17,8 +17,16 @@ class AMPOnPolicyRunner:
         self.env, self.device, self.log_dir = env, device, log_dir
         self.config = train_cfg
         self.cfg, self.alg_cfg, self.disc_cfg = [train_cfg[k] for k in ("runner", "algorithm", "discriminator")]
+        policy_cfg = dict(train_cfg["policy"])
+        if policy_cfg.get("motion_exploration") is not None:
+            settings = dict(policy_cfg["motion_exploration"])
+            names = settings.pop("joint_names")
+            settings["indices"] = [env.dof_names.index(name) for name in names]
+            settings["command_index"] = env.num_obs-env.cfg.env.num_single_obs
+            settings["command_threshold"] = settings.pop("speed_threshold")*env.obs_scales.lin_vel
+            policy_cfg["motion_exploration"] = settings
         self.actor_critic = ActorCritic(env.num_obs, env.num_privileged_obs, env.num_actions,
-                                        **train_cfg["policy"]).to(device)
+                                        **policy_cfg).to(device)
         lib = env.motion_library
         self.discriminator = Discriminator(lib.feature_dim, lib.history_steps,
                                             self.disc_cfg["hidden_dims"]).to(device)
@@ -79,6 +87,17 @@ class AMPOnPolicyRunner:
                 data["log_prob"][step].copy_(distribution.log_prob(actions).sum(-1))
                 data["values"][step].copy_(model.evaluate(critic))
                 obs, critic, task_reward, dones, info = env.step(actions.to(env.device))
+                if model.motion_std_floor > 0:
+                    # Use the pre-step command and actual sampling distribution.
+                    # These are nominal target noise scales before clipping.
+                    command = data["obs"][step, :, model.motion_command_index]
+                    moving = command.abs() > model.motion_command_threshold
+                    zero = command.abs() <= 1e-6
+                    selected = distribution.scale[:, model.motion_std_mask]
+                    degrees = torch.rad2deg(selected*env.cfg.control.action_scale)
+                    extra = info.setdefault("training_metrics", {})
+                    extra["Policy/moving_selected_raw_target_noise_std_deg"] = degrees[moving].flatten()
+                    extra["Policy/zero_selected_raw_target_noise_std_deg"] = degrees[zero].flatten()
                 obs, critic = obs.to(self.device), critic.to(self.device)
                 amp = info["amp_obs"].to(self.device)
                 task_reward, dones = task_reward.to(self.device), dones.to(self.device)

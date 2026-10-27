@@ -1,4 +1,5 @@
 """Reward geometry shared by CPU diagnostics and the next AMP experiment."""
+import math
 import torch
 
 
@@ -12,6 +13,14 @@ def style_multiplier(command_vx, actual_vx, stand_gate, standing_floor=.2, motio
     standing = 1-(1-standing_floor)*stand_gate
     progress = (actual_vx*command_vx.sign()/command_vx.abs().clamp(min=motion_threshold)).clamp(0, 1)
     return standing*torch.where(command_vx.abs() > motion_threshold, progress, torch.ones_like(progress))
+
+
+def moving_speed_quality(command_vx, actual_vx, sigma=.12, motion_threshold=.05):
+    """Suppress moving-style rewards for both under- and overspeed; keep zero unchanged."""
+    if not math.isfinite(sigma) or sigma <= 0:
+        raise ValueError("Moving style speed tolerance must be positive")
+    quality = torch.exp(-(actual_vx-command_vx).square()/sigma**2)
+    return torch.where(command_vx.abs() > motion_threshold, quality, torch.ones_like(quality))
 
 
 def sole_heights(feet_state, vertices, ground_height):

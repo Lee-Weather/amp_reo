@@ -1,0 +1,161 @@
+{
+  "passed": true,
+  "iteration": 8005,
+  "metadata_matches_source": true,
+  "weights_finite": true,
+  "fresh_optimizer_steps": {
+    "optimizer_state_dict": [
+      100.0,
+      100.0
+    ],
+    "disc_optimizer_state_dict": [
+      20.0,
+      20.0
+    ]
+  },
+  "training_origin": {
+    "mode": "warm_start_fresh_optimizers",
+    "source_file": "model_8000.pt",
+    "source_sha256": "48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1",
+    "source_iteration": 8000
+  },
+  "checkpoint_path": "/home/robot/czy/exp1/exp_20261027_141705/logs/x1_amp_exp16/exported_data/2026-10-27_14-19-57exp1.6_preflight/model_8005.pt",
+  "checkpoint_sha256": "9be0068ee7a7b529b80507e257ca3739e28f73bab99b46d5b0b51fa15eb5dac2",
+  "metrics": {
+    "AMP/kl": [
+      {
+        "step": 8001,
+        "value": 0.0071019865572452545
+      },
+      {
+        "step": 8002,
+        "value": 0.007695539388805628
+      },
+      {
+        "step": 8003,
+        "value": 0.007124657742679119
+      },
+      {
+        "step": 8004,
+        "value": 0.006186636630445719
+      },
+      {
+        "step": 8005,
+        "value": 0.008595515042543411
+      }
+    ],
+    "AMP/kl_max": [
+      {
+        "step": 8001,
+        "value": 0.007954280823469162
+      },
+      {
+        "step": 8002,
+        "value": 0.010443302802741528
+      },
+      {
+        "step": 8003,
+        "value": 0.010613687336444855
+      },
+      {
+        "step": 8004,
+        "value": 0.007605591788887978
+      },
+      {
+        "step": 8005,
+        "value": 0.008841084316372871
+      }
+    ],
+    "AMP/kl_early_stop": [
+      {
+        "step": 8001,
+        "value": 0.0
+      },
+      {
+        "step": 8002,
+        "value": 0.0
+      },
+      {
+        "step": 8003,
+        "value": 0.0
+      },
+      {
+        "step": 8004,
+        "value": 0.0
+      },
+      {
+        "step": 8005,
+        "value": 0.0
+      }
+    ],
+    "Policy/moving_selected_raw_target_noise_std_deg": [
+      {
+        "step": 8001,
+        "value": 3.580986738204956
+      },
+      {
+        "step": 8002,
+        "value": 3.580986261367798
+      },
+      {
+        "step": 8003,
+        "value": 3.580986261367798
+      },
+      {
+        "step": 8004,
+        "value": 3.580986499786377
+      },
+      {
+        "step": 8005,
+        "value": 3.580986499786377
+      }
+    ],
+    "Policy/zero_selected_raw_target_noise_std_deg": [
+      {
+        "step": 8001,
+        "value": 1.627176284790039
+      },
+      {
+        "step": 8002,
+        "value": 1.627007246017456
+      },
+      {
+        "step": 8003,
+        "value": 1.626766562461853
+      },
+      {
+        "step": 8004,
+        "value": 1.6266409158706665
+      },
+      {
+        "step": 8005,
+        "value": 1.6264797449111938
+      }
+    ],
+    "AMP/moving_speed_quality": [
+      {
+        "step": 8001,
+        "value": 0.4613640308380127
+      },
+      {
+        "step": 8002,
+        "value": 0.416696161031723
+      },
+      {
+        "step": 8003,
+        "value": 0.4546886384487152
+      },
+      {
+        "step": 8004,
+        "value": 0.36349236965179443
+      },
+      {
+        "step": 8005,
+        "value": 0.49102842807769775
+      }
+    ]
+  },
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_141705",
+  "code_sha256": "8c2826374a7758056f45607085fdb1f2c2edf253e422405c29ce631110df408f",
+  "scope": "Five GPU updates verify interfaces, Gaussian/KL consistency and finite states; not gait acceptance."
+}

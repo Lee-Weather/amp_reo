@@ -1,0 +1,41 @@
+{
+  "status": "implemented_locally_cpu45_and_gpu5_updates_passed_replay_formula_check_running",
+  "experiment_if_used": "exp1.6",
+  "activation_condition": "Final GPU model8000 fails backward/slow response and right-foot clearance; condition confirmed.",
+  "evidence": {
+    "cpu_7500_standing_reverse_mean_vx": 0.0003091921394554282,
+    "cpu_7500_standing_slow_mean_vx": -3.811142887653577e-05,
+    "cpu_7700_reverse_rsi_falls": 13,
+    "cpu_7000_reverse_rsi_falls": 13,
+    "nominal_raw_target_noise_std_deg_7700": {
+      "left_hip_pitch": 1.6138497591018677,
+      "right_hip_pitch": 1.4203883409500122,
+      "left_knee_pitch": 1.8603601455688477,
+      "right_knee_pitch": 1.2326403856277466,
+      "left_ankle_pitch": 4.315999507904053,
+      "right_ankle_pitch": 2.8253695964813232
+    },
+    "final_gpu8000": {
+      "backward_command": -0.2,
+      "backward_mean_vx": 0.0004118015,
+      "slow_command": 0.1,
+      "slow_mean_vx": 0.033679207,
+      "command04_mean_vx": 0.490082925,
+      "command06_mean_vx": 0.518052402,
+      "right_sole_p95_m": 0.012544514,
+      "right_sole_below1cm_fraction": 0.94516129
+    }
+  },
+  "candidate_changes": [
+    "Add per-command training statistics for backward/slow/normal command fractions, actual velocities and termination events; do not mix early failed episodes into walking success.",
+    "Multiply moving AMP style by exp(-((actual_vx-command_vx)/0.12)^2) to penalize fixed-speed/overspeed style reward; keep zero gate unchanged.",
+    "Test a moving-command-only Gaussian exploration floor for four hip/knee pitch joints, nominal action std 0.25 (3.58 deg raw target std at action_scale0.25). Keep correct Normal sampling, log_prob, entropy and KL; append actual conditional noise metrics while preserving original log display.",
+    "If command metrics confirm difficult directions lose sampling time after early reset, consider command scheduling independent of episode resets as a separate controlled experiment."
+  ],
+  "limits": [
+    "The noise values are nominal before action and hard-target clipping; they are not measured effective servo noise.",
+    "Low exploration is a hypothesis, not a proven sole cause. Ankle nominal noise is already larger, so do not increase all joint noise indiscriminately.",
+    "Any candidate requires CPU consistency tests and actual model_8000 GPU preflight before a new long run. Existing exp1.5 training and queued replay stay on their recorded code.",
+    "Do not enter exp2 without explicit user permission."
+  ]
+}

@@ -104,3 +104,8 @@ exp1.5候选任务`x1_amp_exp15`保持相同控制与观测约定，增加速度
 先刷新服务器状态，再用`python scripts/amp_tools/fetch_server_checkpoint.py --state czy/exp1/exp1.5_training_recovery.json --reference-model czy/exp1/exp1.5_evaluation/recovery/model_7200.pt --output-dir czy/data/exp1.5 --iteration 8000`取回最终模型。工具要求实际训练进程结束、存在最终保存凭据，验证文件大小/hash、iter、控制元数据、完整恢复来源和权重有限性，并要求双方优化器计数与归一化器count相对7200均增加；不会用重新清空优化器的模型冒充完整恢复。中途7300已经按此规则验证通过。最后照原流程回放并补齐严格三件套。
 
 exp1.5最终回放已排队：状态为`czy/exp1/exp1.5_evaluation/replay_job.json`，服务器`/home/robot/czy/exp1/exp_20261027_131606`，等待恢复训练PID3078307。训练仍存活时不启动GPU回放；进程结束还必须有SERVER_RECOVERY_OK和8000保存凭据，且源文件大小/hash一致才复制模型并录视频。训练异常退出则中止回放，不把中期模型当最终模型。不要再调用replay_archive.py重复部署；完成后取回实际8000，再用collect_replay_archive.py的primary_only/checks_only分阶段收集。排队时checkpoint_sha256为空是因为最终文件尚不存在，收集器会在主视频完成后读取prepared_checkpoint.json，并与下载模型及训练来源逐项核对后填入，不能手填猜测哈希。
+
+
+exp1.5的8000模型和最终三件套已取回，主/RSI均无跌倒，但后退、低速与右脚离地未达标。完整验收见czy/exp1/exp1.5_evaluation/acceptance_summary.json。exp1.6从真实8000热启动，增加运动AMP速度误差质量因子与四髋膝pitch运动条件std下限0.25，保持零速原方差、原控制与日志展示。45项CPU检查、8000→8005的4096/seed5 GPU短训及三项短回放公式核对均通过；这些不替代正式步态验收。
+
+201.5新任务用launch_server_amp.py：显式指定experiment/task/model/sha256/iterations/state，固定4096/seed5。工具仅传humanoid Python、setup.py及输入模型，复用已验证resources；拒绝GPU已有计算进程、已有state及已有远程目录。预检额外加--preflight。状态在启动前持久化，启动观察超时必须检查同目录和进程，禁止自动重启。server_status.py兼容旧恢复日志和新任务记录的log_file/success_marker；fetch_server_checkpoint.py按resume_mode分别验证完整恢复动量延续或热启动新Adam计数范围、真实输入SHA与控制元数据。

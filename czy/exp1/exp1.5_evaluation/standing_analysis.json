@@ -1,0 +1,167 @@
+{
+  "csv": "czy/data/exp1.5/isaac_diag.csv",
+  "metadata_source": "czy/exp1/exp1.5_evaluation/replay_metadata.json",
+  "experiment": "exp1.5",
+  "seed": 5,
+  "replay_conditions": {
+    "seed": 5,
+    "noise": false,
+    "pushes": false,
+    "reset_mode": "standing"
+  },
+  "definitions": {
+    "amplitude": "P95-P05, not peak-to-peak or mean posture offset",
+    "windows": "Late zero-command windows; initial window precedes any walking",
+    "height": "Root height, not whole-body COM height",
+    "contact": "CSV foot contact vertical force >20 N"
+  },
+  "windows": {
+    "initial_stop": {
+      "requested_window_s": [
+        3.6,
+        9.8
+      ],
+      "rows": 310,
+      "max_abs_command": 0.0,
+      "mean_abs_vx_m_s": 0.0001772825091679366,
+      "mean_abs_vy_m_s": 9.73651522062277e-05,
+      "mean_abs_wz_rad_s": 0.0005036456147873621,
+      "roll_mean_deg": 0.5861586846559687,
+      "roll_p95_p05_deg": 0.009961888430573995,
+      "pitch_mean_deg": -6.820402651016479,
+      "pitch_p95_p05_deg": 0.016246466013652316,
+      "root_height_p95_p05_mm": 0.02438724040987328,
+      "yaw_change_deg": -0.08471662426112392,
+      "left_contact_over_20N_fraction": 1.0,
+      "right_contact_over_20N_fraction": 1.0,
+      "joints": {
+        "left_knee_pitch_joint": {
+          "mean_q_deg": 10.260934648779108,
+          "q_p95_p05_deg": 0.04164182775622798,
+          "dq_rms_rad_s": 0.004984212440782447,
+          "raw_target_p95_p05_deg": 0.0491457723991805,
+          "effective_target_p95_p05_deg": 0.0491457723991805
+        },
+        "left_ankle_pitch_joint": {
+          "mean_q_deg": -5.111409590107849,
+          "q_p95_p05_deg": 0.09821671153826672,
+          "dq_rms_rad_s": 0.003272277007008085,
+          "raw_target_p95_p05_deg": 0.09771319853038984,
+          "effective_target_p95_p05_deg": 0.09771319853038984
+        },
+        "right_knee_pitch_joint": {
+          "mean_q_deg": 10.613470973988063,
+          "q_p95_p05_deg": 0.054723134120683345,
+          "dq_rms_rad_s": 0.001409705293459268,
+          "raw_target_p95_p05_deg": 0.05143362963904026,
+          "effective_target_p95_p05_deg": 0.05143362963904026
+        },
+        "right_ankle_pitch_joint": {
+          "mean_q_deg": -5.555412841129667,
+          "q_p95_p05_deg": 0.12939161590090897,
+          "dq_rms_rad_s": 0.001752917484490446,
+          "raw_target_p95_p05_deg": 0.06475945677578279,
+          "effective_target_p95_p05_deg": 0.06475945677578279
+        }
+      }
+    },
+    "after_first_walk": {
+      "requested_window_s": [
+        34.0,
+        39.8
+      ],
+      "rows": 290,
+      "max_abs_command": 0.0,
+      "mean_abs_vx_m_s": 7.709113701723474e-05,
+      "mean_abs_vy_m_s": 0.00017714612215121602,
+      "mean_abs_wz_rad_s": 0.0004228721078530286,
+      "roll_mean_deg": 0.44332652760814345,
+      "roll_p95_p05_deg": 0.002152321021457293,
+      "pitch_mean_deg": -5.304510702478755,
+      "pitch_p95_p05_deg": 0.009363342665906771,
+      "root_height_p95_p05_mm": 0.005933642387434546,
+      "yaw_change_deg": -0.04619155151248903,
+      "left_contact_over_20N_fraction": 1.0,
+      "right_contact_over_20N_fraction": 1.0,
+      "joints": {
+        "left_knee_pitch_joint": {
+          "mean_q_deg": 9.635872629692585,
+          "q_p95_p05_deg": 0.010906019179853553,
+          "dq_rms_rad_s": 0.005262788968161626,
+          "raw_target_p95_p05_deg": 0.012055966903988552,
+          "effective_target_p95_p05_deg": 0.012055966903988552
+        },
+        "left_ankle_pitch_joint": {
+          "mean_q_deg": -4.310392151401627,
+          "q_p95_p05_deg": 0.010597828237897407,
+          "dq_rms_rad_s": 0.0038464422241025,
+          "raw_target_p95_p05_deg": 0.04084841590676663,
+          "effective_target_p95_p05_deg": 0.04084841590676663
+        },
+        "right_knee_pitch_joint": {
+          "mean_q_deg": 11.881029890931849,
+          "q_p95_p05_deg": 0.01279721318366514,
+          "dq_rms_rad_s": 0.005886913532770416,
+          "raw_target_p95_p05_deg": 0.012766135822941265,
+          "effective_target_p95_p05_deg": 0.012766135822941265
+        },
+        "right_ankle_pitch_joint": {
+          "mean_q_deg": -6.434649263086939,
+          "q_p95_p05_deg": 0.02494417101400391,
+          "dq_rms_rad_s": 0.005097505084298823,
+          "raw_target_p95_p05_deg": 0.020068120309872973,
+          "effective_target_p95_p05_deg": 0.020068120309872973
+        }
+      }
+    },
+    "after_second_walk": {
+      "requested_window_s": [
+        54.0,
+        59.8
+      ],
+      "rows": 290,
+      "max_abs_command": 0.0,
+      "mean_abs_vx_m_s": 7.783870912668323e-05,
+      "mean_abs_vy_m_s": 0.00014761003120572147,
+      "mean_abs_wz_rad_s": 0.000507436731984477,
+      "roll_mean_deg": 0.6376105885813462,
+      "roll_p95_p05_deg": 0.002635211327342457,
+      "pitch_mean_deg": -5.773491908544667,
+      "pitch_p95_p05_deg": 0.02166751497817021,
+      "root_height_p95_p05_mm": 0.005993247032209936,
+      "yaw_change_deg": -0.05239182775677723,
+      "left_contact_over_20N_fraction": 1.0,
+      "right_contact_over_20N_fraction": 1.0,
+      "joints": {
+        "left_knee_pitch_joint": {
+          "mean_q_deg": 10.013432748119278,
+          "q_p95_p05_deg": 0.023156091522318678,
+          "dq_rms_rad_s": 0.004380989483562301,
+          "raw_target_p95_p05_deg": 0.015470634602173393,
+          "effective_target_p95_p05_deg": 0.015470634602173393
+        },
+        "left_ankle_pitch_joint": {
+          "mean_q_deg": -5.195997283390301,
+          "q_p95_p05_deg": 0.02212338826415295,
+          "dq_rms_rad_s": 0.003362468736438342,
+          "raw_target_p95_p05_deg": 0.06457691997021396,
+          "effective_target_p95_p05_deg": 0.06457691997021396
+        },
+        "right_knee_pitch_joint": {
+          "mean_q_deg": 11.692054310193393,
+          "q_p95_p05_deg": 0.010966679797420364,
+          "dq_rms_rad_s": 0.004526299652055305,
+          "raw_target_p95_p05_deg": 0.012864063660167277,
+          "effective_target_p95_p05_deg": 0.012864063660167277
+        },
+        "right_ankle_pitch_joint": {
+          "mean_q_deg": -5.683502182602314,
+          "q_p95_p05_deg": 0.022468206095532815,
+          "dq_rms_rad_s": 0.004449457293431401,
+          "raw_target_p95_p05_deg": 0.018859134138098515,
+          "effective_target_p95_p05_deg": 0.018859134138098515
+        }
+      }
+    }
+  }
+}

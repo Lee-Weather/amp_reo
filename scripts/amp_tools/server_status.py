@@ -20,7 +20,7 @@ def main():
     program = r'''
 import json, pathlib, re
 root = pathlib.Path(REMOTE)
-log = (root/'train_recovery.log').read_text(errors='replace')
+log = (root/LOGFILE).read_text(errors='replace')
 proc = pathlib.Path('/proc/PID/stat')
 alive = proc.exists() and proc.read_text().split()[2] != 'Z'
 iterations = re.findall(r'Learning iteration\s+(\d+)\s*/\s*(\d+)', log)
@@ -28,7 +28,7 @@ receipts = [json.loads(line.split('CHECKPOINT_SAVED ',1)[1]) for line in log.spl
 restored = [json.loads(line.split('CHECKPOINT_RESTORED ',1)[1]) for line in log.splitlines() if line.startswith('CHECKPOINT_RESTORED ')]
 eta = re.findall(r'ETA:\s*([0-9.]+)s', log)
 times = re.findall(r'Total timesteps:\s*(\d+)', log)
-complete = 'SERVER_RECOVERY_OK' in log and any(r['iteration']==TARGET for r in receipts)
+complete = SUCCESS in log and any(r['iteration']==TARGET for r in receipts)
 phase = 'running' if alive else ('completed_training' if complete else 'stopped_requires_inspection')
 print(json.dumps(dict(phase=phase, process_alive=alive,
  iteration=int(iterations[-1][0]) if iterations else None,
@@ -36,7 +36,7 @@ print(json.dumps(dict(phase=phase, process_alive=alive,
  new_timesteps=int(times[-1]) if times else 0,
  restored_checkpoint=restored[-1] if restored else None,
  saved_checkpoints=receipts, log_tail=log.splitlines()[-12:])))
-'''.replace("REMOTE", repr(remote)).replace("PID", str(pid)).replace("TARGET", str(int(state["target_iteration"])))
+'''.replace("REMOTE", repr(remote)).replace("LOGFILE", repr(state.get("log_file", "train_recovery.log"))).replace("SUCCESS", repr(state.get("success_marker", "SERVER_RECOVERY_OK"))).replace("PID", str(pid)).replace("TARGET", str(int(state["target_iteration"])))
     result = subprocess.run(["C:/Windows/System32/OpenSSH/ssh.exe", "-o", "BatchMode=yes",
                              state["host"], "python3 -"], input=program.encode(), capture_output=True, timeout=45)
     if result.returncode:

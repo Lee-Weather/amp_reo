@@ -1,0 +1,1471 @@
+{
+  "definitions": {
+    "frequency": "Same-leg joint oscillation, NOT bilateral touchdown step count",
+    "excursion": "P95-P05; foot position relative to pelvis",
+    "sole_height": "Lowest raw collision-mesh vertex, reconstructed by URDF FK",
+    "cycle_distance": "Mean body-forward velocity times same-leg period; not measured touchdown step length",
+    "reference": "B3 forward continuous gait; boundary frames excluded; unequal actual speed is reported"
+  },
+  "foot_fk_max_error_m": 1.430511474609375e-06,
+  "policy_windows": {
+    "cmd04_first": {
+      "samples": 390,
+      "duration_s": 7.780000369530171,
+      "mean_vx": 0.4854783662618735,
+      "joints": {
+        "left_hip_pitch_joint": {
+          "mean_deg": -2.309861958273898,
+          "p95_p05_deg": 36.58952683801821,
+          "frequency": {
+            "dominant_hz": 0.8974358548099817,
+            "peak_count": 7,
+            "median_period_s": 1.170000055572018,
+            "cycle_hz": 0.8547008141047444
+          }
+        },
+        "left_knee_pitch_joint": {
+          "mean_deg": 17.075479893683145,
+          "p95_p05_deg": 52.515977048225196,
+          "frequency": {
+            "dominant_hz": 0.8974358548099817,
+            "peak_count": 7,
+            "median_period_s": 1.170000055572018,
+            "cycle_hz": 0.8547008141047444
+          }
+        },
+        "left_ankle_pitch_joint": {
+          "mean_deg": -7.185074730757777,
+          "p95_p05_deg": 20.33100228216681,
+          "frequency": {
+            "dominant_hz": 0.8974358548099817,
+            "peak_count": 16,
+            "median_period_s": 0.42000001994892955,
+            "cycle_hz": 2.3809522678632167
+          }
+        },
+        "right_hip_pitch_joint": {
+          "mean_deg": -4.778483616782892,
+          "p95_p05_deg": 24.76549700057608,
+          "frequency": {
+            "dominant_hz": 0.8974358548099817,
+            "peak_count": 7,
+            "median_period_s": 1.170000055572018,
+            "cycle_hz": 0.8547008141047444
+          }
+        },
+        "right_knee_pitch_joint": {
+          "mean_deg": 21.656229927708036,
+          "p95_p05_deg": 48.23775922448688,
+          "frequency": {
+            "dominant_hz": 0.8974358548099817,
+            "peak_count": 6,
+            "median_period_s": 1.2000000569969416,
+            "cycle_hz": 0.8333332937521258
+          }
+        },
+        "right_ankle_pitch_joint": {
+          "mean_deg": -7.120932967927184,
+          "p95_p05_deg": 23.593418823198714,
+          "frequency": {
+            "dominant_hz": 0.8974358548099817,
+            "peak_count": 12,
+            "median_period_s": 0.3000000142492354,
+            "cycle_hz": 3.3333331750085033
+          }
+        }
+      },
+      "feet": {
+        "left": {
+          "sole_p05_m": -0.00014914683997631071,
+          "sole_p95_m": 0.039071170985698685,
+          "sole_vertical_span_m": 0.039220317825675,
+          "sole_below_1cm_fraction": 0.8128205128205128,
+          "forward_excursion_p95_p05_m": 0.32237343266606333,
+          "contact_over_20N_fraction": 0.7615384615384615
+        },
+        "right": {
+          "sole_p05_m": -0.0003408083692193031,
+          "sole_p95_m": 0.011131430417299271,
+          "sole_vertical_span_m": 0.011472238786518573,
+          "sole_below_1cm_fraction": 0.9461538461538461,
+          "forward_excursion_p95_p05_m": 0.3432463966310024,
+          "contact_over_20N_fraction": 0.8666666666666667
+        }
+      },
+      "geometric_double_support_fraction": 0.7589743589743589,
+      "force_double_support_fraction": 0.6282051282051282,
+      "same_leg_cycle_period_s": 1.170000055572018,
+      "trunk_forward_distance_per_same_leg_cycle_m": 0.5680097155054046,
+      "time_window_s": [
+        12.0,
+        19.8
+      ],
+      "actuation": {
+        "left_hip_pitch_joint": {
+          "pd_target_raw": {
+            "mean": -2.7070391586348004,
+            "p95_p05": 55.83759593849659,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "pd_target_effective": {
+            "mean": -2.7070391586348004,
+            "p95_p05": 55.83759593849659,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "q": {
+            "mean": -2.309861958273898,
+            "p95_p05": 36.58952683801821,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.170000055572018,
+              "cycle_hz": 0.8547008141047444
+            }
+          },
+          "torque": {
+            "mean": -0.8950746323817815,
+            "p95_p05": 60.817927074432376,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 2.5641024423142333,
+              "peak_count": 12,
+              "median_period_s": 0.7200000341981649,
+              "cycle_hz": 1.3888888229202097
+            }
+          }
+        },
+        "right_hip_pitch_joint": {
+          "pd_target_raw": {
+            "mean": -1.6733615280124994,
+            "p95_p05": 36.26460906160595,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "pd_target_effective": {
+            "mean": -1.6733615280124994,
+            "p95_p05": 36.26460906160595,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "q": {
+            "mean": -4.778483616782892,
+            "p95_p05": 24.76549700057608,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.170000055572018,
+              "cycle_hz": 0.8547008141047444
+            }
+          },
+          "torque": {
+            "mean": 6.286379407862058,
+            "p95_p05": 62.54427528381348,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 2.5641024423142333,
+              "peak_count": 13,
+              "median_period_s": 0.5500000261235982,
+              "cycle_hz": 1.81818173182282
+            }
+          }
+        },
+        "left_knee_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 9.098248211196118,
+            "p95_p05": 85.64405243488766,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "pd_target_effective": {
+            "mean": 14.770134505577241,
+            "p95_p05": 54.47886538237757,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "q": {
+            "mean": 17.075479893683145,
+            "p95_p05": 52.515977048225196,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.170000055572018,
+              "cycle_hz": 0.8547008141047444
+            }
+          },
+          "torque": {
+            "mean": -5.9581254547270825,
+            "p95_p05": 25.649042785167687,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 13,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          }
+        },
+        "right_knee_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 19.54436886916793,
+            "p95_p05": 39.301047222470885,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 13,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          },
+          "pd_target_effective": {
+            "mean": 19.57311307667595,
+            "p95_p05": 39.301047222470885,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 13,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          },
+          "q": {
+            "mean": 21.656229927708036,
+            "p95_p05": 48.23775922448688,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 6,
+              "median_period_s": 1.2000000569969416,
+              "cycle_hz": 0.8333332937521258
+            }
+          },
+          "torque": {
+            "mean": -5.94814437371798,
+            "p95_p05": 42.923884248733515,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 1.6666665875042517,
+              "peak_count": 14,
+              "median_period_s": 0.5000000237487257,
+              "cycle_hz": 1.9999999050051018
+            }
+          }
+        },
+        "lumbar_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 16.515952052910556,
+            "p95_p05": 10.699037084556483,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 13,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          },
+          "pd_target_effective": {
+            "mean": 16.515952052910556,
+            "p95_p05": 10.699037084556483,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 13,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          },
+          "q": {
+            "mean": 20.07830027775488,
+            "p95_p05": 9.149302294666134,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 7,
+              "median_period_s": 1.170000055572018,
+              "cycle_hz": 0.8547008141047444
+            }
+          },
+          "torque": {
+            "mean": -9.315882724217879,
+            "p95_p05": 17.447682666778558,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 3.461538297124215,
+              "peak_count": 23,
+              "median_period_s": 0.34000001614913344,
+              "cycle_hz": 2.9411763308898555
+            }
+          }
+        },
+        "right_hip_roll_joint": {
+          "pd_target_raw": {
+            "mean": 2.5550100283986894,
+            "p95_p05": 32.23722451633131,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 1.6666665875042517,
+              "peak_count": 13,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          },
+          "pd_target_effective": {
+            "mean": 2.5989160124194415,
+            "p95_p05": 32.23722451633131,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 1.6666665875042517,
+              "peak_count": 13,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          },
+          "q": {
+            "mean": -5.145701108120965,
+            "p95_p05": 13.52377756617735,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 6,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "torque": {
+            "mean": 13.432784983439323,
+            "p95_p05": 57.43551790714262,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 0.8974358548099817,
+              "peak_count": 13,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          }
+        }
+      }
+    },
+    "cmd06": {
+      "samples": 310,
+      "duration_s": 6.180000293534249,
+      "mean_vx": 0.5214900016784668,
+      "joints": {
+        "left_hip_pitch_joint": {
+          "mean_deg": 0.4786893101875985,
+          "p95_p05_deg": 37.555278703636496,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 5,
+            "median_period_s": 1.1800000560469925,
+            "cycle_hz": 0.8474575868665686
+          }
+        },
+        "left_knee_pitch_joint": {
+          "mean_deg": 14.715467372617708,
+          "p95_p05_deg": 51.261472729530546,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 5,
+            "median_period_s": 1.190000056521967,
+            "cycle_hz": 0.8403360945399588
+          }
+        },
+        "left_ankle_pitch_joint": {
+          "mean_deg": -6.603661707317699,
+          "p95_p05_deg": 20.07724429000968,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 13,
+            "median_period_s": 0.370000017574057,
+            "cycle_hz": 2.702702574331219
+          }
+        },
+        "right_hip_pitch_joint": {
+          "mean_deg": -2.4762823300605312,
+          "p95_p05_deg": 30.522218785320522,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 5,
+            "median_period_s": 1.190000056521967,
+            "cycle_hz": 0.8403360945399588
+          }
+        },
+        "right_knee_pitch_joint": {
+          "mean_deg": 20.410721624157393,
+          "p95_p05_deg": 47.24468373628865,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 5,
+            "median_period_s": 1.1800000560469925,
+            "cycle_hz": 0.8474575868665686
+          }
+        },
+        "right_ankle_pitch_joint": {
+          "mean_deg": -8.203302564396193,
+          "p95_p05_deg": 26.52622879902336,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 10,
+            "median_period_s": 0.36000001709908247,
+            "cycle_hz": 2.7777776458404193
+          }
+        }
+      },
+      "feet": {
+        "left": {
+          "sole_p05_m": -3.6488287150859826e-05,
+          "sole_p95_m": 0.0330058015882969,
+          "sole_vertical_span_m": 0.03304228987544776,
+          "sole_below_1cm_fraction": 0.8193548387096774,
+          "forward_excursion_p95_p05_m": 0.35350433476269244,
+          "contact_over_20N_fraction": 0.7709677419354839
+        },
+        "right": {
+          "sole_p05_m": -0.0003367817029356956,
+          "sole_p95_m": 0.012544514238834388,
+          "sole_vertical_span_m": 0.012881295941770083,
+          "sole_below_1cm_fraction": 0.9451612903225807,
+          "forward_excursion_p95_p05_m": 0.353830948472023,
+          "contact_over_20N_fraction": 0.867741935483871
+        }
+      },
+      "geometric_double_support_fraction": 0.7645161290322581,
+      "force_double_support_fraction": 0.6387096774193548,
+      "same_leg_cycle_period_s": 1.1850000562844798,
+      "trunk_forward_distance_per_same_leg_cycle_m": 0.6179656813407767,
+      "time_window_s": [
+        23.6,
+        29.8
+      ],
+      "actuation": {
+        "left_hip_pitch_joint": {
+          "pd_target_raw": {
+            "mean": -1.93991122452935,
+            "p95_p05": 58.280436659304286,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 6,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "pd_target_effective": {
+            "mean": -1.93991122452935,
+            "p95_p05": 58.280436659304286,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 6,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "q": {
+            "mean": 0.4786893101875985,
+            "p95_p05": 37.555278703636496,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "torque": {
+            "mean": -5.232208344244188,
+            "p95_p05": 71.89708623886108,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 7,
+              "median_period_s": 0.780000037048012,
+              "cycle_hz": 1.2820512211571167
+            }
+          }
+        },
+        "right_hip_pitch_joint": {
+          "pd_target_raw": {
+            "mean": -0.4249947540039976,
+            "p95_p05": 38.13509807265657,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "pd_target_effective": {
+            "mean": -0.4249947540039976,
+            "p95_p05": 38.13509807265657,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "q": {
+            "mean": -2.4762823300605312,
+            "p95_p05": 30.522218785320522,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.190000056521967,
+              "cycle_hz": 0.8403360945399588
+            }
+          },
+          "torque": {
+            "mean": 4.003466908633709,
+            "p95_p05": 62.47565050125122,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 6,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          }
+        },
+        "left_knee_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 5.202658182589443,
+            "p95_p05": 86.45012899186304,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "pd_target_effective": {
+            "mean": 12.491681454682041,
+            "p95_p05": 52.622536591448196,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "q": {
+            "mean": 14.715467372617708,
+            "p95_p05": 51.261472729530546,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.190000056521967,
+              "cycle_hz": 0.8403360945399588
+            }
+          },
+          "torque": {
+            "mean": -5.191452863662985,
+            "p95_p05": 26.952697229385382,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.8400000398978591,
+              "cycle_hz": 1.1904761339316083
+            }
+          }
+        },
+        "right_knee_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 17.831113720973082,
+            "p95_p05": 39.5326597056223,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.6000000284984708,
+              "cycle_hz": 1.6666665875042517
+            }
+          },
+          "pd_target_effective": {
+            "mean": 17.946494768125355,
+            "p95_p05": 38.545026645978965,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.6000000284984708,
+              "cycle_hz": 1.6666665875042517
+            }
+          },
+          "q": {
+            "mean": 20.410721624157393,
+            "p95_p05": 47.24468373628865,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "torque": {
+            "mean": -6.569693076340181,
+            "p95_p05": 40.29524540901184,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 2.5806450387162605,
+              "peak_count": 13,
+              "median_period_s": 0.4000000189989805,
+              "cycle_hz": 2.4999998812563775
+            }
+          }
+        },
+        "lumbar_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 16.040090395722068,
+            "p95_p05": 10.741140547723244,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 12,
+              "median_period_s": 0.5600000265985727,
+              "cycle_hz": 1.7857142008974125
+            }
+          },
+          "pd_target_effective": {
+            "mean": 16.040090395722068,
+            "p95_p05": 10.741140547723244,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 12,
+              "median_period_s": 0.5600000265985727,
+              "cycle_hz": 1.7857142008974125
+            }
+          },
+          "q": {
+            "mean": 19.88737733506321,
+            "p95_p05": 11.272561025529876,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 8,
+              "median_period_s": 0.3800000180490315,
+              "cycle_hz": 2.631578822375134
+            }
+          },
+          "torque": {
+            "mean": -10.021677731314012,
+            "p95_p05": 18.288732254505156,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 3.3870966133150917,
+              "peak_count": 18,
+              "median_period_s": 0.3000000142492354,
+              "cycle_hz": 3.3333331750085033
+            }
+          }
+        },
+        "right_hip_roll_joint": {
+          "pd_target_raw": {
+            "mean": 1.4158243420067695,
+            "p95_p05": 33.789851464448354,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.6600000313483179,
+              "cycle_hz": 1.5151514431856832
+            }
+          },
+          "pd_target_effective": {
+            "mean": 1.434131083218689,
+            "p95_p05": 33.789851464448354,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.6600000313483179,
+              "cycle_hz": 1.5151514431856832
+            }
+          },
+          "q": {
+            "mean": -4.704905631936374,
+            "p95_p05": 14.169592432097396,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.190000056521967,
+              "cycle_hz": 0.8403360945399588
+            }
+          },
+          "torque": {
+            "mean": 10.610367092249854,
+            "p95_p05": 62.847412681579605,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.6600000313483179,
+              "cycle_hz": 1.5151514431856832
+            }
+          }
+        }
+      }
+    },
+    "cmd04_second": {
+      "samples": 310,
+      "duration_s": 6.180000293534249,
+      "mean_vx": 0.49539777848028366,
+      "joints": {
+        "left_hip_pitch_joint": {
+          "mean_deg": -1.9747379200851312,
+          "p95_p05_deg": 36.819276728582956,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 5,
+            "median_period_s": 1.170000055572018,
+            "cycle_hz": 0.8547008141047444
+          }
+        },
+        "left_knee_pitch_joint": {
+          "mean_deg": 17.584708590597607,
+          "p95_p05_deg": 53.340440554508376,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 6,
+            "median_period_s": 1.1600000550970435,
+            "cycle_hz": 0.8620689245711646
+          }
+        },
+        "left_ankle_pitch_joint": {
+          "mean_deg": -7.309074699539501,
+          "p95_p05_deg": 19.142460156138984,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 16,
+            "median_period_s": 0.2200000104494393,
+            "cycle_hz": 4.5454543295570495
+          }
+        },
+        "right_hip_pitch_joint": {
+          "mean_deg": -4.49899018286743,
+          "p95_p05_deg": 25.595937119797323,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 5,
+            "median_period_s": 1.170000055572018,
+            "cycle_hz": 0.8547008141047444
+          }
+        },
+        "right_knee_pitch_joint": {
+          "mean_deg": 21.48917436670667,
+          "p95_p05_deg": 48.13475622163986,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 5,
+            "median_period_s": 1.2000000569969416,
+            "cycle_hz": 0.8333332937521258
+          }
+        },
+        "right_ankle_pitch_joint": {
+          "mean_deg": -6.8898641514977355,
+          "p95_p05_deg": 24.120590944685958,
+          "frequency": {
+            "dominant_hz": 0.8064515745988314,
+            "peak_count": 10,
+            "median_period_s": 0.3000000142492354,
+            "cycle_hz": 3.3333331750085033
+          }
+        }
+      },
+      "feet": {
+        "left": {
+          "sole_p05_m": -0.00015435516834259034,
+          "sole_p95_m": 0.04025070499628783,
+          "sole_vertical_span_m": 0.04040506016463042,
+          "sole_below_1cm_fraction": 0.8032258064516129,
+          "forward_excursion_p95_p05_m": 0.3294471986591816,
+          "contact_over_20N_fraction": 0.7451612903225806
+        },
+        "right": {
+          "sole_p05_m": -0.00030087158083915707,
+          "sole_p95_m": 0.010271415486931806,
+          "sole_vertical_span_m": 0.010572287067770964,
+          "sole_below_1cm_fraction": 0.9483870967741935,
+          "forward_excursion_p95_p05_m": 0.34603545889258386,
+          "contact_over_20N_fraction": 0.8838709677419355
+        }
+      },
+      "geometric_double_support_fraction": 0.7516129032258064,
+      "force_double_support_fraction": 0.6290322580645161,
+      "same_leg_cycle_period_s": 1.170000055572018,
+      "trunk_forward_distance_per_same_leg_cycle_m": 0.5796154283521862,
+      "time_window_s": [
+        43.6,
+        49.8
+      ],
+      "actuation": {
+        "left_hip_pitch_joint": {
+          "pd_target_raw": {
+            "mean": -2.508015980496801,
+            "p95_p05": 56.77759560037772,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "pd_target_effective": {
+            "mean": -2.508015980496801,
+            "p95_p05": 56.77759560037772,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.1800000560469925,
+              "cycle_hz": 0.8474575868665686
+            }
+          },
+          "q": {
+            "mean": -1.9747379200851312,
+            "p95_p05": 36.819276728582956,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.170000055572018,
+              "cycle_hz": 0.8547008141047444
+            }
+          },
+          "torque": {
+            "mean": -1.4431550914241422,
+            "p95_p05": 63.500837039947506,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 2.5806450387162605,
+              "peak_count": 10,
+              "median_period_s": 0.4000000189989805,
+              "cycle_hz": 2.4999998812563775
+            }
+          }
+        },
+        "right_hip_pitch_joint": {
+          "pd_target_raw": {
+            "mean": -1.5598547870103399,
+            "p95_p05": 37.35977354595685,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.190000056521967,
+              "cycle_hz": 0.8403360945399588
+            }
+          },
+          "pd_target_effective": {
+            "mean": -1.5598547870103399,
+            "p95_p05": 37.35977354595685,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.190000056521967,
+              "cycle_hz": 0.8403360945399588
+            }
+          },
+          "q": {
+            "mean": -4.49899018286743,
+            "p95_p05": 25.595937119797323,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.170000055572018,
+              "cycle_hz": 0.8547008141047444
+            }
+          },
+          "torque": {
+            "mean": 5.898230841900072,
+            "p95_p05": 62.68410778045654,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 2.5806450387162605,
+              "peak_count": 10,
+              "median_period_s": 0.4400000208988786,
+              "cycle_hz": 2.2727271647785248
+            }
+          }
+        },
+        "left_knee_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 9.995573049721292,
+            "p95_p05": 86.34858661852921,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 6,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "pd_target_effective": {
+            "mean": 15.594228745243834,
+            "p95_p05": 54.9648036305011,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 6,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "q": {
+            "mean": 17.584708590597607,
+            "p95_p05": 53.340440554508376,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 6,
+              "median_period_s": 1.1600000550970435,
+              "cycle_hz": 0.8620689245711646
+            }
+          },
+          "torque": {
+            "mean": -5.464055511292311,
+            "p95_p05": 25.720564317703246,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.5600000265985727,
+              "cycle_hz": 1.7857142008974125
+            }
+          }
+        },
+        "right_knee_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 19.1041758197193,
+            "p95_p05": 38.97957728286297,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 11,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          },
+          "pd_target_effective": {
+            "mean": 19.12588732760921,
+            "p95_p05": 38.97957728286297,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 11,
+              "median_period_s": 0.5800000275485218,
+              "cycle_hz": 1.7241378491423291
+            }
+          },
+          "q": {
+            "mean": 21.48917436670667,
+            "p95_p05": 48.13475622163986,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 5,
+              "median_period_s": 1.2000000569969416,
+              "cycle_hz": 0.8333332937521258
+            }
+          },
+          "torque": {
+            "mean": -6.355519586056471,
+            "p95_p05": 41.98676981925964,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 1.774193464117429,
+              "peak_count": 12,
+              "median_period_s": 0.5000000237487257,
+              "cycle_hz": 1.9999999050051018
+            }
+          }
+        },
+        "lumbar_pitch_joint": {
+          "pd_target_raw": {
+            "mean": 16.464371099579658,
+            "p95_p05": 10.429416946551477,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.5200000246986747,
+              "cycle_hz": 1.923076831735675
+            }
+          },
+          "pd_target_effective": {
+            "mean": 16.464371099579658,
+            "p95_p05": 10.429416946551477,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 10,
+              "median_period_s": 0.5200000246986747,
+              "cycle_hz": 1.923076831735675
+            }
+          },
+          "q": {
+            "mean": 20.004570054089424,
+            "p95_p05": 8.962671217576947,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 8,
+              "median_period_s": 0.8400000398978591,
+              "cycle_hz": 1.1904761339316083
+            }
+          },
+          "torque": {
+            "mean": -9.301789207420041,
+            "p95_p05": 18.1684195458889,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 3.3870966133150917,
+              "peak_count": 16,
+              "median_period_s": 0.3800000180490315,
+              "cycle_hz": 2.631578822375134
+            }
+          }
+        },
+        "right_hip_roll_joint": {
+          "pd_target_raw": {
+            "mean": 2.756352004190991,
+            "p95_p05": 32.61677274973495,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 1.774193464117429,
+              "peak_count": 11,
+              "median_period_s": 0.6000000284984708,
+              "cycle_hz": 1.6666665875042517
+            }
+          },
+          "pd_target_effective": {
+            "mean": 2.784512246202207,
+            "p95_p05": 32.61677274973495,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 1.774193464117429,
+              "peak_count": 11,
+              "median_period_s": 0.6000000284984708,
+              "cycle_hz": 1.6666665875042517
+            }
+          },
+          "q": {
+            "mean": -5.676646213206857,
+            "p95_p05": 12.764923170879214,
+            "unit": "deg",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 6,
+              "median_period_s": 1.1000000522471964,
+              "cycle_hz": 0.90909086591141
+            }
+          },
+          "torque": {
+            "mean": 14.688666014036825,
+            "p95_p05": 56.70442564487459,
+            "unit": "Nm",
+            "frequency": {
+              "dominant_hz": 0.8064515745988314,
+              "peak_count": 11,
+              "median_period_s": 0.5900000280234963,
+              "cycle_hz": 1.6949151737331372
+            }
+          }
+        }
+      }
+    }
+  },
+  "reference_clips": {
+    "F1_B1_stand_to_walk": {
+      "samples": 261,
+      "duration_s": 5.2,
+      "mean_vx": 0.38256165385246277,
+      "joints": {
+        "left_hip_pitch_joint": {
+          "mean_deg": -3.1029345989227295,
+          "p95_p05_deg": 34.75804550689305,
+          "frequency": {
+            "dominant_hz": 0.5747126436781609,
+            "peak_count": 3,
+            "median_period_s": 1.43,
+            "cycle_hz": 0.6993006993006994
+          }
+        },
+        "left_knee_pitch_joint": {
+          "mean_deg": 14.961870193481445,
+          "p95_p05_deg": 48.9563575931177,
+          "frequency": {
+            "dominant_hz": 0.7662835249042146,
+            "peak_count": 3,
+            "median_period_s": 1.45,
+            "cycle_hz": 0.6896551724137931
+          }
+        },
+        "left_ankle_pitch_joint": {
+          "mean_deg": -9.627518653869629,
+          "p95_p05_deg": 23.760079227567598,
+          "frequency": {
+            "dominant_hz": 0.7662835249042146,
+            "peak_count": 5,
+            "median_period_s": 0.72,
+            "cycle_hz": 1.3888888888888888
+          }
+        },
+        "right_hip_pitch_joint": {
+          "mean_deg": 0.9926766753196716,
+          "p95_p05_deg": 34.31798666395288,
+          "frequency": {
+            "dominant_hz": 0.7662835249042146,
+            "peak_count": 3,
+            "median_period_s": 1.44,
+            "cycle_hz": 0.6944444444444444
+          }
+        },
+        "right_knee_pitch_joint": {
+          "mean_deg": 17.623197555541992,
+          "p95_p05_deg": 50.30041929346574,
+          "frequency": {
+            "dominant_hz": 0.7662835249042146,
+            "peak_count": 3,
+            "median_period_s": 1.43,
+            "cycle_hz": 0.6993006993006994
+          }
+        },
+        "right_ankle_pitch_joint": {
+          "mean_deg": -8.928293228149414,
+          "p95_p05_deg": 26.018406518077413,
+          "frequency": {
+            "dominant_hz": 0.5747126436781609,
+            "peak_count": 6,
+            "median_period_s": 0.64,
+            "cycle_hz": 1.5625
+          }
+        }
+      },
+      "feet": {
+        "left": {
+          "sole_p05_m": 0.0019999854266643524,
+          "sole_p95_m": 0.03671820089221001,
+          "sole_vertical_span_m": 0.034718215465545654,
+          "sole_below_1cm_fraction": 0.5517241379310345,
+          "forward_excursion_p95_p05_m": 0.3815459758043289
+        },
+        "right": {
+          "sole_p05_m": 0.001999974250793457,
+          "sole_p95_m": 0.01645677536725998,
+          "sole_vertical_span_m": 0.014456801116466522,
+          "sole_below_1cm_fraction": 0.842911877394636,
+          "forward_excursion_p95_p05_m": 0.38166382908821106
+        }
+      },
+      "geometric_double_support_fraction": 0.3946360153256705,
+      "same_leg_cycle_period_s": 1.435,
+      "trunk_forward_distance_per_same_leg_cycle_m": 0.5489759732782841
+    },
+    "F1_B2_walk_to_stand": {
+      "samples": 234,
+      "duration_s": 4.66,
+      "mean_vx": 0.4070527255535126,
+      "joints": {
+        "left_hip_pitch_joint": {
+          "mean_deg": -4.527513027191162,
+          "p95_p05_deg": 34.65919354507328,
+          "frequency": {
+            "dominant_hz": 0.8547008547008548,
+            "peak_count": 3,
+            "median_period_s": 1.28,
+            "cycle_hz": 0.78125
+          }
+        },
+        "left_knee_pitch_joint": {
+          "mean_deg": 16.778287887573242,
+          "p95_p05_deg": 51.328434480538945,
+          "frequency": {
+            "dominant_hz": 0.6410256410256411,
+            "peak_count": 3,
+            "median_period_s": 1.33,
+            "cycle_hz": 0.7518796992481203
+          }
+        },
+        "left_ankle_pitch_joint": {
+          "mean_deg": -9.844977378845215,
+          "p95_p05_deg": 24.44466193772369,
+          "frequency": {
+            "dominant_hz": 0.6410256410256411,
+            "peak_count": 6,
+            "median_period_s": 0.5,
+            "cycle_hz": 2.0
+          }
+        },
+        "right_hip_pitch_joint": {
+          "mean_deg": -1.9758601188659668,
+          "p95_p05_deg": 35.62221990908064,
+          "frequency": {
+            "dominant_hz": 0.6410256410256411,
+            "peak_count": 2,
+            "median_period_s": null,
+            "cycle_hz": 0.6410256410256411
+          }
+        },
+        "right_knee_pitch_joint": {
+          "mean_deg": 19.77116584777832,
+          "p95_p05_deg": 52.08928835501966,
+          "frequency": {
+            "dominant_hz": 0.8547008547008548,
+            "peak_count": 2,
+            "median_period_s": null,
+            "cycle_hz": 0.8547008547008548
+          }
+        },
+        "right_ankle_pitch_joint": {
+          "mean_deg": -8.91411304473877,
+          "p95_p05_deg": 27.063867395673007,
+          "frequency": {
+            "dominant_hz": 0.6410256410256411,
+            "peak_count": 5,
+            "median_period_s": 0.68,
+            "cycle_hz": 1.4705882352941175
+          }
+        }
+      },
+      "feet": {
+        "left": {
+          "sole_p05_m": 0.0019999779760837555,
+          "sole_p95_m": 0.030243978090584277,
+          "sole_vertical_span_m": 0.028244000114500522,
+          "sole_below_1cm_fraction": 0.6239316239316239,
+          "forward_excursion_p95_p05_m": 0.3651046365499496
+        },
+        "right": {
+          "sole_p05_m": 0.001999974250793457,
+          "sole_p95_m": 0.014671475812792776,
+          "sole_vertical_span_m": 0.012671501561999319,
+          "sole_below_1cm_fraction": 0.8974358974358975,
+          "forward_excursion_p95_p05_m": 0.38676338121294973
+        }
+      },
+      "geometric_double_support_fraction": 0.5213675213675214,
+      "same_leg_cycle_period_s": 1.28,
+      "trunk_forward_distance_per_same_leg_cycle_m": 0.5210274887084961
+    },
+    "F1_B3_continuous_walk": {
+      "samples": 331,
+      "duration_s": 6.6000000000000005,
+      "mean_vx": 0.6174001097679138,
+      "joints": {
+        "left_hip_pitch_joint": {
+          "mean_deg": -1.6726033687591553,
+          "p95_p05_deg": 37.010978281979874,
+          "frequency": {
+            "dominant_hz": 0.755287009063444,
+            "peak_count": 5,
+            "median_period_s": 1.21,
+            "cycle_hz": 0.8264462809917356
+          }
+        },
+        "left_knee_pitch_joint": {
+          "mean_deg": 17.0179443359375,
+          "p95_p05_deg": 52.01997405852981,
+          "frequency": {
+            "dominant_hz": 0.755287009063444,
+            "peak_count": 5,
+            "median_period_s": 1.25,
+            "cycle_hz": 0.8
+          }
+        },
+        "left_ankle_pitch_joint": {
+          "mean_deg": -8.235228538513184,
+          "p95_p05_deg": 25.343440820994406,
+          "frequency": {
+            "dominant_hz": 0.755287009063444,
+            "peak_count": 10,
+            "median_period_s": 0.74,
+            "cycle_hz": 1.3513513513513513
+          }
+        },
+        "right_hip_pitch_joint": {
+          "mean_deg": -0.17481940984725952,
+          "p95_p05_deg": 37.8808139718384,
+          "frequency": {
+            "dominant_hz": 0.755287009063444,
+            "peak_count": 5,
+            "median_period_s": 1.25,
+            "cycle_hz": 0.8
+          }
+        },
+        "right_knee_pitch_joint": {
+          "mean_deg": 21.605010986328125,
+          "p95_p05_deg": 51.62348328475786,
+          "frequency": {
+            "dominant_hz": 0.755287009063444,
+            "peak_count": 5,
+            "median_period_s": 1.26,
+            "cycle_hz": 0.7936507936507936
+          }
+        },
+        "right_ankle_pitch_joint": {
+          "mean_deg": -8.463533401489258,
+          "p95_p05_deg": 25.068383553589292,
+          "frequency": {
+            "dominant_hz": 0.755287009063444,
+            "peak_count": 10,
+            "median_period_s": 0.54,
+            "cycle_hz": 1.8518518518518516
+          }
+        }
+      },
+      "feet": {
+        "left": {
+          "sole_p05_m": 0.001999974250793457,
+          "sole_p95_m": 0.0328700952231884,
+          "sole_vertical_span_m": 0.030870120972394943,
+          "sole_below_1cm_fraction": 0.7009063444108762,
+          "forward_excursion_p95_p05_m": 0.3886133171617985
+        },
+        "right": {
+          "sole_p05_m": 0.0019999779760837555,
+          "sole_p95_m": 0.02244037762284279,
+          "sole_vertical_span_m": 0.020440399646759033,
+          "sole_below_1cm_fraction": 0.7341389728096677,
+          "forward_excursion_p95_p05_m": 0.3995301276445389
+        }
+      },
+      "geometric_double_support_fraction": 0.4350453172205438,
+      "same_leg_cycle_period_s": 1.23,
+      "trunk_forward_distance_per_same_leg_cycle_m": 0.759402135014534
+    },
+    "F1_B4_walk_backwards": {
+      "samples": 327,
+      "duration_s": 6.5200000000000005,
+      "mean_vx": -0.28804638981819153,
+      "joints": {
+        "left_hip_pitch_joint": {
+          "mean_deg": -2.5835025310516357,
+          "p95_p05_deg": 27.69139629772019,
+          "frequency": {
+            "dominant_hz": 0.764525993883792,
+            "peak_count": 4,
+            "median_period_s": 1.4000000000000001,
+            "cycle_hz": 0.7142857142857142
+          }
+        },
+        "left_knee_pitch_joint": {
+          "mean_deg": 19.448753356933594,
+          "p95_p05_deg": 47.422249881178026,
+          "frequency": {
+            "dominant_hz": 0.764525993883792,
+            "peak_count": 4,
+            "median_period_s": 1.4000000000000001,
+            "cycle_hz": 0.7142857142857142
+          }
+        },
+        "left_ankle_pitch_joint": {
+          "mean_deg": -10.16616153717041,
+          "p95_p05_deg": 24.21630285510085,
+          "frequency": {
+            "dominant_hz": 0.764525993883792,
+            "peak_count": 5,
+            "median_period_s": 1.06,
+            "cycle_hz": 0.9433962264150942
+          }
+        },
+        "right_hip_pitch_joint": {
+          "mean_deg": -2.8534092903137207,
+          "p95_p05_deg": 21.73600268749782,
+          "frequency": {
+            "dominant_hz": 0.6116207951070336,
+            "peak_count": 3,
+            "median_period_s": 1.47,
+            "cycle_hz": 0.6802721088435374
+          }
+        },
+        "right_knee_pitch_joint": {
+          "mean_deg": 22.94341278076172,
+          "p95_p05_deg": 43.07861900757882,
+          "frequency": {
+            "dominant_hz": 0.6116207951070336,
+            "peak_count": 3,
+            "median_period_s": 1.43,
+            "cycle_hz": 0.6993006993006994
+          }
+        },
+        "right_ankle_pitch_joint": {
+          "mean_deg": -9.349495887756348,
+          "p95_p05_deg": 25.633868788796402,
+          "frequency": {
+            "dominant_hz": 0.764525993883792,
+            "peak_count": 4,
+            "median_period_s": 1.42,
+            "cycle_hz": 0.7042253521126761
+          }
+        }
+      },
+      "feet": {
+        "left": {
+          "sole_p05_m": 0.0019999753683805467,
+          "sole_p95_m": 0.03842562958598136,
+          "sole_vertical_span_m": 0.036425654217600814,
+          "sole_below_1cm_fraction": 0.6238532110091743,
+          "forward_excursion_p95_p05_m": 0.3053885620087385
+        },
+        "right": {
+          "sole_p05_m": 0.001999974250793457,
+          "sole_p95_m": 0.019468670338392256,
+          "sole_vertical_span_m": 0.0174686960875988,
+          "sole_below_1cm_fraction": 0.8165137614678899,
+          "forward_excursion_p95_p05_m": 0.28904788084328176
+        }
+      },
+      "geometric_double_support_fraction": 0.44036697247706424,
+      "same_leg_cycle_period_s": 1.435,
+      "trunk_forward_distance_per_same_leg_cycle_m": -0.41334656938910486
+    }
+  }
+}

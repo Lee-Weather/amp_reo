@@ -1,4 +1,4 @@
-"""Collect an SSH recovery checkpoint and verify model and optimizer continuity."""
+"""Collect an SSH checkpoint and verify its recorded resume or warm-start mode."""
 import argparse
 from datetime import datetime
 import hashlib
@@ -55,7 +55,15 @@ def main():
         checkpoint = torch.load(staged, map_location="cpu", weights_only=False)
         assert checkpoint["iter"] == iteration > source["iter"]
         assert checkpoint["metadata"] == source["metadata"]
-        assert checkpoint["training_origin"] == source["training_origin"]
+        warm_start = state["resume_mode"] == "warm_start_fresh_optimizers"
+        if warm_start:
+            assert checkpoint["training_origin"] == {
+                "mode": "warm_start_fresh_optimizers", "source_file": args.reference_model.name,
+                "source_sha256": state["source_checkpoint_sha256"], "source_iteration": source["iter"]}
+            assert checkpoint["config"]["runner"]["experiment_name"] == state["task"]
+        else:
+            assert state["resume_mode"] == "full_weights_normalizer_both_optimizer_states"
+            assert checkpoint["training_origin"] == source["training_origin"]
         assert all(torch.isfinite(value).all() for group in ("model_state_dict", "discriminator_state_dict")
                    for value in checkpoint[group].values())
         counters = {}
@@ -63,7 +71,14 @@ def main():
             counters[key] = optimizer_steps(checkpoint[key])
             previous = optimizer_steps(source[key])
             assert counters[key]["state_count"] == previous["state_count"]
-            assert counters[key]["minimum"] > previous["maximum"]
+            if warm_start:
+                updates = iteration-source["iter"]
+                cfg = checkpoint["config"]
+                per_update = (cfg["algorithm"]["num_learning_epochs"]*cfg["algorithm"]["num_mini_batches"]
+                              if key == "optimizer_state_dict" else cfg["discriminator"]["num_updates"])
+                assert 0 < counters[key]["minimum"] <= counters[key]["maximum"] <= updates*per_update
+            else:
+                assert counters[key]["minimum"] > previous["maximum"]
         assert checkpoint["discriminator_state_dict"]["normalizer.count"] > source["discriminator_state_dict"]["normalizer.count"]
         output.mkdir(parents=True, exist_ok=True)
         destination = output/staged.name
@@ -72,7 +87,8 @@ def main():
         shutil.copy2(staged, destination)
     validation = {"iteration": iteration, "sha256": digest, "bytes": receipt["bytes"],
                   "path": destination.relative_to(ROOT).as_posix(), "metadata_matches_source": True,
-                  "weights_finite": True, "original_training_origin_retained": True,
+                  "weights_finite": True, "original_training_origin_retained": not warm_start,
+                  "training_mode": state["resume_mode"], "training_origin_verified": True,
                   "optimizer_counters": counters, "normalizer_count_increased": True,
                   "verified_at": datetime.now().astimezone().isoformat()}
     state.setdefault("verified_checkpoints", {})[str(iteration)] = validation

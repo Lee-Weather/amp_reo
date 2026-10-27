@@ -1,0 +1,242 @@
+{
+  "Loss/value_function": {
+    "last": 0.041327010840177536,
+    "last100_mean": 0.04058847600594163,
+    "samples": 800
+  },
+  "Loss/surrogate": {
+    "last": -0.003021660726517439,
+    "last100_mean": -0.0028729915802250617,
+    "samples": 800
+  },
+  "Loss/learning_rate": {
+    "last": 3.3749998692655936e-05,
+    "last100_mean": 3.3749998692655936e-05,
+    "samples": 800
+  },
+  "Policy/mean_noise_std": {
+    "last": 0.13286733627319336,
+    "last100_mean": 0.13114381715655327,
+    "samples": 800
+  },
+  "AMP/value_loss": {
+    "last": 0.041327010840177536,
+    "last100_mean": 0.04058847600594163,
+    "samples": 800
+  },
+  "AMP/surrogate_loss": {
+    "last": -0.003021660726517439,
+    "last100_mean": -0.0028729915802250617,
+    "samples": 800
+  },
+  "AMP/entropy": {
+    "last": -19.199634552001953,
+    "last100_mean": -19.58150894165039,
+    "samples": 800
+  },
+  "AMP/kl": {
+    "last": 0.011631952598690987,
+    "last100_mean": 0.010935762329027057,
+    "samples": 800
+  },
+  "AMP/kl_max": {
+    "last": 0.01281807478517294,
+    "last100_mean": 0.013981870580464602,
+    "samples": 800
+  },
+  "AMP/kl_early_stop": {
+    "last": 0.0,
+    "last100_mean": 0.0,
+    "samples": 800
+  },
+  "AMP/policy_updates": {
+    "last": 20.0,
+    "last100_mean": 20.0,
+    "samples": 800
+  },
+  "AMP/disc_loss": {
+    "last": 0.014912087470293045,
+    "last100_mean": 0.014830809123814105,
+    "samples": 800
+  },
+  "AMP/grad_penalty": {
+    "last": 0.007810861803591251,
+    "last100_mean": 0.007969654882326722,
+    "samples": 800
+  },
+  "AMP/expert_score": {
+    "last": 0.981316328048706,
+    "last100_mean": 0.975319368839264,
+    "samples": 800
+  },
+  "AMP/policy_score": {
+    "last": -0.9719676375389099,
+    "last100_mean": -0.9754921424388886,
+    "samples": 800
+  },
+  "AMP/task_reward": {
+    "last": 0.02651369199156761,
+    "last100_mean": 0.026420527976006268,
+    "samples": 800
+  },
+  "AMP/style_reward": {
+    "last": 0.009046060964465141,
+    "last100_mean": 0.00895014421083033,
+    "samples": 800
+  },
+  "AMP/style_score": {
+    "last": 0.05515916272997856,
+    "last100_mean": 0.05634039312601089,
+    "samples": 800
+  },
+  "AMP/done_fraction": {
+    "last": 0.001190185546875,
+    "last100_mean": 0.0011044311901787297,
+    "samples": 800
+  },
+  "AMP/episode_length": {
+    "last": 462.22021484375,
+    "last100_mean": 488.150478515625,
+    "samples": 800
+  },
+  "AMP/steps_per_second": {
+    "last": 25187.064453125,
+    "last100_mean": 24699.21681640625,
+    "samples": 800
+  },
+  "AMP/current_episode_age": {
+    "last": 462.22021484375,
+    "last100_mean": 488.150478515625,
+    "samples": 800
+  },
+  "Control/raw_target_clip_rate": {
+    "last": 0.03410216420888901,
+    "last100_mean": 0.038118444941937925,
+    "samples": 800
+  },
+  "Control/effective_target_violation_rate": {
+    "last": 0.0,
+    "last100_mean": 0.0,
+    "samples": 800
+  },
+  "Control/torque_saturation_rate": {
+    "last": 1.6556663467781618e-05,
+    "last100_mean": 1.950844976818189e-05,
+    "samples": 800
+  },
+  "Standing/command_fraction": {
+    "last": 0.2308247983455658,
+    "last100_mean": 0.2328021292388439,
+    "samples": 800
+  },
+  "Standing/linear_speed": {
+    "last": 0.06441791355609894,
+    "last100_mean": 0.0631377473846078,
+    "samples": 800
+  },
+  "Standing/angular_speed": {
+    "last": 0.3004175126552582,
+    "last100_mean": 0.30039624869823456,
+    "samples": 800
+  },
+  "Standing/joint_speed_rms": {
+    "last": 0.33434826135635376,
+    "last100_mean": 0.3314962872862816,
+    "samples": 800
+  },
+  "Standing/pose_rms": {
+    "last": 0.1363764852285385,
+    "last100_mean": 0.14130667820572854,
+    "samples": 800
+  },
+  "Standing/both_feet_contact": {
+    "last": 0.9735578298568726,
+    "last100_mean": 0.9719240164756775,
+    "samples": 800
+  },
+  "Stop/pending_fraction": {
+    "last": 0.1098531112074852,
+    "last100_mean": 0.11887899093329907,
+    "samples": 800
+  },
+  "AMP/standing_style_multiplier": {
+    "last": 0.24743379652500153,
+    "last100_mean": 0.2460923282802105,
+    "samples": 800
+  },
+  "AMP/moving_style_multiplier": {
+    "last": 0.6987128853797913,
+    "last100_mean": 0.6784369486570359,
+    "samples": 800
+  },
+  "Standing/leg_joint_speed_rms": {
+    "last": 0.3873435854911804,
+    "last100_mean": 0.3859418994188309,
+    "samples": 800
+  },
+  "Gait/scuff_cost": {
+    "last": 0.19078965485095978,
+    "last100_mean": 0.19675433933734893,
+    "samples": 800
+  },
+  "Init/rsi_completed_length": {
+    "last": 927.1754150390625,
+    "last100_mean": 884.9546392822266,
+    "samples": 799
+  },
+  "Init/rsi_non_timeout_rate": {
+    "last": 0.15789473056793213,
+    "last100_mean": 0.18639695398509504,
+    "samples": 799
+  },
+  "Init/rsi_early_failure_rate": {
+    "last": 0.035087719559669495,
+    "last100_mean": 0.07754630191251635,
+    "samples": 799
+  },
+  "Train/mean_reward": {
+    "last": 17.76812744140625,
+    "last100_mean": 16.14020245552063,
+    "samples": 799
+  },
+  "Train/mean_episode_length": {
+    "last": 960.010009765625,
+    "last100_mean": 920.7174993896484,
+    "samples": 799
+  },
+  "AMP/mean_episode_task_reward": {
+    "last": 26.334901809692383,
+    "last100_mean": 24.085870628356933,
+    "samples": 799
+  },
+  "AMP/mean_episode_style_reward": {
+    "last": 9.2013521194458,
+    "last100_mean": 8.194535131454467,
+    "samples": 799
+  },
+  "Train/mean_reward/time": {
+    "last": 17.76812744140625,
+    "last100_mean": 16.14020245552063,
+    "samples": 799
+  },
+  "Train/mean_episode_length/time": {
+    "last": 960.010009765625,
+    "last100_mean": 920.7174993896484,
+    "samples": 799
+  },
+  "Init/standing_completed_length": {
+    "last": 964.61669921875,
+    "last100_mean": 959.066552734375,
+    "samples": 793
+  },
+  "Init/standing_non_timeout_rate": {
+    "last": 0.0833333358168602,
+    "last100_mean": 0.10705743078142405,
+    "samples": 793
+  },
+  "Init/standing_early_failure_rate": {
+    "last": 0.0,
+    "last100_mean": 0.0,
+    "samples": 793
+  }
+}

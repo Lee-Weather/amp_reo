@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "replay_zero",
+      "rows": 150,
+      "finite": true,
+      "style_formula_max_error": 0.0,
+      "mixed_formula_max_error": 0.0,
+      "motion_gate_max_error": null,
+      "non_timeout_terminations": 0
+    },
+    {
+      "case": "replay_slow",
+      "rows": 150,
+      "finite": true,
+      "style_formula_max_error": 0.0,
+      "mixed_formula_max_error": 0.0,
+      "motion_gate_max_error": 3.720741270640815e-08,
+      "non_timeout_terminations": 0
+    },
+    {
+      "case": "replay_forward",
+      "rows": 150,
+      "finite": true,
+      "style_formula_max_error": 0.0,
+      "mixed_formula_max_error": 0.0,
+      "motion_gate_max_error": 8.733915290992655e-08,
+      "non_timeout_terminations": 0
+    }
+  ]
+}

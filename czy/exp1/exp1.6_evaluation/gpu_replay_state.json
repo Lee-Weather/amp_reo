@@ -1,0 +1,24 @@
+{
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_141705",
+  "launch_pid": "3115247",
+  "phase": "completed",
+  "log": "verify_replay.log",
+  "launch_observation_timeout": true,
+  "process_verified_alive": true,
+  "status": {
+    "alive": false,
+    "completed": true,
+    "tail": [
+      "STANDING_REFERENCE_WINDOWS 139 / 1345",
+      "step=100 mean_reward=0.02286 resets=0",
+      "Segment 0: cmd=0.40 | applied=0.200 | real=0.135 | RMSE=0.136 | resets=0 (timeouts=0)",
+      "Replay files closed: 0 frames",
+      "PREFLIGHT_REPLAY_OK"
+    ],
+    "files": [
+      "replay_zero/replay_metadata.json",
+      "replay_forward/replay_metadata.json",
+      "replay_slow/replay_metadata.json"
+    ]
+  }
+}
