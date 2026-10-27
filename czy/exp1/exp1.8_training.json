@@ -26,26 +26,26 @@
   "status": {
     "phase": "running",
     "process_alive": true,
-    "iteration": 10007,
+    "iteration": 10069,
     "target_iteration": 11000,
-    "eta_seconds": 3446.8,
-    "new_timesteps": 688128,
+    "eta_seconds": 3209.4,
+    "new_timesteps": 6782976,
     "restored_checkpoint": null,
     "saved_checkpoints": [],
     "log_tail": [
-      "     Tracking/lateral_abs_velocity: 0.040512",
-      "     Tracking/linear_tolerance_m_s: 0.143402",
-      "      Tracking/moving_abs_yaw_rate: 0.198246",
-      "Tracking/slow_forward_abs_vx_error: 0.050284",
-      "          Tracking/slow_forward_vx: 0.123988",
-      "        Tracking/zero_abs_vx_error: 0.025249",
-      "                  Tracking/zero_vx: 0.003347",
+      "     Tracking/lateral_abs_velocity: 0.042390",
+      "     Tracking/linear_tolerance_m_s: 0.144738",
+      "      Tracking/moving_abs_yaw_rate: 0.204362",
+      "Tracking/slow_forward_abs_vx_error: 0.064050",
+      "          Tracking/slow_forward_vx: 0.109832",
+      "        Tracking/zero_abs_vx_error: 0.043499",
+      "                  Tracking/zero_vx: 0.025793",
       "--------------------------------------------------------------------------------",
-      "                   Total timesteps: 688128",
-      "                    Iteration time: 3.40s",
-      "                        Total time: 24.30s",
-      "                               ETA: 3446.8s"
+      "                   Total timesteps: 6782976",
+      "                    Iteration time: 3.52s",
+      "                        Total time: 237.86s",
+      "                               ETA: 3209.4s"
     ],
-    "observed_at": "2026-10-27T18:37:23.374283+08:00"
+    "observed_at": "2026-10-27T18:41:03.908739+08:00"
   }
 }

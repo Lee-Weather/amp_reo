@@ -1,0 +1,60 @@
+{
+  "last_iteration": 10049,
+  "scope": "Early stochastic training aggregates, not fixed-command replay acceptance",
+  "metrics": {
+    "Train/mean_reward": {
+      "last": 7.894966125488281,
+      "last20_mean": 7.108209908008575
+    },
+    "Train/mean_episode_length": {
+      "last": 541.3699951171875,
+      "last20_mean": 670.577505493164
+    },
+    "AMP/kl": {
+      "last": 0.009567486122250557,
+      "last20_mean": 0.012271835189312696
+    },
+    "AMP/kl_max": {
+      "last": 0.015833431854844093,
+      "last20_mean": 0.014940011780709028
+    },
+    "AMP/done_fraction": {
+      "last": 9.1552734375e-05,
+      "last20_mean": 0.002089945538818938
+    },
+    "Commands/backward_applied_fraction": {
+      "last": 0.1874796599149704,
+      "last20_mean": 0.19460754953324794
+    },
+    "Tracking/backward_vx": {
+      "last": -0.014321630820631981,
+      "last20_mean": -0.03954503485001624
+    },
+    "Tracking/backward_abs_vx": {
+      "last": 0.059737082570791245,
+      "last20_mean": 0.09068602714687586
+    },
+    "Tracking/backward_abs_vx_error": {
+      "last": 0.12615685164928436,
+      "last20_mean": 0.13041825443506241
+    },
+    "Tracking/backward_wrong_direction_fraction": {
+      "last": 0.11530113965272903,
+      "last20_mean": 0.11095814798027277
+    },
+    "Tracking/slow_forward_abs_vx_error": {
+      "last": 0.04732507839798927,
+      "last20_mean": 0.052010059915483
+    },
+    "Tracking/zero_abs_vx_error": {
+      "last": 0.027180450037121773,
+      "last20_mean": 0.03526493702083826
+    }
+  },
+  "limits": [
+    "Completed-episode windows overlap; early return composition is changing as first timeouts arrive.",
+    "Grouped metrics include RSI, transitions, stochastic actions and recovery; near-zero backward mean does not prove sustained backward walking.",
+    "Episode group labels reflect the terminal command and are not independent constant-command trajectories.",
+    "Reward magnitudes cannot be directly compared to the parent objective because the reward changed."
+  ]
+}
