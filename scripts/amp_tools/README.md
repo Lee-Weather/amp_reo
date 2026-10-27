@@ -109,3 +109,6 @@ exp1.5最终回放已排队：状态为`czy/exp1/exp1.5_evaluation/replay_job.js
 exp1.5的8000模型和最终三件套已取回，主/RSI均无跌倒，但后退、低速与右脚离地未达标。完整验收见czy/exp1/exp1.5_evaluation/acceptance_summary.json。exp1.6从真实8000热启动，增加运动AMP速度误差质量因子与四髋膝pitch运动条件std下限0.25，保持零速原方差、原控制与日志展示。45项CPU检查、8000→8005的4096/seed5 GPU短训及三项短回放公式核对均通过；这些不替代正式步态验收。
 
 201.5新任务用launch_server_amp.py：显式指定experiment/task/model/sha256/iterations/state，固定4096/seed5。工具仅传humanoid Python、setup.py及输入模型，复用已验证resources；拒绝GPU已有计算进程、已有state及已有远程目录。预检额外加--preflight。状态在启动前持久化，启动观察超时必须检查同目录和进程，禁止自动重启。server_status.py兼容旧恢复日志和新任务记录的log_file/success_marker；fetch_server_checkpoint.py按resume_mode分别验证完整恢复动量延续或热启动新Adam计数范围、真实输入SHA与控制元数据。
+
+
+exp1.6正式状态：czy/exp1/exp1.6_training.json，源8000、目标9000，代码dea3d4f；server_status.py按该文件轮询同一进程。最终回放已通过queue_server_replay.py排队，状态czy/exp1/exp1.6_evaluation/replay_job.json；禁止重复部署。工具复制正式训练的代码，等待记录的launcher退出、成功标记、保存凭据和GPU空闲后执行主六段视频/RSI及五项恒速检查。训练完成后先按真实8000参考取回9000，再用collect_replay_archive.py分阶段收集，最终czy/data/exp1.6只保留模型、视频、CSV三项。

@@ -7,7 +7,7 @@
 | exp1.3 | 2026-10-26（10-27回放） | 6000轮和三件套完成；主回放步态频率改善，右脚离地与站立漂移未达目标 | 失败 | TASK_20261026_229 | limxmts0d1flmto8rp@uberip.com | model_6000.pt |
 | exp1.4 | 2026-10-27 | 最终三件套完成；站立躯干/步态周期改善，右脚拖地、低速不走、零速膝摆和RSI跌倒未达标 | 失败 | TASK_20261027_166（原TASK_20261027_120） | limxmts0d1flmto8rp@uberip.com | model_7000.pt |
 | exp1.5 | 2026-10-27 | 8000三件套完成；主/RSI零跌倒、零速膝摆解决，后退/低速和右脚离地未达标 | 失败 | TASK_20261027_186（服务器完成恢复） | limxmts0d1flmto8rp@uberip.com（原云端账号） | model_8000.pt |
-| exp1.6 | 2026-10-27 | 运动AMP速度匹配门控、髋膝条件探索；8000源GPU预检通过，待正式续训 | 待训练 | 201.5服务器（预检） | 不使用云端计费账号 | 目标model_9000.pt |
+| exp1.6 | 2026-10-27 | 运动AMP速度匹配门控、髋膝条件探索；4096/seed5从8000正式续训1000轮 | 续训中 | 201.5 / exp_20261027_142839 | 不使用云端计费账号 | 目标model_9000.pt |
 
 当前命名规则（用户于2026-10-27指定）：原exp_2（训练记录exp_ada_2）统一标记为 **exp1.2**；原exp_3统一标记为 **exp1.3**；exp_1.1沿用已有历史编号。**当前实施exp1.6，下一轮exp1.7；后续同系列递增，未经用户明确同意不得进入exp2。后续训练和回放仅使用seed=5**；历史seed7/11结果保留。
 
@@ -1239,7 +1239,7 @@ abs(cmd_vx)>0.05时，在原有沿指令进展门控上乘exp(-((vx-cmd_vx)/0.12
 | 初始学习率 | 1e-5，沿用原KL保护和自适应上下界 |
 | 保存间隔 | 100更新 |
 | 算力/环境 | 201.5服务器RTX A6000 48G，F1/PyTorch1.12.1+cu113；不新建云端计费任务 |
-| 代码 | Lee-Weather/amp_reo，codex/exp1-6，正式提交待记录 |
+| 代码 | Lee-Weather/amp_reo，codex/exp1-6，正式提交dea3d4ffa51ee3dd602210025e7193bb700db08c |
 | 控制 | 继续原控制/PD/观测；不新增LPF |
 
 正式命令模板：`python -u humanoid/scripts/train.py --task=x1_amp_exp16 --headless --num_envs=4096 --seed=5 --max_iterations=1000 --run_name=exp1.6 --warm_start=checkpoints/model_8000.pt --warm_start_sha256=48ff8faca7192d56b9c455ad2fd117253ad53ef86c08209b309c941db2c66ab1`。
@@ -1255,3 +1255,13 @@ abs(cmd_vx)>0.05时，在原有沿指令进展门控上乘exp(-((vx-cmd_vx)/0.12
 45项本地CPU检查通过。真实8000源4096/seed5 GPU预检：/home/robot/czy/exp1/exp_20261027_141705，5更新至8005，权重有限、控制元数据一致、双方Adam均从新状态开始，最终actor/critic step100、判别器20。五轮KL=0.007102/0.007696/0.007125/0.006187/0.008596，最高KL_max=0.010614，无提前停止。实际运动名义目标std=3.58099度、零速约1.627度，符合门控。代码SHA256=8c2826374a7758056f45607085fdb1f2c2edf253e422405c29ce631110df408f，源commit与未提交候选区别记录于gpu_preflight_state.json。
 
 8005短回放公式检查已通过：零速/0.1/0.4各150步、无视频GPU回放均无非超时终止且CSV有限，风格贡献和混合奖励逐行误差均为0，运动门控最大误差8.74e-8，零速后段乘数保持0.2，元数据正确记录0.12速度sigma与条件探索。8005已临时下载核对iter/哈希/来源和新Adam计数，不进入正式三件套；正式起点仍为8000。见gpu_replay_formula_summary.json。预检只验证算法接口和数值，不代表新步态已学会。
+
+
+#### 正式1000轮训练已启动，最终回放已排队
+
+正式目录/home/robot/czy/exp1/exp_20261027_142839，训练launcher PID3119394，状态入口[exp1.6_training.json](exp1.6_training.json)。首次空闲保护发现另一项目测试，因此未创建本轮任务；确认其退出后才正式启动，不停止或干预其他项目。源模型仍为真实8000，代码提交dea3d4ffa51ee3dd602210025e7193bb700db08c；传输humanoid/setup代码SHA256=8c2826374a7758056f45607085fdb1f2c2edf253e422405c29ce631110df408f，与本轮GPU预检相同。启动日志已确认seed5和GPU PhysX/pipeline；实际迭代、来源加载记录继续核对，不能仅凭launcher存活宣称采样完成。
+
+最终9000回放目录/home/robot/czy/exp1/exp_20261027_142902，launcher PID3119884，状态[replay_job.json](exp1.6_evaluation/replay_job.json)。此进程只做CPU等待，不与当前训练抢GPU；训练结束还必须有SERVER_TRAINING_OK、最终9000保存凭据、文件字节/hash一致，并等待GPU空闲，才复制真实9000并录主六段视频。另做六段RSI、站姿-0.2/0.1/0.65各20秒，以及RSI-0.2/0.1各20秒；均seed5，无额外seed。异常退出或文件不符则中止，不用8005/中期checkpoint冒充最终成果。依赖保护回归新增一项，当前46项CPU检查全部通过。
+
+
+14:30首次实际采样核对：正式源8000的WARM_START_OK与预期SHA一致、初始学习率1e-5。服务器当前代码哈希与预检完全一致，训练已到8019/9000，新增1,867,776步=19×4096×24，3.52秒/更新，ETA3491秒（约58分钟，非承诺完成时刻）。排队回放PID3119884实测存活且日志仅WAITING_FOR_RECORDED_TRAINING，未提前占用GPU；见deployment_verification.json。当前仍是训练中，尚无本轮正式9000模型或三件套，不能以预检8005代替。

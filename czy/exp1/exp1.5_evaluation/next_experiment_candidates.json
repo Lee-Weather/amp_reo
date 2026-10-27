@@ -1,5 +1,5 @@
 {
-  "status": "implemented_locally_cpu45_and_gpu5_updates_passed_replay_formula_check_running",
+  "status": "exp1.6_formal_training_running_after_cpu_gpu_and_download_validation",
   "experiment_if_used": "exp1.6",
   "activation_condition": "Final GPU model8000 fails backward/slow response and right-foot clearance; condition confirmed.",
   "evidence": {

@@ -79,7 +79,9 @@
         }
       },
       "normalizer_count_increased": true,
-      "verified_at": "2026-10-27T14:23:52.243880+08:00"
+      "verified_at": "2026-10-27T14:23:52.243880+08:00",
+      "local_copy_removed_after_validation": true,
+      "retained_server_checkpoint": "logs/x1_amp_exp16/exported_data/2026-10-27_14-19-57exp1.6_preflight/model_8005.pt"
     }
   }
 }
