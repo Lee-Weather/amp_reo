@@ -9,7 +9,7 @@
 | exp1.5 | 2026-10-27 | 8000三件套完成；主/RSI零跌倒、零速膝摆解决，后退/低速和右脚离地未达标 | 失败 | TASK_20261027_186（服务器完成恢复） | limxmts0d1flmto8rp@uberip.com（原云端账号） | model_8000.pt |
 | exp1.6 | 2026-10-27 | 9000三件套完整；慢速/正向跟踪改善，后退不走、持续偏航及右脚短摆动未达标 | 失败 | 201.5 / exp_20261027_142839 | 不使用云端计费账号 | model_9000.pt |
 | exp1.7 | 2026-10-27 | 10000三件套/全检查完成；直行、右脚离地和静止改善，后退往复与两次刹停未达标 | 失败 | 201.5 / exp_20261027_164846 | 不使用云端计费账号 | model_10000.pt |
-| exp1.8 | 2026-10-27 | 反向凹奖励扣除回弹，制动后再完整启用腿部安静约束；10000源预检 | 待训练 | 201.5 / 待创建 | 不使用云端计费账号 | 目标model_11000.pt |
+| exp1.8 | 2026-10-27 | 反向凹奖励扣除回弹，制动后再启用完整腿部静止代价；预检通过，10000正式续训1000轮 | 续训中 | 201.5 / exp_20261027_183624 | 不使用云端计费账号 | 目标model_11000.pt |
 
 当前命名规则（用户于2026-10-27指定）：原exp_2（训练记录exp_ada_2）统一标记为 **exp1.2**；原exp_3统一标记为 **exp1.3**；exp_1.1沿用已有历史编号。**当前实施exp1.8，下一轮exp1.9；后续同系列递增，未经用户明确同意不得进入exp2。后续训练和回放仅使用seed=5**；历史seed7/11结果保留。
 
@@ -1574,7 +1574,7 @@ gait_rewards.py增加两个独立函数；x1_amp_exp18_env.py/config.py注册新
 | 服务器 | 201.5，F1，RTX A6000 48GB，按post-201-5新建时间戳目录 |
 | 分支/task | codex/exp1-8 / x1_amp_exp18 |
 
-命令模板：`python -u humanoid/scripts/train.py --task=x1_amp_exp18 --headless --num_envs=4096 --seed=5 --max_iterations=1000 --run_name=exp1.8 --warm_start=checkpoints/model_10000.pt --warm_start_sha256=02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9`。实际进程/目录以生成的状态文件为准，当前尚未启动正式任务。
+实际正式命令：`python -u humanoid/scripts/train.py --task=x1_amp_exp18 --headless --num_envs=4096 --seed=5 --max_iterations=1000 --run_name=exp1.8 --warm_start=checkpoints/model_10000.pt --warm_start_sha256=02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9`。实际任务入口exp1.8_training.json，源码提交ecba10499d883394bf423e6fc76bbe9cec8dbbbd，生产代码哈希与预检相同。
 
 ### 6. 预期与验收
 
@@ -1589,3 +1589,7 @@ gait_rewards.py增加两个独立函数；x1_amp_exp18_env.py/config.py注册新
 GPU预检已完成：/home/robot/czy/exp1/exp_20261027_183012，原PID3229666终止、SERVER_TRAINING_OK，真实10000至10005共5更新/491,520采样步/runner17.55秒；提交5910f5c，生产代码SHA256=9958cd54c31ad759739ba2aaa9eff481c0ca07609128787e4bb81f87715b93cf。10005已实际取回校验，10,777,160字节，SHA256=63d570e9bce35122457c8640e0f7fef0a9844c1b2ea023582cb459c824af626d；源10000/控制元数据一致、权重有限、normalizer增长，双方新Adam100/20步。五轮KL=0.007925/0.005692/0.007441/0.009485/0.008356，KL_max最大0.016825，无灾难性跳变。
 
 5更新每环境仅2.4秒，完成回合均长87.04步、均奖励-1.11只统计早期终止者，不能与20秒完整回合比较或声称整体退化/已学会后退。独立GPU验证PID3231144已终止且RUNTIME_SUITE_OK：零速150步、后退400步、0.4→0各250步共1050步，全部非超时终止0；反向项最大独立公式误差7.73e-6、腿部静止项最大1.25e-6、gate误差7.57e-8。制动case实际118个pending步、最小gate1.25e-9，证明放宽及恢复路径真实执行。状态和报告见gpu_preflight_state.json、gpu_preflight_summary.json、runtime_verification_state.json、runtime_reward_summary.json。以上是数值/接口/短场景核对，不是完整验收；正式仍从10000重新开始。
+
+正式任务18:36已实际启动：/home/robot/czy/exp1/exp_20261027_183624，原launcher PID3233131，真实10000源；18:37核实已到10007/11000，实际新增688,128步，ETA3446.8秒。独立重算远端humanoid/setup哈希9958cd54c31ad759739ba2aaa9eff481c0ca07609128787e4bb81f87715b93cf，与预检逐字节一致；输入10000 SHA及WARM_START_OK中的来源/初始LR1e-5正确，记录deployment_verification.json。未使用10005作为正式源。
+
+最终11000回放已排队到/home/robot/czy/exp1/exp_20261027_183647，launcher PID3233537，依赖上述原训练PID与目录。仅在训练成功退出、SERVER_TRAINING_OK、最终保存receipt/文件大小/SHA一致且GPU空闲后执行主60秒视频、RSI60秒、站姿-0.2/0.1/0.65及RSI-0.2/0.1各20秒。状态入口exp1.8_evaluation/replay_job.json；不根据短训无跌倒或早期负速度均值宣称后退/整体已通过。

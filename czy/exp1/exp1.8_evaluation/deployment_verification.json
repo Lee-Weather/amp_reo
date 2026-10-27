@@ -1,0 +1,11 @@
+{
+  "code_sha256": "9958cd54c31ad759739ba2aaa9eff481c0ca07609128787e4bb81f87715b93cf",
+  "source_checkpoint_sha256": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+  "warm_start": {
+    "mode": "warm_start_fresh_optimizers",
+    "source_file": "model_10000.pt",
+    "source_sha256": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+    "source_iteration": 10000,
+    "learning_rate": 1e-05
+  }
+}
