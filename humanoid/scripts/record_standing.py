@@ -40,7 +40,7 @@ def main():
     parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
     parser.add_argument("--output_dir", required=True)
     parser.add_argument("--seconds", type=float, default=5.)
-    parser.add_argument("--seeds", nargs="+", type=int, default=[5, 7, 11])
+    parser.add_argument("--seeds", nargs="+", type=int, default=[5])
     parsed, rest = parser.parse_known_args()
     sys.argv = [sys.argv[0]]+rest
     args = get_args()

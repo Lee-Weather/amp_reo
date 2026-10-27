@@ -1,0 +1,35 @@
+{
+  "source": "czy/data/exp1.3/isaac_diag.csv",
+  "samples": 890,
+  "definition": "Offline full-gate penalty on old seed5 late-zero windows; not an exp1.4 training result",
+  "terms": {
+    "stand_lin_vel": {
+      "unscaled_mean": 0.39469920677367276,
+      "scale": -0.3,
+      "mean_task_reward_delta": -0.0023681952406420367
+    },
+    "stand_ang_vel": {
+      "unscaled_mean": 0.9846715328946908,
+      "scale": -0.1,
+      "mean_task_reward_delta": -0.001969343065789382
+    },
+    "stand_dof_vel": {
+      "unscaled_mean": 0.5903066889787739,
+      "scale": -0.2,
+      "mean_task_reward_delta": -0.002361226755915096
+    },
+    "stand_pose": {
+      "unscaled_mean": 0.5583949632171352,
+      "scale": -0.3,
+      "mean_task_reward_delta": -0.0033503697793028117
+    },
+    "stand_orientation": {
+      "unscaled_mean": 0.30140039233776744,
+      "scale": -0.2,
+      "mean_task_reward_delta": -0.00120560156935107
+    }
+  },
+  "old_task_reward_mean": 0.04842190747096967,
+  "additional_task_penalty_mean": -0.011254736411000396,
+  "mixed_reward_delta_mean": -0.005627368205500198
+}

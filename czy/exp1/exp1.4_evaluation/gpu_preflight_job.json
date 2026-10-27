@@ -1,0 +1,17 @@
+{
+  "experiment": "exp1.4",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_094932",
+  "source_model": "/home/robot/czy/exp1/exp_20261027_084758/checkpoints/model_6000.pt",
+  "source_sha256": "d93631636a056ab19314ebd2a2459bf345324b48085a5e319bac18973ace48fc",
+  "code_sha256": "276859a624c81ae6bd5afbd29a4b5e691b58f86439fba19b7aba7e70001cc632",
+  "num_envs": 4096,
+  "seed": 5,
+  "warm_start_iterations": 5,
+  "resume_iterations": 2,
+  "initial_learning_rate": 1e-05,
+  "phase": "passed",
+  "launch_pid": "3004509",
+  "summary": "czy/exp1/exp1.4_evaluation/gpu_preflight_summary.json",
+  "first_update_kl": 0.008159309043549001,
+  "max_update_kl": 0.012021627044305205
+}

@@ -1,5 +1,6 @@
 """On-policy PPO with AMP rewards, replay, gradient penalty and resumable state."""
 import json
+import hashlib
 import os
 import time
 
@@ -37,6 +38,7 @@ class AMPOnPolicyRunner:
             raise ValueError("task_reward_weight must be in [0, 1]")
         self.num_steps_per_env = self.cfg["num_steps_per_env"]
         self.current_learning_iteration = 0
+        self.training_origin = None
         self.training_log = TrainingLog(env.num_envs, self.device)
         self.writer = None
         if log_dir is not None:
@@ -224,7 +226,8 @@ class AMPOnPolicyRunner:
         totals = {"disc_loss": 0., "grad_penalty": 0., "expert_score": 0., "policy_score": 0.}
         for _ in range(cfg["num_updates"]):
             policy = self.replay.sample(cfg["batch_size"])
-            expert = self.env.motion_library.sample(cfg["batch_size"]).to(self.device)
+            sampler = getattr(self.env, "sample_amp_expert", self.env.motion_library.sample)
+            expert = sampler(cfg["batch_size"]).to(self.device)
             with torch.no_grad():
                 disc.normalizer.update(torch.cat((policy, expert)))
             # Penalty is with respect to normalized expert input, as in the reference.
@@ -290,7 +293,7 @@ class AMPOnPolicyRunner:
                     "optimizer_state_dict": self.optimizer.state_dict(),
                     "disc_optimizer_state_dict": self.disc_optimizer.state_dict(),
                     "iter": self.current_learning_iteration, "metadata": self._metadata(),
-                    "infos": infos, "config": self.config}, path)
+                    "infos": infos, "config": self.config, "training_origin": self.training_origin}, path)
 
     def load(self, path, load_optimizer=True):
         state = torch.load(path, map_location=self.device)
@@ -302,7 +305,23 @@ class AMPOnPolicyRunner:
             self.optimizer.load_state_dict(state["optimizer_state_dict"])
             self.disc_optimizer.load_state_dict(state["disc_optimizer_state_dict"])
         self.current_learning_iteration = state["iter"]
+        self.training_origin = state.get("training_origin")
         return state.get("infos")
+
+    def warm_start(self, path, expected_sha256=None):
+        """Retain all learned weights and update count, start fresh optimizers."""
+        with open(path, "rb") as stream:
+            digest = hashlib.sha256(stream.read()).hexdigest()
+        if expected_sha256 is not None and digest != expected_sha256:
+            raise ValueError("Warm-start checkpoint SHA256 mismatch")
+        self.load(path, load_optimizer=False)
+        self.optimizer = torch.optim.Adam(self.actor_critic.parameters(), lr=self.alg_cfg["learning_rate"])
+        self.disc_optimizer = torch.optim.Adam(self.discriminator.network.parameters(),
+                                               lr=self.disc_cfg["learning_rate"],
+                                               weight_decay=self.disc_cfg["weight_decay"])
+        self.training_origin = {"mode": "warm_start_fresh_optimizers", "source_file": os.path.basename(path),
+                                "source_sha256": digest, "source_iteration": self.current_learning_iteration}
+        print("WARM_START_OK "+json.dumps(dict(self.training_origin, learning_rate=self.alg_cfg["learning_rate"])), flush=True)
 
     def get_inference_policy(self, device=None):
         self.actor_critic.eval()

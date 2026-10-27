@@ -182,8 +182,10 @@ def plot_comparison(data, q, local, soles, names, reference, report, output):
     stages = ["B3参考", "策略0.4指令", "策略0.6指令"]
     items = [report["reference_clips"]["F1_B3_continuous_walk"], report["policy_windows"]["cmd04_first"], report["policy_windows"]["cmd06"]]
     axes[2, 1].bar(stages, [1/r["same_leg_cycle_period_s"] for r in items], color=["#2a9377", "#b34b69", "#b34b69"])
-    axes[2, 1].set(ylabel="Hz（同腿周期）", title="关节主运动周期明显缩短")
-    fig.suptitle("exp_1.1 小碎步诊断：高频、低摆幅、低离地\n参考B3与0.6m/s指令段对比；实际速度不同，详见数值报告", fontsize=15)
+    axes[2, 1].set(ylabel="Hz（同腿周期）", title="同腿关节运动周期")
+    suffix = "_evaluation"
+    experiment = output.name[:-len(suffix)] if output.name.endswith(suffix) else output.name
+    fig.suptitle(experiment+" 步态诊断\n参考B3与0.6m/s指令段对比；实际速度不同，详见数值报告", fontsize=15)
     fig.savefig(output/"gait_comparison.png", dpi=160)
     plt.close(fig)
 

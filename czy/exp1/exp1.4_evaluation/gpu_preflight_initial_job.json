@@ -1,0 +1,14 @@
+{
+  "experiment": "exp1.4",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_094700",
+  "source_model": "/home/robot/czy/exp1/exp_20261027_084758/checkpoints/model_6000.pt",
+  "source_sha256": "d93631636a056ab19314ebd2a2459bf345324b48085a5e319bac18973ace48fc",
+  "code_sha256": "0da1ea2d9f8cdc2f2a06d6f680605e87cd8423288a6d9518938267e6c37f7dab",
+  "num_envs": 4096,
+  "seed": 5,
+  "warm_start_iterations": 5,
+  "resume_iterations": 2,
+  "phase": "completed_with_first_update_kl_concern",
+  "launch_pid": "3003163",
+  "first_update_kl": 0.13213913701474667
+}

@@ -18,13 +18,14 @@ def credentials():
 
 def sanitize(value):
     if isinstance(value, dict):
-        return {k: ("[REDACTED]" if re.search(r"(?i)token|secret|password|api.?key|startscript|urlDown|logoUrl", k)
+        return {k: ("[REDACTED]" if re.search(r"(?i)token|secret|password|api.?key|startscript|urlDown|url_b64|logoUrl", k)
                     else sanitize(v)) for k, v in value.items()}
     if isinstance(value, list):
         return [sanitize(v) for v in value]
     if isinstance(value, str):
         value = re.sub(r"(?:gh[pousr]_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+|gm_sk_[A-Za-z0-9_-]+)", "[REDACTED]", value)
         value = re.sub(r"https?://[^\s\"<>]+\?[^\s\"<>]+", "[SIGNED_URL_REDACTED]", value)
+        value = re.sub(r"(--(?:warm_start_url_b64|checkpoint_url_b64)(?:=|\s+))\S+", r"\1[REDACTED]", value)
     return value
 
 

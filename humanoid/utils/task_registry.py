@@ -164,7 +164,12 @@ class TaskRegistry():
         runner = runner_class(env, all_cfg, log_dir, device=args.rl_device)
         #save resume path before creating a new log_dir
         resume = train_cfg.runner.resume
-        if resume:
+        warm_start = getattr(args, "warm_start", None)
+        if warm_start:
+            if resume or runner_name != "AMPOnPolicyRunner":
+                raise ValueError("AMP warm_start must be used without --resume")
+            runner.warm_start(os.path.abspath(warm_start), getattr(args, "warm_start_sha256", None))
+        elif resume:
             # load previously trained model
             resume_path = get_load_path(log_root, load_run=train_cfg.runner.load_run, checkpoint=train_cfg.runner.checkpoint)
             print(f"Loading model from: {resume_path}")

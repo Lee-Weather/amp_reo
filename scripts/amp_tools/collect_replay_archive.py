@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -44,6 +45,8 @@ def main():
     mode.add_argument("--primary_only", action="store_true", help="Archive the main trio while auxiliary checks run")
     mode.add_argument("--checks_only", action="store_true", help="Add finished auxiliary checks to an existing report")
     args = parser.parse_args()
+    if not re.fullmatch(r"exp[1-9][0-9]*(?:\.[1-9][0-9]*)?|exp_[0-9]+(?:\.[0-9]+)?", args.experiment):
+        raise ValueError("Use an experiment name such as exp1.4 (or a historical exp_N name)")
     artifacts = args.record_dir.resolve() if args.record_dir else ROOT / "czy/exp1/artifacts" / args.experiment
     state = json.loads((artifacts / "replay_job.json").read_text())
     context = load_context(args.model)

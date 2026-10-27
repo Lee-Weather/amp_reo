@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 from pathlib import Path
+import re
 import shlex
 import subprocess
 import tarfile
@@ -20,14 +21,14 @@ def main():
     parser.add_argument("--experiment", required=True)
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--resource_source", required=True)
-    parser.add_argument("--task", choices=("x1_amp", "x1_amp_exp11", "x1_amp_exp3"), default="x1_amp")
+    parser.add_argument("--task", choices=("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14"), default="x1_amp")
     parser.add_argument("--training-task-id", default="TASK_20261022_177")
     parser.add_argument("--record_dir", type=Path)
     parser.add_argument("--extra_seeds", type=int, nargs="*", default=[])
     parser.add_argument("--check_rsi", action="store_true")
     args = parser.parse_args()
-    if not args.experiment.startswith("exp_") or any(c not in "exp_0123456789." for c in args.experiment):
-        raise ValueError("Use an exp_N archive name")
+    if not re.fullmatch(r"exp[1-9][0-9]*(?:\.[1-9][0-9]*)?|exp_[0-9]+(?:\.[0-9]+)?", args.experiment):
+        raise ValueError("Use an experiment name such as exp1.4 (or a historical exp_N name)")
     model = args.model.resolve()
     import torch
     iteration = int(torch.load(model, map_location="cpu", weights_only=False)["iter"])

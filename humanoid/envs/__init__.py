@@ -56,3 +56,8 @@ from .x1.x1_amp_exp3_config import X1AMPExp3Cfg, X1AMPExp3CfgPPO
 from .x1.x1_amp_exp3_env import X1AMPExp3Env
 
 task_registry.register("x1_amp_exp3", X1AMPExp3Env, X1AMPExp3Cfg(), X1AMPExp3CfgPPO())
+
+from .x1.x1_amp_exp14_config import X1AMPExp14Cfg, X1AMPExp14CfgPPO
+from .x1.x1_amp_exp14_env import X1AMPExp14Env
+
+task_registry.register("x1_amp_exp14", X1AMPExp14Env, X1AMPExp14Cfg(), X1AMPExp14CfgPPO())

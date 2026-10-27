@@ -25,6 +25,7 @@ def load_context(model):
             positions = np.clip(positions, bounds[:, 0], bounds[:, 1])
         reference.append(positions)
     return dict(metadata=metadata, names=names, iteration=state["iter"],
+                style_reward_scale=state.get("config", {}).get("discriminator", {}).get("style_reward_scale"),
                 reference_mean=np.concatenate(reference).mean(0),
                 default=np.asarray(metadata["default_dof_pos"]), physics_dt=state["config"]["sim"]["dt"])
 
@@ -132,6 +133,10 @@ def evaluate_csv(path, context):
         "standing_mean_abs_vx_below_005": report["standing"].get("samples", 0) > 0 and report["standing"]["mean_abs_vx"] <= .05,
         "speed_04_rmse_below_015": report["speed_04"].get("samples", 0) > 0 and report["speed_04"]["rmse_vx"] <= .15,
         "speed_06_rmse_below_015": report["speed_06"].get("samples", 0) > 0 and report["speed_06"]["rmse_vx"] <= .15,
-        "style_reward_above_0005": mean_style >= .005,
+        # The .005 threshold was set for exp_1.1's scale=2.  It is not a
+        # valid pass/fail threshold for differently scaled AMP rewards.
+        "style_reward_above_0005": (mean_style >= .005) if context.get("style_reward_scale") == 2. else None,
     }
+    if context.get("style_reward_scale") != 2.:
+        report["style_criterion_note"] = "0.005 threshold applies to scale=2; judge gait separately for other scales."
     return report

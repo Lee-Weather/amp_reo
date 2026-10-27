@@ -1,4 +1,4 @@
-"""exp_3: x-only commands, stronger AMP feedback and controlled PPO updates."""
+"""exp1.3 (historical exp_3): x-only commands and controlled PPO updates."""
 from .x1_amp_exp11_config import X1AMPExp11Cfg, X1AMPExp11CfgPPO
 
 
@@ -28,6 +28,6 @@ class X1AMPExp3CfgPPO(X1AMPExp11CfgPPO):
 
     class runner(X1AMPExp11CfgPPO.runner):
         experiment_name = "x1_amp_exp3"
-        run_name = "exp_3"
+        run_name = "exp1.3"
         max_iterations = 6000
         save_interval = 100

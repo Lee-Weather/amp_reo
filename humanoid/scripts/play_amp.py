@@ -30,8 +30,8 @@ def main():
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3"):
-        raise ValueError("Use --task=x1_amp, --task=x1_amp_exp11 or --task=x1_amp_exp3")
+    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14"):
+        raise ValueError("Use a registered x1_amp task")
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     # The shared helper applies --seed only to train_cfg, not env_cfg.
     # Set it before make_env() seeds the simulator and reset perturbations.
@@ -49,7 +49,7 @@ def main():
     cfg.noise.add_noise = False
     cfg.domain_rand.push_robots = False
     cfg.amp.reference_state_initialization = play.reset_mode == "rsi"
-    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3")
+    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14")
     if shared_buffer:
         cfg.amp.rsi_probability = 1. if play.reset_mode == "rsi" else 0.
         cfg.amp.stand_buffer_seconds = play.stand_buffer_seconds
