@@ -1,6 +1,6 @@
 ---
 name: "lab-notebook"
-description: "管理当前项目训练实验笔记，当前项目实验固定为exp1.x系列，当前exp1.7，下一轮exp1.8；未经用户明确同意不得进入exp2；后续仅seed=5，不添加ada。目标文件 czy/exp1/exp1.md。当用户要记录实验结果、新建实验、更新索引表、写回训练分析结论时使用。与 isaac-diag-eval 配合：本 skill 管笔记结构与编号，isaac-diag-eval 管数据分析（可选，有 CSV 时使用）。"
+description: "管理当前项目训练实验笔记，当前项目实验固定为exp1.x系列，当前exp1.8，下一轮exp1.9；未经用户明确同意不得进入exp2；后续仅seed=5，不添加ada。目标文件 czy/exp1/exp1.md。当用户要记录实验结果、新建实验、更新索引表、写回训练分析结论时使用。与 isaac-diag-eval 配合：本 skill 管笔记结构与编号，isaac-diag-eval 管数据分析（可选，有 CSV 时使用）。"
 ---
 
 # 实验笔记更新规范（当前项目exp1.x系列）
@@ -28,8 +28,8 @@ czy/exp1/exp1.md
 
 - 原`exp_2`（训练历史`exp_ada_2`）统一为`exp1.2`；原`exp_3`统一为`exp1.3`。
 - 已有`exp_1.1`保留历史名称。索引按发生顺序保留，不根据新标签伪造训练时间顺序。
-- **当前实验为`exp1.7`（从真实9000正式续训1000轮，训练中），下一轮为`exp1.8`**，后续同系列递增；不加下划线或ada。
-- 当前正式训练状态入口为`czy/exp1/exp1.7_training.json`，预检使用`czy/exp1/exp1.7_evaluation/gpu_preflight_state.json`；用scripts/amp_tools/server_status.py查询。父实验完成记录为exp1.5_training_recovery.json；exp1.5_training.json保留原云端终止事实；exp1.4重试TASK_20261027_166及原TASK_20261027_120状态文件保留，不拿父实验的完成状态代替当前任务。
+- **当前实验为`exp1.8`（真实10000为源，先预检再正式续训1000轮），下一轮为`exp1.9`**，后续同系列递增；不加下划线或ada。
+- 当前正式训练状态入口为`czy/exp1/exp1.8_training.json`，预检使用`czy/exp1/exp1.8_evaluation/gpu_preflight_state.json`；状态文件在实际创建对应任务后生成，用scripts/amp_tools/server_status.py查询。父实验exp1.7的10000三件套已完成，但后退往复和刹停未通过，详见exp1.7_training.json及exp1.7_evaluation/acceptance_summary.json。历史云端失败和恢复记录保留，不拿父实验的完成状态代替当前任务。
 - **只有用户明确同意才可进入`exp2`**。实验达标、跨模块修改、改任务或大改奖励均不能自动跨到exp2。
 - **后续训练、短训和回放仅用`seed=5`**；站姿初始化与RSI均可用同一个seed=5检查。不得默认补seed7/11；历史已有结果如实保留。
 - 用户本次授权的本地目录/标签重命名要同步索引、正文、状态文件和有效链接，校验三件套模型/视频/CSV哈希不变。

@@ -59,3 +59,25 @@ def backward_progress(command_vx, actual_vx):
     """Bounded directional progress bonus, without overspeed or rest credit."""
     progress = (-actual_vx/command_vx.abs().clamp(min=.05)).clamp(0,1)
     return torch.where(command_vx < -.05,progress,torch.zeros_like(progress))
+
+
+def backward_velocity_reward(command_vx, actual_vx, speed_scale=.2):
+    """Concave signed credit: rest is zero and a zero-net oscillation cannot gain credit."""
+    if not math.isfinite(speed_scale) or speed_scale <= 0:
+        raise ValueError("Backward reward speed scale must be positive")
+
+    def huber(value):
+        magnitude = value.abs()
+        return torch.where(magnitude <= 1, .5*value.square(), magnitude-.5)
+
+    reward = 2*(huber(command_vx/speed_scale)-huber((actual_vx-command_vx)/speed_scale))
+    return torch.where(command_vx < -.05, reward, torch.zeros_like(reward))
+
+
+def braking_leg_gate(planar_velocity, yaw_rate, pending, linear_scale=.08, angular_scale=.15):
+    """Relax leg quiet/pose costs only during an unconfirmed moving-to-zero transition."""
+    if not all(math.isfinite(s) and s > 0 for s in (linear_scale, angular_scale)):
+        raise ValueError("Braking gate scales must be positive")
+    settled = torch.exp(-planar_velocity.square().sum(-1)/linear_scale**2
+                        -yaw_rate.square()/angular_scale**2)
+    return torch.where(pending, settled, torch.ones_like(settled))

@@ -1,0 +1,43 @@
+{
+  "source_iteration": 10000,
+  "source_model_sha256": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+  "reverse_csv_sha256": "2882750c732fe57fbf6afbe4dda22e7e16550a105a85e082e2e79270ac6b6446",
+  "main_csv_sha256": "dbfe2ae0bbe4cf22e183bad7b631b654ce99f2f62dcbfd08c3f14edfd55bd0e5",
+  "candidate": {
+    "backward_speed_scale": 0.2,
+    "backward_weight": 1.5,
+    "leg_linear_scale": 0.08,
+    "leg_angular_scale": 0.15
+  },
+  "reverse": {
+    "samples": 810,
+    "mean_vx": -0.0014427099743409566,
+    "old_mean_bonus": 0.6408449415491463,
+    "new_mean_bonus": -1.0303216081620685,
+    "new_task_mixed_mean": 0.007518315765720962,
+    "new_total_mixed_mean": 0.011171283908318739,
+    "negative_step_fraction": 0.26666666666666666,
+    "recorded_window_discounted_return": 1.3639514804812203,
+    "immediate_zero_return_termination_worse_for_recorded_window": true
+  },
+  "braking": [
+    {
+      "start_s": 30.0,
+      "mean_leg_gate": 0.36634608350681086,
+      "old_weighted_leg_cost": -0.012853620745972395,
+      "new_weighted_leg_cost": -0.0005861821520874646
+    },
+    {
+      "start_s": 50.0,
+      "mean_leg_gate": 0.4007003362570823,
+      "old_weighted_leg_cost": -0.005902888721396623,
+      "new_weighted_leg_cost": -0.0008077249215356153
+    }
+  ],
+  "late_quiet_reward_delta_max": 0.0,
+  "limits": [
+    "Same trajectory and discriminator; no prediction of learned physics or future terminations.",
+    "Standing-state metadata rounds joint targets to 1e-6rad.",
+    "Positive recorded-window return is not a guarantee against termination incentives at every state."
+  ]
+}
