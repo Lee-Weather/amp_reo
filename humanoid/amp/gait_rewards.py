@@ -1,6 +1,7 @@
 """Reward geometry shared by CPU diagnostics and the next AMP experiment."""
 import math
 import torch
+from .motion import quat_rotate
 
 
 def tracking_denominator(command_vx, minimum_std=.08, maximum_std=.30, maximum_speed=.65):
@@ -37,3 +38,24 @@ def scuff_cost(height, horizontal_speed, command_vx, clearance=.015):
     deficit = ((clearance-height)/clearance).clamp(min=0, max=1).square()
     moving = (command_vx.abs() > .05).float()*(command_vx.abs()/.2).clamp(max=1.)
     return (deficit*horizontal_speed).sum(-1)*moving
+
+
+def lowest_sole_kinematics(feet_state, vertices, com_local, ground_height):
+    """Height and velocity of the same lowest material vertex; Gym v is COM velocity."""
+    heights, speeds = [], []
+    for i, mesh in enumerate(vertices):
+        q = feet_state[:,i,3:7]
+        x,y,z,w = q.unbind(-1)
+        row = torch.stack((2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)),-1)
+        height, ids = (row@mesh.T).min(-1)
+        heights.append(height+feet_state[:,i,2]-ground_height)
+        arm = quat_rotate(q, mesh[ids]-com_local[i])
+        velocity = feet_state[:,i,7:10]+torch.cross(feet_state[:,i,10:13],arm,dim=-1)
+        speeds.append(velocity[:,:2].norm(dim=-1))
+    return torch.stack(heights,-1), torch.stack(speeds,-1)
+
+
+def backward_progress(command_vx, actual_vx):
+    """Bounded directional progress bonus, without overspeed or rest credit."""
+    progress = (-actual_vx/command_vx.abs().clamp(min=.05)).clamp(0,1)
+    return torch.where(command_vx < -.05,progress,torch.zeros_like(progress))

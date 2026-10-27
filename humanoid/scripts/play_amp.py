@@ -30,7 +30,7 @@ def main():
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16"):
+    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17"):
         raise ValueError("Use a registered x1_amp task")
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     # The shared helper applies --seed only to train_cfg, not env_cfg.
@@ -49,7 +49,7 @@ def main():
     cfg.noise.add_noise = False
     cfg.domain_rand.push_robots = False
     cfg.amp.reference_state_initialization = play.reset_mode == "rsi"
-    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16")
+    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17")
     if shared_buffer:
         cfg.amp.rsi_probability = 1. if play.reset_mode == "rsi" else 0.
         cfg.amp.stand_buffer_seconds = play.stand_buffer_seconds
@@ -116,6 +116,8 @@ def main():
         "motion_style_velocity_sigma": getattr(cfg.amp, "motion_style_velocity_sigma", None),
         "training_motion_exploration": getattr(train_cfg.policy, "motion_exploration", None),
         "tracking_ang_sigma": cfg.rewards.tracking_sigma,
+        "tracking_lateral_std": getattr(cfg.rewards,"tracking_lateral_std",None),
+        "foot_scuff_velocity_reference": "lowest_material_point_from_COM" if args.task == "x1_amp_exp17" else "rigid_body_COM",
         "pushes": cfg.domain_rand.push_robots, "noise": cfg.noise.add_noise,
         "reference_state_initialization": cfg.amp.reference_state_initialization,
         "reset_mode": play.reset_mode, "policy_metadata": runner._metadata(),

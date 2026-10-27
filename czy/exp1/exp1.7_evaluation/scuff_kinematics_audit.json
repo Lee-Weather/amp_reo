@@ -1,0 +1,31 @@
+{
+  "window_s": [
+    23.6,
+    29.8
+  ],
+  "samples": 310,
+  "foot_fk_max_error_m": 1.0549655193869967e-06,
+  "epsilon_sensitivity_max_m_s": 2.366101203854498e-06,
+  "feet": {
+    "left": {
+      "contact_near_floor_samples": 240,
+      "candidate_rolling_samples": 27,
+      "mean_com_speed_m_s": 0.12786465733856697,
+      "mean_lowest_point_speed_m_s": 0.08185931753594287,
+      "legacy_mean_scuff_cost": 0.12633918736759966,
+      "point_mean_scuff_cost": 0.09555798541807374
+    },
+    "right": {
+      "contact_near_floor_samples": 265,
+      "candidate_rolling_samples": 45,
+      "mean_com_speed_m_s": 0.16707211120908697,
+      "mean_lowest_point_speed_m_s": 0.12738023005883523,
+      "legacy_mean_scuff_cost": 0.16961079172554033,
+      "point_mean_scuff_cost": 0.15062668850879168
+    }
+  },
+  "method": "COM-aware central directional FK derivative along recorded joint dq and root world twist; same material vertex selected at current minimum z",
+  "limits": "Kinematic estimate, not an observed per-point contact sensor. Lowest vertex may differ from the solver contact patch; this diagnoses reward semantics, not a proven gait cause.",
+  "model_sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
+  "csv_sha256": "bc51a1a6d09157cb31586f61b344ef3744a62f1e8f1d3907cab0c16841bfa397"
+}

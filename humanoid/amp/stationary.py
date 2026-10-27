@@ -21,12 +21,17 @@ def sample_commands(ranges, count, device, zero_probability):
 
 class CommandMotionSampler:
     def __init__(self, library, speed_tolerance=.15, expert_standing_probability=.2,
-                 max_root_speed=.05, max_angular_speed=.3, max_joint_speed=.2):
+                 max_root_speed=.05, max_angular_speed=.3, max_joint_speed=.2,
+                 exclude_quiet_for_moving=False, relative_speed_tolerance=None):
         if speed_tolerance <= 0 or not 0 <= expert_standing_probability <= 1:
             raise ValueError("Invalid reference sampling settings")
         self.library = library
         self.tolerance = speed_tolerance
         self.expert_standing_probability = expert_standing_probability
+        if relative_speed_tolerance is not None and (not math.isfinite(relative_speed_tolerance) or relative_speed_tolerance <= 0):
+            raise ValueError("Relative reference speed tolerance must be positive")
+        self.exclude_quiet_for_moving = exclude_quiet_for_moving
+        self.relative_speed_tolerance = relative_speed_tolerance
         ids, times = [], []
         minimum = (library.history_steps-1)*library.dt
         for i in range(len(library.names)):
@@ -56,9 +61,14 @@ class CommandMotionSampler:
         selections = []
         for command in commands.split(512):
             vx = command[:, 0:1]
-            allowed = (self.local_vx[None, :]-vx).abs() <= self.tolerance
+            tolerance = self.tolerance if self.relative_speed_tolerance is None else (.025+self.relative_speed_tolerance*vx.abs()).clamp(max=self.tolerance)
+            allowed = (self.local_vx[None, :]-vx).abs() <= tolerance
             directional = (vx.abs() <= .05) | (vx*self.local_vx[None, :] > 0)
             allowed &= directional
+            if self.exclude_quiet_for_moving:
+                moving = vx.abs() > .05
+                enough_speed = self.local_vx[None,:].abs() >= (.5*vx.abs()).clamp(max=.05)
+                allowed &= ~moving | (~self.quiet[None,:] & enough_speed)
             zero = command.abs().amax(-1) <= 1e-6
             allowed[zero] = self.quiet
             weights = allowed*self.prior[None, :]
@@ -79,3 +89,21 @@ class CommandMotionSampler:
             ids[quiet], times[quiet] = self.ids[selected], self.times[selected]
         # Preserve real q/dq, root velocity and oldest-first reference history.
         return lib.history(ids, times)
+
+
+def sample_directional_commands(ranges, count, device, zero_probability=.2, backward_probability=.3):
+    """Event probabilities, preserving every speed and fixed evaluation commands."""
+    if not 0 <= zero_probability < 1 or not 0 <= backward_probability <= 1-zero_probability:
+        raise ValueError("Invalid command event probabilities")
+    lo, hi = ranges["lin_vel_x"]
+    if lo == hi:
+        return sample_commands(ranges,count,device,zero_probability)
+    if not lo < 0 < hi or tuple(ranges["lin_vel_y"]) != (0.,0.) or tuple(ranges["ang_vel_yaw"]) != (0.,0.):
+        raise ValueError("Directional command sampler requires x-only signed ranges")
+    result = torch.zeros(count,3,device=device)
+    choice = torch.rand(count,device=device)
+    negative = (choice >= zero_probability) & (choice < zero_probability+backward_probability)
+    positive = choice >= zero_probability+backward_probability
+    result[negative,0] = lo+(-lo)*torch.rand(int(negative.sum()),device=device)
+    result[positive,0] = hi*torch.rand(int(positive.sum()),device=device)
+    return result
