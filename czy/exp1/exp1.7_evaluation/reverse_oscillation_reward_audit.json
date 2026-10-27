@@ -1,0 +1,79 @@
+{
+  "scope": "Existing same-CPU standing reverse rollouts, fixed 3.60-19.78s window; no resets",
+  "config_iteration": 9400,
+  "policy_dt": 0.020000000949949026,
+  "task_mix": 0.5,
+  "cases": [
+    {
+      "iteration": 9000,
+      "samples": 810,
+      "mean_vx": 0.00044872598604529454,
+      "mean_abs_vx": 0.0016758075446802318,
+      "mean_bonus": 0.0030677038508749943,
+      "mixed_reward_components_per_step": {
+        "backward_bonus_mixed": 3.067703996583108e-05,
+        "linear_tracking_mixed": 0.0019751261012969446,
+        "angular_tracking_mixed": 0.012494963543604918,
+        "task_mixed": 0.014000112503583049,
+        "style_mixed": 8.682004212360395e-07,
+        "total_mixed": 0.014000980704004285
+      },
+      "phases": {
+        "reverse": {
+          "fraction": 0.0,
+          "mean_vx": null,
+          "mean_bonus": null
+        },
+        "forward": {
+          "fraction": 0.0,
+          "mean_vx": null,
+          "mean_bonus": null
+        },
+        "near_zero": {
+          "fraction": 1.0,
+          "mean_vx": 0.00044872598604529454,
+          "mean_bonus": 0.0030677038508749943
+        }
+      },
+      "csv_sha256": "67ea5c96d953f57ccf0be230ba3973f6a24c8058ddf96ca04b3e658affc5a21c"
+    },
+    {
+      "iteration": 9400,
+      "samples": 810,
+      "mean_vx": -0.006094425418861512,
+      "mean_abs_vx": 0.20466615375018007,
+      "mean_bonus": 0.5246198092564988,
+      "mixed_reward_components_per_step": {
+        "backward_bonus_mixed": 0.005246198341746024,
+        "linear_tracking_mixed": 0.0069593097684028625,
+        "angular_tracking_mixed": 0.011011780613255471,
+        "task_mixed": 0.02258766823804673,
+        "style_mixed": 0.0012312158886772372,
+        "total_mixed": 0.023818884126723967
+      },
+      "phases": {
+        "reverse": {
+          "fraction": 0.6160493827160494,
+          "mean_vx": -0.1700632909839163,
+          "mean_bonus": 0.8466127930306903
+        },
+        "forward": {
+          "fraction": 0.3308641975308642,
+          "mean_vx": 0.2985518096682073,
+          "mean_bonus": 0.0
+        },
+        "near_zero": {
+          "fraction": 0.05308641975308642,
+          "mean_vx": -0.002018311148445761,
+          "mean_bonus": 0.05772701803370929
+        }
+      },
+      "csv_sha256": "6036b69d80fa2bb729e747c4f6811d1d8d9f02b7ca1c663699a5f37ebb3b6031"
+    }
+  ],
+  "limits": [
+    "Reconstructed components only; remaining task rewards are not independently decomposed.",
+    "A positive clipped bonus under zero net speed demonstrates a loophole, not sole causal attribution.",
+    "CPU rollouts are not final GPU acceptance; no training or reward code was changed."
+  ]
+}
