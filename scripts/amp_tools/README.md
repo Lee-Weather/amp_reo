@@ -6,8 +6,10 @@
 | --- | --- |
 | `flux_ops.py` | 调用已安装的Flux CLI，对返回的凭据与签名URL脱敏 |
 | `flux_status.py` | 按指定任务状态文件查询训练状态，更新旁边的脱敏日志 |
+| `server_status.py` | 查询记录的201.5训练进程、实际轮数、恢复优化器凭据和保存记录 |
 | `launch_fixed_amp.py` | 用输入输出同目录规则提交训练，核对账号、源模型和远端提交 |
 | `fetch_amp_checkpoint.py` | 下载实际训练模型，对照保存凭据校验大小、哈希、轮数和模型约定 |
+| `fetch_server_checkpoint.py` | 按服务器保存凭据取回恢复模型，核对双方优化器步数及归一化器延续 |
 | `fetch_replay_curves.py` | 获取指定训练任务的AMP曲线，保存到明确指定的附件路径 |
 | `replay_archive.py` | 在201.5服务器新目录部署当前代码并启动完整回放 |
 | `collect_replay_archive.py` | 取回完成的回放，校验视频/CSV/模型并归档、生成诊断汇总 |
@@ -53,7 +55,7 @@ python scripts/amp_tools/collect_replay_archive.py --experiment exp_1.1 --model 
 - `czy/exp1/{实验编号}_evaluation/`：诊断图、训练曲线、元数据、日志和摘要。
 - `czy/exp1/{实验编号}_training.json/log`：训练状态和脱敏日志。
 
-已清理的artifacts目录不再恢复。当前实验exp1.4，下一轮exp1.5；当前归档还包括exp1.2（原exp_2）与exp1.3（原exp_3），未经用户明确同意不得进入exp2。后续只用seed=5；不传`--extra_seeds`，`--check_rsi`也只检查seed=5。技术task名x1_amp_exp3保留，历史启动命令/分支不因标签变化而改写。
+已清理的artifacts目录不再恢复。当前实验exp1.5，下一轮exp1.6；当前归档还包括exp1.2（原exp_2）与exp1.3（原exp_3），未经用户明确同意不得进入exp2。后续只用seed=5；不传`--extra_seeds`，`--check_rsi`也只检查seed=5。技术task名x1_amp_exp3保留，历史启动命令/分支不因标签变化而改写。
 
 原 `czy/validation/` 已清空；部署压缩包、短测导出模型、参考工程快照和一次性脚本不保留。
 
@@ -94,4 +96,8 @@ exp1.4独立任务`x1_amp_exp14`：每次重采样20%精确零指令，0.5秒渐
 
 云端固定checkpoint目录：训练可显式传`--checkpoint_dir=/workspace/amp_reo/logs/x1_amp_exp14/exported_data/upload_check`，并将`--warm_start`指向同目录的model_6000.pt。平台`checkPointMountPath`也设为对应的仓库相对目录。该目录只允许已有输入模型，拒绝覆盖既有训练结果；不要把不同任务都输出到同一个旧目录。CHECKPOINT_INPUT_READY为输入副本事件，CHECKPOINT_SAVED为本地保存，只有实际模型列表和下载验证才证明上传成功。
 
-exp1.5候选任务`x1_amp_exp15`保持相同控制与观测约定，增加速度相关跟踪容差、零速腿部约束和移动脚底拖地代价；零指令的AMP乘数在0.5秒内降到0.2。abs(vx指令)>0.05时另乘指令方向的实际速度/指令速度并限制为[0,1]，避免原地获取完整运动AMP奖励，不为超速加分。`style_score`仍是原始判别器分数，`style_reward`为实际门控后的风格贡献，CSV另有`style_reward_raw`和`amp_style_multiplier`；主runner原有回合日志不变。早期候选的35项CPU检查及6100→6102的4096环境GPU接口预检已通过；新增运动门控后须重新检查，不能把旧代码预检说成当前代码GPU通过，也不能把预检模型当正式训练源或最终成果。
+exp1.5候选任务`x1_amp_exp15`保持相同控制与观测约定，增加速度相关跟踪容差、零速腿部约束和移动脚底拖地代价；零指令的AMP乘数在0.5秒内降到0.2。abs(vx指令)>0.05时另乘指令方向的实际速度/指令速度并限制为[0,1]，避免原地获取完整运动AMP奖励，不为超速加分。`style_score`仍是原始判别器分数，`style_reward`为实际门控后的风格贡献，CSV另有`style_reward_raw`和`amp_style_multiplier`；主runner原有回合日志不变。当前完整代码36项CPU检查及7000→7005的4096环境GPU预检通过，另核对了零速/0.1回放的风格和混合奖励公式。正式TASK_20261027_186从实际7000新增1000轮到8000，首个7100已下载校验；预检7005不作为正式训练源或最终成果。
+
+任务186于7263附近被平台终止，原因未确认；已取回实际7200并在201.5从7200完整恢复剩余800轮到8000。当前查询命令是`python scripts/amp_tools/server_status.py --state czy/exp1/exp1.5_training_recovery.json`；旧exp1.5_training.json记录云端状态6，不能代替服务器进程状态。恢复使用`--resume`保留双方Adam状态，CHECKPOINT_RESTORED确认原step4000/800和学习率；后续服务器模型按实际保存记录经SCP取回并核对哈希，不期待旧云端模型列表出现8000。
+
+先刷新服务器状态，再用`python scripts/amp_tools/fetch_server_checkpoint.py --state czy/exp1/exp1.5_training_recovery.json --reference-model czy/exp1/exp1.5_evaluation/recovery/model_7200.pt --output-dir czy/data/exp1.5 --iteration 8000`取回最终模型。工具要求实际训练进程结束、存在最终保存凭据，验证文件大小/hash、iter、控制元数据、完整恢复来源和权重有限性，并要求双方优化器计数与归一化器count相对7200均增加；不会用重新清空优化器的模型冒充完整恢复。中途7300已经按此规则验证通过。最后照原流程回放并补齐严格三件套。
