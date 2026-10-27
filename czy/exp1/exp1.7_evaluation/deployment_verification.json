@@ -1,0 +1,12 @@
+{
+  "code_sha256": "dd03f67f41c59f2ddece2aa8a04213e01845d8fc12fa79a1afbe50787318d84c",
+  "warm_start": {
+    "mode": "warm_start_fresh_optimizers",
+    "source_file": "model_9000.pt",
+    "source_sha256": "9b877aa3f29744b633bf789e3f953ce60681a59d7f6e7d38a2cb3f323cc302a7",
+    "source_iteration": 9000,
+    "learning_rate": 1e-05
+  },
+  "queue_alive": true,
+  "queue_tail": "WAITING_FOR_RECORDED_TRAINING\n"
+}

@@ -79,7 +79,8 @@
         }
       },
       "normalizer_count_increased": true,
-      "verified_at": "2026-10-27T16:48:19.772505+08:00"
+      "verified_at": "2026-10-27T16:48:19.772505+08:00",
+      "local_copy_removed_after_validation": true
     }
   }
 }

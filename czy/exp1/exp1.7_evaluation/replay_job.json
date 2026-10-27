@@ -1,0 +1,72 @@
+{
+  "experiment": "exp1.7",
+  "task_id": "server_exp_20261027_164846",
+  "training_backend": "ssh_server",
+  "training_state": "czy/exp1/exp1.7_training.json",
+  "task": "x1_amp_exp17",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_164952",
+  "checkpoint_iteration": 10000,
+  "checkpoint_name": "model_10000.pt",
+  "checkpoint_sha256": null,
+  "code_sha256": "dd03f67f41c59f2ddece2aa8a04213e01845d8fc12fa79a1afbe50787318d84c",
+  "code_hash_definition": "SHA256 of sorted humanoid/*.py plus setup.py, with NUL separators",
+  "profile": [
+    0,
+    0.4,
+    0.6,
+    0,
+    0.4,
+    0
+  ],
+  "stage_seconds": 10,
+  "steps": 3000,
+  "video": "1920x1080@25fps",
+  "primary_output": "logs/replay/standing_seed5",
+  "checks": [
+    {
+      "seed": 5,
+      "reset_mode": "rsi",
+      "output": "logs/replay/rsi_seed5"
+    },
+    {
+      "seed": 5,
+      "reset_mode": "standing",
+      "vx": -0.2,
+      "steps": 1000,
+      "output": "logs/replay/speed_check_0"
+    },
+    {
+      "seed": 5,
+      "reset_mode": "standing",
+      "vx": 0.1,
+      "steps": 1000,
+      "output": "logs/replay/speed_check_1"
+    },
+    {
+      "seed": 5,
+      "reset_mode": "standing",
+      "vx": 0.65,
+      "steps": 1000,
+      "output": "logs/replay/speed_check_2"
+    },
+    {
+      "seed": 5,
+      "reset_mode": "rsi",
+      "vx": -0.2,
+      "steps": 1000,
+      "output": "logs/replay/rsi_speed_check_0"
+    },
+    {
+      "seed": 5,
+      "reset_mode": "rsi",
+      "vx": 0.1,
+      "steps": 1000,
+      "output": "logs/replay/rsi_speed_check_1"
+    }
+  ],
+  "phase": "waiting_for_training",
+  "dependency_pid": "3187411",
+  "dependency_dir": "/home/robot/czy/exp1/exp_20261027_164846",
+  "created_at": "2026-10-27T16:49:52.993195+08:00",
+  "launch_pid": "3188064"
+}
