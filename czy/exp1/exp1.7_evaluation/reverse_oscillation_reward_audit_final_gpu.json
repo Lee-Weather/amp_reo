@@ -1,0 +1,71 @@
+{
+  "scope": "Final GPU standing reverse rollout, fixed 3.60-19.78s window; no resets",
+  "config_iteration": 10000,
+  "policy_dt": 0.020000000949949026,
+  "task_mix": 0.5,
+  "cases": [
+    {
+      "iteration": 10000,
+      "samples": 810,
+      "mean_vx": -0.0014427099743409566,
+      "mean_abs_vx": 0.2726295768534822,
+      "mean_bonus": 0.6408449415491463,
+      "mixed_reward_components_per_step": {
+        "backward_bonus_mixed": 0.006408449719876477,
+        "linear_tracking_mixed": 0.00804267455961047,
+        "angular_tracking_mixed": 0.011501297359960456,
+        "task_mixed": 0.024229982056594625,
+        "style_mixed": 0.003652968142597778,
+        "total_mixed": 0.027882950199192402
+      },
+      "phases": {
+        "reverse": {
+          "fraction": 0.6876543209876543,
+          "mean_vx": -0.19841679604306042,
+          "mean_bonus": 0.927610051784984
+        },
+        "forward": {
+          "fraction": 0.26666666666666666,
+          "mean_vx": 0.5070442366758706,
+          "mean_bonus": 0.0
+        },
+        "near_zero": {
+          "fraction": 0.04567901234567901,
+          "mean_vx": -0.004648508249177925,
+          "mean_bonus": 0.06501631920465896
+        }
+      },
+      "csv_sha256": "2882750c732fe57fbf6afbe4dda22e7e16550a105a85e082e2e79270ac6b6446",
+      "untrained_counterfactual_candidates": {
+        "signed_progress_upper_cap": {
+          "mean_bonus": -0.03712221554620891,
+          "task_mixed_per_step": 0.017450310163623955,
+          "total_mixed_per_step_with_same_frozen_D": 0.02110327830622173
+        },
+        "signed_huber_weight_1": {
+          "mean_bonus": -0.6868810718423901,
+          "task_mixed_per_step": 0.010952721292043242,
+          "total_mixed_per_step_with_same_frozen_D": 0.014605689434641021
+        },
+        "signed_huber_weight_1_5": {
+          "mean_bonus": -1.0303216077635853,
+          "task_mixed_per_step": 0.007518315769705791,
+          "total_mixed_per_step_with_same_frozen_D": 0.01117128391230357
+        },
+        "signed_huber_weight_2": {
+          "mean_bonus": -1.3737621436847802,
+          "task_mixed_per_step": 0.004083910247368339,
+          "total_mixed_per_step_with_same_frozen_D": 0.007736878389966117
+        }
+      }
+    }
+  ],
+  "config_checkpoint_sha256": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+  "limits": [
+    "Reconstructed components only; remaining task rewards are not independently decomposed.",
+    "A positive clipped bonus under zero net speed demonstrates a loophole, not sole causal attribution.",
+    "Counterfactual scores retain the same trajectory and discriminator; no learning or physics response is predicted.",
+    "Candidate concavity does not prove whole-reward ordering, stability, naturalness or safe termination incentives.",
+    "No training or reward code was changed."
+  ]
+}

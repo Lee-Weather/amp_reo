@@ -15,6 +15,8 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--include-observations", action="store_true",
                         help="Also export per-observation mean/std; full events always remain on server")
+    parser.add_argument("--export-timeout", type=float, default=120,
+                        help="Allow full TensorBoard event parsing to finish while the caller polls this tool")
     args = parser.parse_args()
     state = json.loads(args.state.read_text(encoding="utf-8"))
     if state["backend"] != "ssh_server" or state["host"] != "robot@10.12.201.5":
@@ -37,7 +39,7 @@ print(json.dumps(dict(path=str(path),bytes=path.stat().st_size,sha256=hashlib.sh
 '''.replace("__ROOT__", repr(root)).replace("__TASK__", repr(state["task"])).replace("__EXPORT__", repr(export_path)).replace("__INCLUDE_OBS__", repr(args.include_observations))
     result = subprocess.run(["C:/Windows/System32/OpenSSH/ssh.exe", "-o", "BatchMode=yes",
                              state["host"], "source /home/robot/Anaconda/etc/profile.d/conda.sh && conda activate F1 && OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python -"],
-                            input=program.encode(), capture_output=True, timeout=45)
+                            input=program.encode(), capture_output=True, timeout=args.export_timeout)
     if result.returncode:
         raise RuntimeError("Observation failed; do not restart training: "+result.stderr.decode("utf-8", errors="replace")[-1500:])
     manifest = json.loads(result.stdout.decode("utf-8"))

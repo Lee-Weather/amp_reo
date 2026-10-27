@@ -1,0 +1,47 @@
+{
+  "source_export_receipt": {
+    "path": "/home/robot/czy/exp1/exp_20261027_164846/curves_export_de047b9e78984019a3e0f17d88c60700.json",
+    "bytes": 3328713,
+    "sha256": "72247dc2dc071c1b935750dc2a2950412acb7f37b468b205e26663fe147dd1c5"
+  },
+  "last_iteration": 10000,
+  "scope": "Stochastic training aggregates, not deterministic replay acceptance",
+  "metrics": {
+    "Train/mean_reward": {
+      "last": 17.458980560302734,
+      "last100_mean": 16.826163845062254
+    },
+    "Train/mean_episode_length": {
+      "last": 977.260009765625,
+      "last100_mean": 949.6177020263672
+    },
+    "Tracking/backward_abs_vx_error": {
+      "last": 0.16058526933193207,
+      "last100_mean": 0.1559595848619938
+    },
+    "Tracking/backward_vx": {
+      "last": 0.0059984908439219,
+      "last100_mean": -0.00582225106889382
+    },
+    "Commands/backward_applied_fraction": {
+      "last": 0.2122395932674408,
+      "last100_mean": 0.2112940515577793
+    },
+    "Tracking/slow_forward_abs_vx_error": {
+      "last": 0.05264517292380333,
+      "last100_mean": 0.05379752017557621
+    },
+    "Tracking/forward_abs_vx_error": {
+      "last": 0.06929058581590652,
+      "last100_mean": 0.07301643647253514
+    },
+    "AMP/kl": {
+      "last": 0.011198936961591244,
+      "last100_mean": 0.013576383534818888
+    },
+    "AMP/kl_max": {
+      "last": 0.018197886645793915,
+      "last100_mean": 0.016462559169158338
+    }
+  }
+}

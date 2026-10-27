@@ -1,0 +1,51 @@
+{
+  "status": "diagnostic_candidates_only_not_implemented_or_trained",
+  "next_experiment": "exp1.8",
+  "source_candidate": "czy/data/exp1.7/model_10000.pt",
+  "source_sha256": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+  "problems": [
+    "GPU reverse motion alternates slow backward travel and faster forward return, with almost zero net mean vx.",
+    "Both braking confirmation times exceed 2 seconds, despite quiet late standing windows."
+  ],
+  "retain": [
+    "4096 envs and seed5; vx [-0.2,0.65], vy=wz=0; no exp2.",
+    "Existing PD, observations, action convention, AMP feature/history schema and no new output LPF.",
+    "Exp1.7 foot-point scuff semantics, lateral/yaw tracking, B4 clip prior and quiet stationary behavior."
+  ],
+  "candidates": [
+    {
+      "name": "concave signed reverse tracking bonus",
+      "formula": "2 * (Huber(cmd_vx/s) - Huber((actual_vx-cmd_vx)/s)), Huber delta=1; negative-motion commands only",
+      "reference_scale_candidate_m_s": 0.2,
+      "reward_weight_candidates": [
+        1.0,
+        1.5
+      ],
+      "reason": "At zero actual vx the reward is zero; at zero mean vx concavity prevents positive average bonus from velocity oscillation. Overspeed falls away from the target rather than earning extra credit.",
+      "current_evidence": "For command=-0.2 this equals the signed-Huber candidates in reverse_oscillation_reward_audit_final_gpu.json; other commands and whole-reward ordering remain untested.",
+      "risks": [
+        "Negative wrong-direction reward may change termination incentives; validate early termination and RSI recovery.",
+        "A component-level concavity guarantee does not guarantee whole-reward ordering or successful exploration."
+      ]
+    },
+    {
+      "name": "allow leg motion while braking before quiet hold",
+      "reason": "The stronger standing leg-velocity penalty improves late quietness but may oppose catch-steps; stand gate already reaches 1 after 0.5s, so the observed 2.72/2.96s cannot be explained by a multi-second reward ramp.",
+      "candidate": "Keep immediate body linear/angular stopping objectives; consider smoothly enabling full leg quiet/pose penalties as base planar/yaw speed settles.",
+      "risks": [
+        "This is a hypothesis, not a demonstrated single-factor cause.",
+        "Verify that gating cannot be exploited by maintaining body motion and that zero-speed quietness remains."
+      ]
+    }
+  ],
+  "required_before_formal_training": [
+    "Complete and archive all exp1.7 auxiliary checks.",
+    "Check reward ranking for measured GPU counterexamples, actual rest, steady tracking, zero-net oscillation, overspeed and recovery over the full command range.",
+    "Validate termination incentives and preserve all existing control metadata.",
+    "Use the actual source model for a short GPU preflight, then preserve original full acceptance gates."
+  ],
+  "deferred": [
+    "True command-conditioned expert matching remains a separate hypothesis; expert recognition itself is near perfect and expert mass is nonzero.",
+    "No further blind increase to B4 prior or clipped positive backward bonus."
+  ]
+}

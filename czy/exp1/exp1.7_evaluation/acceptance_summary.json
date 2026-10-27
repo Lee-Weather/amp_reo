@@ -1,0 +1,263 @@
+{
+  "criteria_version": "exp1.6",
+  "checkpoint_iteration": 10000,
+  "checkpoint_sha256": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+  "csv_sha256": "dbfe2ae0bbe4cf22e183bad7b631b654ce99f2f62dcbfd08c3f14edfd55bd0e5",
+  "video_sha256": "0e2609f4d6d2b051fe047d8c5dd90ecef6957d869cd07e168590ab415e685cc9",
+  "numeric_criteria_passed": false,
+  "visual_review_passed": false,
+  "accepted": false,
+  "criteria": {
+    "primary_no_falls": true,
+    "strict_trio": true,
+    "artifact_hashes_bound": true,
+    "gait_window_without_reset": true,
+    "effective_targets_within_hard_limits": true,
+    "full_video_collected": true,
+    "all_auxiliary_checks": false,
+    "speed06_rmse_le_010": true,
+    "all_standing_windows": true,
+    "both_stops_confirm_within_2s": false,
+    "each_sole_p95_ge_15mm": true,
+    "each_foot_foreaft_ge_25cm": true,
+    "cycle_averaged_abs_wz_le_005": true,
+    "each_sole_below_1cm_fraction_le_085": true,
+    "cycle_averaged_abs_vy_le_005": true,
+    "speed04_mean_error_le_008": true,
+    "speed06_mean_error_le_008": true
+  },
+  "standing_windows": {
+    "initial_stop": {
+      "vx": true,
+      "vy": true,
+      "wz": true,
+      "roll_span": true,
+      "pitch_span": true,
+      "knees": true
+    },
+    "after_first_walk": {
+      "vx": true,
+      "vy": true,
+      "wz": true,
+      "roll_span": true,
+      "pitch_span": true,
+      "knees": true
+    },
+    "after_second_walk": {
+      "vx": true,
+      "vy": true,
+      "wz": true,
+      "roll_span": true,
+      "pitch_span": true,
+      "knees": true
+    }
+  },
+  "auxiliary_checks": [
+    {
+      "reset_mode": "rsi",
+      "command_vx": null,
+      "collected": true,
+      "passed": true,
+      "no_falls": true
+    },
+    {
+      "reset_mode": "standing",
+      "command_vx": -0.2,
+      "collected": true,
+      "passed": false,
+      "no_falls": true,
+      "mean_vx": -0.005394788208191819,
+      "rmse": 0.387887286451841,
+      "enough_settled_samples": true,
+      "speed_mean_pass": false,
+      "rmse_pass": false
+    },
+    {
+      "reset_mode": "standing",
+      "command_vx": 0.1,
+      "collected": true,
+      "passed": true,
+      "no_falls": true,
+      "mean_vx": 0.09245794967423673,
+      "rmse": 0.04122001998977824,
+      "enough_settled_samples": true,
+      "speed_mean_pass": true,
+      "rmse_pass": true
+    },
+    {
+      "reset_mode": "standing",
+      "command_vx": 0.65,
+      "collected": true,
+      "passed": true,
+      "no_falls": true,
+      "mean_vx": 0.6516828893892693,
+      "rmse": 0.05448415212343478,
+      "enough_settled_samples": true,
+      "speed_mean_pass": true,
+      "rmse_pass": true
+    },
+    {
+      "reset_mode": "rsi",
+      "command_vx": -0.2,
+      "collected": true,
+      "passed": false,
+      "no_falls": true,
+      "mean_vx": 0.006911017506952501,
+      "rmse": 0.39892475512006176,
+      "enough_settled_samples": true,
+      "speed_mean_pass": false,
+      "rmse_pass": false
+    },
+    {
+      "reset_mode": "rsi",
+      "command_vx": 0.1,
+      "collected": true,
+      "passed": true,
+      "no_falls": true,
+      "mean_vx": 0.09274611134858181,
+      "rmse": 0.03787524144860439,
+      "enough_settled_samples": true,
+      "speed_mean_pass": true,
+      "rmse_pass": true
+    }
+  ],
+  "braking": {
+    "criterion": "Planar norm <=0.02m/s, abs wz <=0.03rad/s for 0.2s of consecutive control samples in one episode",
+    "required_samples": 10,
+    "stops": [
+      {
+        "stage": 3,
+        "stop_command_time_s": 30.00000142492354,
+        "entry_time_for_02s_hold_s": 2.5400001206435263,
+        "confirmation_time_s": 2.7200001291930676,
+        "qualifying_fraction": 0.748,
+        "never_confirmed": false
+      },
+      {
+        "stage": 5,
+        "stop_command_time_s": 50.000002374872565,
+        "entry_time_for_02s_hold_s": 2.7800001320429146,
+        "confirmation_time_s": 2.960000140592456,
+        "qualifying_fraction": 0.724,
+        "never_confirmed": false
+      }
+    ]
+  },
+  "gait_summary": {
+    "samples": 310,
+    "duration_s": 6.180000293534249,
+    "mean_vx": 0.6144238518130395,
+    "joints": {
+      "left_hip_pitch_joint": {
+        "mean_deg": -4.969118118286133,
+        "p95_p05_deg": 42.80835260561229,
+        "frequency": {
+          "dominant_hz": 1.129032204438364,
+          "peak_count": 6,
+          "median_period_s": 0.9200000436976552,
+          "cycle_hz": 1.0869564701114685
+        }
+      },
+      "left_knee_pitch_joint": {
+        "mean_deg": 18.699382781982422,
+        "p95_p05_deg": 59.41988734884076,
+        "frequency": {
+          "dominant_hz": 1.129032204438364,
+          "peak_count": 6,
+          "median_period_s": 0.9400000446476042,
+          "cycle_hz": 1.0638297367048415
+        }
+      },
+      "left_ankle_pitch_joint": {
+        "mean_deg": -6.299221515655518,
+        "p95_p05_deg": 27.705816726704455,
+        "frequency": {
+          "dominant_hz": 1.129032204438364,
+          "peak_count": 13,
+          "median_period_s": 0.4700000223238021,
+          "cycle_hz": 2.127659473409683
+        }
+      },
+      "right_hip_pitch_joint": {
+        "mean_deg": -12.831233978271484,
+        "p95_p05_deg": 25.25719717493908,
+        "frequency": {
+          "dominant_hz": 1.129032204438364,
+          "peak_count": 6,
+          "median_period_s": 0.9200000436976552,
+          "cycle_hz": 1.0869564701114685
+        }
+      },
+      "right_knee_pitch_joint": {
+        "mean_deg": 17.912691116333008,
+        "p95_p05_deg": 42.90351345833784,
+        "frequency": {
+          "dominant_hz": 1.129032204438364,
+          "peak_count": 6,
+          "median_period_s": 0.9400000446476042,
+          "cycle_hz": 1.0638297367048415
+        }
+      },
+      "right_ankle_pitch_joint": {
+        "mean_deg": -4.1517558097839355,
+        "p95_p05_deg": 25.196416452765217,
+        "frequency": {
+          "dominant_hz": 1.129032204438364,
+          "peak_count": 14,
+          "median_period_s": 0.36000001709908247,
+          "cycle_hz": 2.7777776458404193
+        }
+      }
+    },
+    "feet": {
+      "left": {
+        "sole_p05_m": -0.00016348548233509065,
+        "sole_p95_m": 0.03991509042680264,
+        "sole_vertical_span_m": 0.040078575909137736,
+        "sole_below_1cm_fraction": 0.8193548387096774,
+        "forward_excursion_p95_p05_m": 0.3227988736703992
+      },
+      "right": {
+        "sole_p05_m": -0.00015141125768423078,
+        "sole_p95_m": 0.029404219612479212,
+        "sole_vertical_span_m": 0.029555630870163444,
+        "sole_below_1cm_fraction": 0.8161290322580645,
+        "forward_excursion_p95_p05_m": 0.32861593216657636
+      }
+    },
+    "geometric_double_support_fraction": 0.635483870967742,
+    "same_leg_cycle_period_s": 0.9200000436976552,
+    "trunk_forward_distance_per_same_leg_cycle_m": 0.565269970516878
+  },
+  "foot_fk_max_error_m": 1.430511474609375e-06,
+  "cycle_diagnostic": {
+    "period_s": 0.9200000436976552,
+    "samples_per_cycle": 46,
+    "cycles": 6,
+    "omitted_samples": 34,
+    "mean_abs_cycle_average": {
+      "vy": 0.022164530654992923,
+      "wz": 0.02759339673059952
+    },
+    "cycle_averages": {
+      "vy": [
+        -0.014027257358817302,
+        -0.023625294111021187,
+        -0.023199433364662462,
+        -0.020269424958235544,
+        -0.024917125875261896,
+        -0.026948648261959137
+      ],
+      "wz": [
+        -0.01678147636171754,
+        -0.02936557785142213,
+        -0.0240700275576471,
+        -0.03800203747358983,
+        -0.037975260846154844,
+        -0.019366000293065674
+      ]
+    },
+    "root_yaw_change_deg": -3.0255672195393237,
+    "definition": "Body-frame rates averaged over nonoverlapping complete measured-cycle bins"
+  }
+}

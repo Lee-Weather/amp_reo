@@ -1,0 +1,18 @@
+{
+  "status": "not_accepted",
+  "checkpoint_sha256": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+  "video_sha256": "0e2609f4d6d2b051fe047d8c5dd90ecef6957d869cd07e168590ab415e685cc9",
+  "review_scope": "Six full-scene samples at 5/15/25/35/45/55s and 12 cropped frames at 24.00-25.32s; not frame-by-frame video review",
+  "observations": [
+    "Sampled frames show alternating leg motion and a persistent crouched/forward-leaning posture; naturalness is not established from the sampled images alone.",
+    "Independent CSV gates show both braking confirmations exceed 2 seconds; full numeric acceptance fails.",
+    "All six auxiliary checks are collected; standing/RSI backward commands fail the required speed tracking despite zero non-timeout terminations."
+  ],
+  "evidence": [
+    "replay_contact_sheet.png",
+    "gait_contact_sheet.png",
+    "standing_analysis.json",
+    "gait_comparison.json",
+    "braking_analysis.json"
+  ]
+}
