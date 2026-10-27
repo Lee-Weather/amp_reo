@@ -26,10 +26,10 @@
   "status": {
     "phase": "running",
     "process_alive": true,
-    "iteration": 9101,
+    "iteration": 9491,
     "target_iteration": 10000,
-    "eta_seconds": 3336.5,
-    "new_timesteps": 9928704,
+    "eta_seconds": 2027.5,
+    "new_timesteps": 48267264,
     "restored_checkpoint": null,
     "saved_checkpoints": [
       {
@@ -37,23 +37,41 @@
         "path": "/home/robot/czy/exp1/exp_20261027_164846/logs/x1_amp_exp17/exported_data/2026-10-27_16-51-36exp1.7/model_9100.pt",
         "bytes": 10777032,
         "sha256": "578a72bea116c4e2f5656c4767569bdd6636063562050e5670efb63f4ae13879"
+      },
+      {
+        "iteration": 9200,
+        "path": "/home/robot/czy/exp1/exp_20261027_164846/logs/x1_amp_exp17/exported_data/2026-10-27_16-51-36exp1.7/model_9200.pt",
+        "bytes": 10777032,
+        "sha256": "ccc43c8cdde7926fa215762b046c28fb503dce4be2d19b3f0a248d371f7b2d8d"
+      },
+      {
+        "iteration": 9300,
+        "path": "/home/robot/czy/exp1/exp_20261027_164846/logs/x1_amp_exp17/exported_data/2026-10-27_16-51-36exp1.7/model_9300.pt",
+        "bytes": 10777032,
+        "sha256": "14ae3449a2ece7db2fa4ecf5ef5ff0a6cf77f066dc795be24906e1457cf3d8ee"
+      },
+      {
+        "iteration": 9400,
+        "path": "/home/robot/czy/exp1/exp_20261027_164846/logs/x1_amp_exp17/exported_data/2026-10-27_16-51-36exp1.7/model_9400.pt",
+        "bytes": 10777032,
+        "sha256": "f979250e23b7180345c4576e82789b0f5eb3e994287dfbbd0b90b2a117f9ae3b"
       }
     ],
     "log_tail": [
-      "     Tracking/lateral_abs_velocity: 0.045874",
-      "     Tracking/linear_tolerance_m_s: 0.145937",
-      "      Tracking/moving_abs_yaw_rate: 0.220431",
-      "Tracking/slow_forward_abs_vx_error: 0.058504",
-      "          Tracking/slow_forward_vx: 0.124577",
-      "        Tracking/zero_abs_vx_error: 0.039518",
-      "                  Tracking/zero_vx: 0.018020",
+      "     Tracking/lateral_abs_velocity: 0.041010",
+      "     Tracking/linear_tolerance_m_s: 0.142795",
+      "      Tracking/moving_abs_yaw_rate: 0.209902",
+      "Tracking/slow_forward_abs_vx_error: 0.052753",
+      "          Tracking/slow_forward_vx: 0.126032",
+      "        Tracking/zero_abs_vx_error: 0.034043",
+      "                  Tracking/zero_vx: 0.009803",
       "--------------------------------------------------------------------------------",
-      "                   Total timesteps: 9928704",
-      "                    Iteration time: 3.84s",
-      "                        Total time: 374.85s",
-      "                               ETA: 3336.5s"
+      "                   Total timesteps: 48267264",
+      "                    Iteration time: 4.13s",
+      "                        Total time: 1955.85s",
+      "                               ETA: 2027.5s"
     ],
-    "observed_at": "2026-10-27T16:55:50.141867+08:00"
+    "observed_at": "2026-10-27T17:23:10.543307+08:00"
   },
   "verified_checkpoints": {
     "9100": {
@@ -80,6 +98,31 @@
       },
       "normalizer_count_increased": true,
       "verified_at": "2026-10-27T16:57:10.405823+08:00"
+    },
+    "9400": {
+      "iteration": 9400,
+      "sha256": "f979250e23b7180345c4576e82789b0f5eb3e994287dfbbd0b90b2a117f9ae3b",
+      "bytes": 10777032,
+      "path": "czy/exp1/exp1.7_evaluation/interim/model_9400.pt",
+      "metadata_matches_source": true,
+      "weights_finite": true,
+      "original_training_origin_retained": false,
+      "training_mode": "warm_start_fresh_optimizers",
+      "training_origin_verified": true,
+      "optimizer_counters": {
+        "optimizer_state_dict": {
+          "minimum": 8000.0,
+          "maximum": 8000.0,
+          "state_count": 17
+        },
+        "disc_optimizer_state_dict": {
+          "minimum": 1600.0,
+          "maximum": 1600.0,
+          "state_count": 6
+        }
+      },
+      "normalizer_count_increased": true,
+      "verified_at": "2026-10-27T17:19:05.302216+08:00"
     }
   }
 }
