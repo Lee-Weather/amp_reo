@@ -314,6 +314,16 @@ class AMPOnPolicyRunner:
             self.disc_optimizer.load_state_dict(state["disc_optimizer_state_dict"])
         self.current_learning_iteration = state["iter"]
         self.training_origin = state.get("training_origin")
+        if load_optimizer:
+            optimizer_steps = {}
+            for name, optimizer in (("actor_critic", self.optimizer), ("discriminator", self.disc_optimizer)):
+                steps = [float(value["step"]) for value in optimizer.state.values() if "step" in value]
+                optimizer_steps[name] = {"state_count": len(optimizer.state),
+                                         "minimum_step": min(steps) if steps else None,
+                                         "maximum_step": max(steps) if steps else None}
+            print("CHECKPOINT_RESTORED "+json.dumps({"iteration": self.current_learning_iteration,
+                  "path": os.path.abspath(path), "optimizers": optimizer_steps,
+                  "learning_rate": self.optimizer.param_groups[0]["lr"]}), flush=True)
         return state.get("infos")
 
     def warm_start(self, path, expected_sha256=None):
