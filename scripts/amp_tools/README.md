@@ -84,3 +84,5 @@ python scripts/amp_tools/analyze_standing.py --csv czy/data/exp1.3/isaac_diag.cs
 exp1.4独立任务`x1_amp_exp14`：每次重采样20%精确零指令，0.5秒渐增静止代价，真实低运动专家混合与指令匹配RSI；继承29DOF/50Hz和原PPO KL保护。正式热启动以exp1.3/model_6000为源，初始学习率经GPU验证修正为1e-5，双方优化器重建；新增1000轮到model_7000。状态文件为czy/exp1/exp1.4_training.json。
 
 `--warm_start`与`--resume`互斥；前者继承权重和iter、新建优化器，后者恢复完整优化器状态。指定`--warm_start_sha256`核对源模型；云端临时URL回退只保存在运行参数内，日志与状态文件必须脱敏。
+
+云端固定checkpoint目录：训练可显式传`--checkpoint_dir=/workspace/amp_reo/logs/x1_amp_exp14/exported_data/upload_check`，并将`--warm_start`指向同目录的model_6000.pt。平台`checkPointMountPath`也设为对应的仓库相对目录。该目录只允许已有输入模型，拒绝覆盖既有训练结果；不要把不同任务都输出到同一个旧目录。CHECKPOINT_INPUT_READY为输入副本事件，CHECKPOINT_SAVED为本地保存，只有实际模型列表和下载验证才证明上传成功。

@@ -164,6 +164,8 @@ def update_cfg_from_args(env_cfg, cfg_train, args):
 
 def get_args():
     custom_parameters = [
+        {"name": "--checkpoint_dir", "type": str,
+         "help": "Fixed fresh AMP log/checkpoint directory; warm_start must reside in this directory"},
         {"name": "--warm_start", "type": str,
          "help": "AMP checkpoint path: retain weights/iteration, reset both optimizers"},
         {"name": "--warm_start_sha256", "type": str,

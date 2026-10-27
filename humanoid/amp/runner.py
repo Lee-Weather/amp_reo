@@ -294,6 +294,12 @@ class AMPOnPolicyRunner:
                     "disc_optimizer_state_dict": self.disc_optimizer.state_dict(),
                     "iter": self.current_learning_iteration, "metadata": self._metadata(),
                     "infos": infos, "config": self.config, "training_origin": self.training_origin}, path)
+        # Local persistence and SDK upload are separate outcomes. Log proof of
+        # the former so a missing platform artifact can be traced precisely.
+        with open(path, "rb") as stream:
+            digest = hashlib.sha256(stream.read()).hexdigest()
+        print("CHECKPOINT_SAVED "+json.dumps({"iteration": self.current_learning_iteration,
+              "path": os.path.abspath(path), "bytes": os.path.getsize(path), "sha256": digest}), flush=True)
 
     def load(self, path, load_optimizer=True):
         state = torch.load(path, map_location=self.device)

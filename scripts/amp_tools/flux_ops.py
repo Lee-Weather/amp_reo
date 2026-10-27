@@ -25,6 +25,7 @@ def sanitize(value):
     if isinstance(value, str):
         value = re.sub(r"(?:gh[pousr]_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+|gm_sk_[A-Za-z0-9_-]+)", "[REDACTED]", value)
         value = re.sub(r"https?://[^\s\"<>]+\?[^\s\"<>]+", "[SIGNED_URL_REDACTED]", value)
+        value = re.sub(r"(?i)https?%3a[^\s\"<>]+", "[ENCODED_URL_REDACTED]", value)
         value = re.sub(r"(--(?:warm_start_url_b64|checkpoint_url_b64)(?:=|\s+))\S+", r"\1[REDACTED]", value)
     return value
 

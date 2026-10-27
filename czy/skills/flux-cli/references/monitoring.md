@@ -26,6 +26,8 @@ play 任务即使产物成功也可能是 `6`，因此终态必须结合日志�
 3. `flux task logs --raw --no-request-log` 获取最新迭代、速度和 ETA；
 4. `flux task model list` 获取 checkpoint 与回放产物。
 
+本项目exp1.4曾出现迭代完成但模型列表为空。服务器GPU训练/恢复预检不能替代云端SDK上传验证；后续须核对首个实际checkpoint的本地保存日志及平台`model list`条目，两者都存在才算模型交付链路已验证。`CHECKPOINT_SAVED`仅证明本地保存，不能当作上传成功。发现平台缺失时，记录绝对路径、大小、hash和SDK发现/上传日志，保留任务，不自动重跑长训。
+
 报告至少包含：
 
 - 当前状态；

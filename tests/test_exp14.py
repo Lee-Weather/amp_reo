@@ -13,7 +13,7 @@ import warnings
 
 import torch
 
-from humanoid.amp.checkpoint import prepare_warm_start
+from humanoid.amp.checkpoint import checkpoint_directory, prepare_warm_start
 from humanoid.amp.motion import MotionLibrary, quat_inverse_rotate
 from humanoid.amp.runner import AMPOnPolicyRunner
 from humanoid.amp.stationary import CommandMotionSampler, sample_commands
@@ -171,6 +171,71 @@ class Exp14Tests(unittest.TestCase):
                     prepare_warm_start(args)
             self.assertNotIn("PRIVATE", str(failure.exception))
             self.assertFalse(Path(args.warm_start).exists())
+
+    def test_warm_start_automatically_saves_in_dotted_run_directory(self):
+        config = adaptive_config()
+        source = AMPOnPolicyRunner(FakeEnv(self.lib), config)
+        source.current_learning_iteration = 6000
+        with tempfile.TemporaryDirectory() as temporary:
+            initial = Path(temporary)/"model_6000.pt"
+            output = Path(temporary)/"logs"/"exp1.4"
+            with contextlib.redirect_stdout(io.StringIO()):
+                source.save(initial)
+                # Check checkpoint I/O independently of the optional local
+                # TensorBoard installation; cloud has the real dependency.
+                runner = AMPOnPolicyRunner(FakeEnv(self.lib), config)
+                output.mkdir(parents=True)
+                runner.log_dir = str(output)
+                runner.warm_start(initial)
+            log = io.StringIO()
+            with contextlib.redirect_stdout(log):
+                runner.learn(1)
+            checkpoint = output/"model_6001.pt"
+            saved = torch.load(checkpoint, map_location="cpu", weights_only=False)
+            self.assertEqual(saved["iter"], 6001)
+            self.assertEqual(saved["training_origin"]["source_iteration"], 6000)
+            self.assertGreater(checkpoint.stat().st_size, 0)
+            marker = [line for line in log.getvalue().splitlines() if line.startswith("CHECKPOINT_SAVED ")][-1]
+            import json
+            evidence = json.loads(marker.split(" ", 1)[1])
+            self.assertEqual(evidence["sha256"], hashlib.sha256(checkpoint.read_bytes()).hexdigest())
+            self.assertEqual(evidence["bytes"], checkpoint.stat().st_size)
+
+    def test_fixed_checkpoint_directory_co_locates_and_preserves_existing_runs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)/"fixed"
+            directory.mkdir()
+            initial = directory/"model_6000.pt"
+            initial.write_bytes(b"input checkpoint")
+            args = SimpleNamespace(checkpoint_dir=str(directory), warm_start=str(initial), resume=False)
+            self.assertEqual(checkpoint_directory(args, "unused"), str(directory.resolve()))
+            args.warm_start = str(Path(temporary)/"model_6000.pt")
+            with self.assertRaisesRegex(ValueError, "inside checkpoint_dir"):
+                checkpoint_directory(args, "unused")
+            args.warm_start = str(initial)
+            old = directory/"model_7000.pt"
+            old.write_bytes(b"existing result")
+            with self.assertRaisesRegex(FileExistsError, "already contains"):
+                checkpoint_directory(args, "unused")
+            self.assertEqual(old.read_bytes(), b"existing result")
+
+    def test_download_exposes_pt_only_in_final_checkpoint_directory(self):
+        payload = b"download test"
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)/"fixed"
+            args = SimpleNamespace(checkpoint_dir=str(directory), warm_start=str(directory/"model_6000.pt"),
+                                   warm_start_url_b64=base64.urlsafe_b64encode(b"https://example.invalid/model").decode(),
+                                   warm_start_sha256=hashlib.sha256(payload).hexdigest())
+            class ObservedResponse(io.BytesIO):
+                def read(self, size=-1):
+                    self_no_pt = list(directory.rglob("*.pt"))
+                    if self_no_pt:
+                        raise AssertionError("SDK could discover a temporary PT before validation")
+                    return super().read(size)
+            with patch("urllib.request.urlopen", return_value=ObservedResponse(payload)):
+                prepare_warm_start(args)
+            self.assertEqual(list(directory.rglob("*.pt")), [directory/"model_6000.pt"])
+            self.assertEqual((directory/"model_6000.pt").read_bytes(), payload)
 
 
 if __name__ == "__main__":

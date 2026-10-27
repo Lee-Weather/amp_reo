@@ -153,6 +153,12 @@ class TaskRegistry():
         all_cfg = {**train_cfg_dict, **env_cfg_dict}
         
         runner_name = train_cfg_dict["runner_class_name"]
+        if getattr(args, "checkpoint_dir", None):
+            if runner_name != "AMPOnPolicyRunner":
+                raise ValueError("checkpoint_dir is supported for AMP training")
+            from humanoid.amp.checkpoint import checkpoint_directory
+            log_dir = checkpoint_directory(args, log_dir)
+            print("CHECKPOINT_DIRECTORY "+log_dir, flush=True)
         if runner_name == "AMPOnPolicyRunner":
             from humanoid.amp.runner import AMPOnPolicyRunner
             runner_class = AMPOnPolicyRunner

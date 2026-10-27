@@ -1,0 +1,35 @@
+{
+  "experiment": "exp1.4",
+  "source_task": "TASK_20261027_120",
+  "sdk": {
+    "version": "1.0.10",
+    "source_url": "https://argo-sdk-prod.oss-cn-beijing.aliyuncs.com/tmp/gradmotion.tar.gz",
+    "downloaded_archive_sha256": "7be83266bbfd40fbd3518fe6ed51d22250442d348a52eab6d5b33a9d4af431d1",
+    "runtime_archive_sha256_available": false
+  },
+  "checks": {
+    "gm_run_forwards_training_flags": true,
+    "dotted_run_directory_pt_suffix_recognized": true,
+    "sdk_locks_first_detected_pt_directory": true,
+    "sdk_lock_reproduced_with_real_handler": true,
+    "warm_start_auto_save_in_dotted_directory_cpu_regression": "passed",
+    "cpu_regression_total": 28
+  },
+  "runtime_log": {
+    "warm_start_verified": true,
+    "last_iteration": [
+      7000,
+      7000
+    ],
+    "found_pt_directory_mentions": 0,
+    "found_pt_file_mentions": 0,
+    "new_checkpoint_names_present": false
+  },
+  "conclusion": "No confirmed training-argument parsing error. SDK first-directory behavior is a verified risk, not the proven root cause: this runtime log contains no PT-directory discovery at all. Local checkpoint persistence was not logged in that run.",
+  "changes": [
+    "Added CHECKPOINT_SAVED receipt with absolute path, byte count and SHA256 after successful torch.save. No training behavior or hyperparameters changed."
+  ],
+  "missing_validation": "Previous GPU preflight verified local training and restore, not the cloud SDK artifact upload.",
+  "next_validation": "For any future run, verify the first local checkpoint receipt and its platform model-list entry before considering cloud persistence verified.",
+  "new_cloud_tasks_started": false
+}
