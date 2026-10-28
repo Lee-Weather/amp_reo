@@ -8,6 +8,7 @@ from pathlib import Path
 import tempfile
 from types import SimpleNamespace
 import unittest
+import weakref
 
 import torch
 from torch import nn
@@ -193,6 +194,22 @@ class Exp110Tests(unittest.TestCase):
             run = Path(tmp)/"run"; run.mkdir()
             (run/"policy.jit").touch(); (run/"policy.jit.json").touch()
             self.assertEqual(ns["get_load_path"](tmp), str(run/"policy.jit"))
+
+    def test_completed_rollout_released_before_allocating_next_history_buffer(self):
+        runner = AMPOnPolicyRunner(DHFakeEnv(self.lib), dh_config())
+        original = runner.collect_rollout
+        previous = []
+        def collect():
+            self.assertTrue(all(ref() is None for ref in previous),
+                            "Previous rollout still alive when next rollout allocates")
+            batch = original()
+            previous[:] = [weakref.ref(value) for value in batch.values()]
+            return batch
+        runner.collect_rollout = collect
+        with contextlib.redirect_stdout(io.StringIO()):
+            runner.learn(2)
+        self.assertEqual(runner.current_learning_iteration, 2)
+        self.assertTrue(all(ref() is None for ref in previous))
 
 
 if __name__ == "__main__":

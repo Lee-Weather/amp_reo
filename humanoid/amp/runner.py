@@ -329,6 +329,10 @@ class AMPOnPolicyRunner:
             learn_time = time.time()-learn_start
             metrics["steps_per_second"] = len(batch["obs"])/(collection_time+learn_time)
             self.training_log.log(self, metrics, collection_time, learn_time, end, first_iteration)
+            # The next collect_rollout() allocates a new batch before assignment
+            # releases the old one. Drop it now to avoid two full history buffers
+            # coexisting (each DH rollout is 9.28 GiB at 4096x96x6336).
+            del batch
             if self.log_dir and self.current_learning_iteration % self.cfg["save_interval"] == 0:
                 self.save(os.path.join(self.log_dir, "model_{}.pt".format(self.current_learning_iteration)))
         if self.log_dir:
