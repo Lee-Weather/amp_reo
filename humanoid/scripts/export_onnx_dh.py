@@ -51,7 +51,10 @@ def get_load_path(root, load_run=-1, checkpoint=-1):
     else:
         load_run = os.path.join(root, load_run)
 
-    models = [file for file in os.listdir(load_run)]
+    models = [file for file in os.listdir(load_run)
+              if file.endswith((".jit", ".pt")) and os.path.isfile(os.path.join(load_run, file))]
+    if not models:
+        raise ValueError("No exported JIT policy in " + str(load_run))
     models.sort(key=lambda m: "{0:0>15}".format(m))
     model = models[-1]
 

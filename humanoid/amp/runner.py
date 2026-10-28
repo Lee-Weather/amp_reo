@@ -9,6 +9,7 @@ from torch import nn
 from torch.distributions import Normal, kl_divergence
 
 from .models import ActorCritic, Discriminator, ReplayBuffer
+from .dh_models import ActorCriticDHAMP
 from .logging import TrainingLog
 
 
@@ -25,8 +26,27 @@ class AMPOnPolicyRunner:
             settings["command_index"] = env.num_obs-env.cfg.env.num_single_obs
             settings["command_threshold"] = settings.pop("speed_threshold")*env.obs_scales.lin_vel
             policy_cfg["motion_exploration"] = settings
-        self.actor_critic = ActorCritic(env.num_obs, env.num_privileged_obs, env.num_actions,
-                                        **policy_cfg).to(device)
+        policy_name = self.cfg.get("policy_class_name", "ActorCritic")
+        self.state_estimator_obs_index = None
+        if policy_name == "ActorCriticDHAMP":
+            policy_cfg.update(num_short_obs=env.cfg.env.short_frame_stack*env.cfg.env.num_single_obs,
+                              num_proprio_obs=env.cfg.env.num_single_obs)
+            if policy_cfg["in_channels"] != env.cfg.env.frame_stack:
+                raise ValueError("DH CNN channels must match the environment frame_stack")
+            self.state_estimator_obs_index = self.alg_cfg.get("state_estimator_obs_index")
+            if (self.state_estimator_obs_index != env.cfg.env.num_single_obs
+                    or self.state_estimator_obs_index+3 != env.num_privileged_obs):
+                raise ValueError("DH velocity supervision must use the critic's appended scaled body velocity")
+            coefficient = self.alg_cfg.get("state_estimator_loss_coef", 1.)
+            if not 0 < coefficient < float("inf"):
+                raise ValueError("DH state_estimator_loss_coef must be finite and positive")
+            policy_class = ActorCriticDHAMP
+        elif policy_name == "ActorCritic":
+            policy_class = ActorCritic
+        else:
+            raise ValueError("Unknown AMP policy: " + policy_name)
+        self.actor_critic = policy_class(env.num_obs, env.num_privileged_obs, env.num_actions,
+                                         **policy_cfg).to(device)
         lib = env.motion_library
         self.discriminator = Discriminator(lib.feature_dim, lib.history_steps,
                                             self.disc_cfg["hidden_dims"]).to(device)
@@ -141,6 +161,8 @@ class AMPOnPolicyRunner:
         if n < cfg["num_mini_batches"]:
             raise ValueError("Rollout smaller than num_mini_batches")
         totals, count = {"value_loss": 0., "surrogate_loss": 0., "entropy": 0., "kl": 0.}, 0
+        if self.state_estimator_obs_index is not None:
+            totals["state_estimator_loss"] = 0.
         for _ in range(cfg["num_learning_epochs"]):
             for ids in torch.tensor_split(torch.randperm(n, device=self.device), cfg["num_mini_batches"]):
                 distribution = model.distribution(batch["obs"][ids])
@@ -156,6 +178,10 @@ class AMPOnPolicyRunner:
                                              (clipped-batch["returns"][ids]).square()).mean()
                 entropy = distribution.entropy().sum(-1).mean()
                 loss = surrogate+cfg["value_loss_coef"]*value_loss-cfg["entropy_coef"]*entropy
+                estimator_loss = self._state_estimator_loss(batch["obs"][ids], batch["critic_obs"][ids])
+                if estimator_loss is not None:
+                    loss = loss+cfg.get("state_estimator_loss_coef", 1.)*estimator_loss
+                    totals["state_estimator_loss"] += estimator_loss.item()
                 if not torch.isfinite(loss):
                     raise FloatingPointError("Non-finite PPO loss")
                 self.optimizer.zero_grad()
@@ -163,12 +189,19 @@ class AMPOnPolicyRunner:
                 nn.utils.clip_grad_norm_(model.parameters(), cfg["max_grad_norm"])
                 self.optimizer.step()
                 kl = ((ratio-1)-log_ratio).mean().detach().clamp(min=0)
-                for key, x in zip(totals, (value_loss, surrogate, entropy, kl)):
+                for key, x in zip(("value_loss", "surrogate_loss", "entropy", "kl"), (value_loss, surrogate, entropy, kl)):
                     totals[key] += x.item()
                 count += 1
             if cfg.get("desired_kl") and kl > 1.5*cfg["desired_kl"]:
                 break
         return {key: x/count for key, x in totals.items()}
+
+    def _state_estimator_loss(self, obs, critic_obs):
+        if self.state_estimator_obs_index is None:
+            return None
+        index = self.state_estimator_obs_index
+        target = critic_obs[:, index:index+3].detach()
+        return (self.actor_critic.estimate_velocity(obs)-target).square().mean()
 
     def _update_policy_minibatch(self, batch):
         """Check exact KL(old || current) before each update; adapt LR once.
@@ -182,6 +215,8 @@ class AMPOnPolicyRunner:
             raise ValueError("Rollout smaller than num_mini_batches")
         target = cfg["desired_kl"]
         totals = {"value_loss": 0., "surrogate_loss": 0., "entropy": 0.}
+        if self.state_estimator_obs_index is not None:
+            totals["state_estimator_loss"] = 0.
         count, maximum_kl, stopped = 0, 0., False
         for _ in range(cfg["num_learning_epochs"]):
             for ids in torch.tensor_split(torch.randperm(n, device=self.device), cfg["num_mini_batches"]):
@@ -206,13 +241,17 @@ class AMPOnPolicyRunner:
                                              (clipped-batch["returns"][ids]).square()).mean()
                 entropy = distribution.entropy().sum(-1).mean()
                 loss = surrogate+cfg["value_loss_coef"]*value_loss-cfg["entropy_coef"]*entropy
+                estimator_loss = self._state_estimator_loss(batch["obs"][ids], batch["critic_obs"][ids])
+                if estimator_loss is not None:
+                    loss = loss+cfg.get("state_estimator_loss_coef", 1.)*estimator_loss
+                    totals["state_estimator_loss"] += estimator_loss.item()
                 if not torch.isfinite(loss):
                     raise FloatingPointError("Non-finite PPO loss")
                 self.optimizer.zero_grad()
                 loss.backward()
                 nn.utils.clip_grad_norm_(model.parameters(), cfg["max_grad_norm"])
                 self.optimizer.step()
-                for key, value in zip(totals, (value_loss, surrogate, entropy)):
+                for key, value in zip(("value_loss", "surrogate_loss", "entropy"), (value_loss, surrogate, entropy)):
                     totals[key] += value.item()
                 count += 1
             if stopped:
@@ -306,6 +345,14 @@ class AMPOnPolicyRunner:
                 "action_scale": self.env.cfg.control.action_scale}
         if hasattr(self.env, "checkpoint_control_metadata"):
             metadata.update(schema_version=2, control=self.env.checkpoint_control_metadata())
+        if self.state_estimator_obs_index is not None:
+            metadata.update(schema_version=3, policy={
+                "architecture": "ActorCriticDHAMP", "frame_stack": self.env.cfg.env.frame_stack,
+                "short_frame_stack": self.env.cfg.env.short_frame_stack,
+                "num_single_obs": self.env.cfg.env.num_single_obs,
+                "history_order": "oldest_to_newest",
+                "critic_velocity_index": self.state_estimator_obs_index,
+                "estimated_velocity_units": "body_linear_velocity_times_obs_scale_lin_vel"})
         return metadata
 
     def save(self, path, infos=None):
@@ -325,7 +372,7 @@ class AMPOnPolicyRunner:
     def load(self, path, load_optimizer=True):
         state = torch.load(path, map_location=self.device)
         if state.get("metadata") != self._metadata():
-            raise ValueError("Checkpoint robot/observation conventions do not match x1_amp")
+            raise ValueError("Checkpoint robot/observation/policy conventions do not match this AMP task; MLP and DH checkpoints cannot be resumed interchangeably")
         self.actor_critic.load_state_dict(state["model_state_dict"])
         self.discriminator.load_state_dict(state["discriminator_state_dict"])
         if load_optimizer:

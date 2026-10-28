@@ -15,9 +15,9 @@ def mlp(inputs, hidden, outputs):
 
 class ActorCritic(nn.Module):
     def __init__(self, num_obs, num_critic_obs, num_actions, actor_hidden_dims,
-                 critic_hidden_dims, init_noise_std, motion_exploration=None):
+                 critic_hidden_dims, init_noise_std, motion_exploration=None, actor_input_dim=None):
         super().__init__()
-        self.actor = mlp(num_obs, actor_hidden_dims, num_actions)
+        self.actor = mlp(num_obs if actor_input_dim is None else actor_input_dim, actor_hidden_dims, num_actions)
         self.critic = mlp(num_critic_obs, critic_hidden_dims, 1)
         self.log_std = nn.Parameter(torch.full((num_actions,), float(init_noise_std)).log())
         self.motion_std_floor = 0.
@@ -39,7 +39,7 @@ class ActorCritic(nn.Module):
         self.register_buffer("motion_std_mask", mask, persistent=False)
 
     def distribution(self, obs):
-        mean = self.actor(obs)
+        mean = self.act_inference(obs)
         std = self.log_std.clamp(-5, 2).exp().expand_as(mean)
         if self.motion_std_floor > 0:
             moving = obs[..., self.motion_command_index].abs().gt(self.motion_command_threshold).unsqueeze(-1)
@@ -48,6 +48,10 @@ class ActorCritic(nn.Module):
 
     def act_inference(self, obs):
         return self.actor(obs)
+
+    def get_policy_module(self):
+        """The complete deterministic inference graph, without training heads."""
+        return self.actor
 
     def evaluate(self, obs):
         return self.critic(obs).squeeze(-1)

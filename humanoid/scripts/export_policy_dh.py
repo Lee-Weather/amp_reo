@@ -71,28 +71,47 @@ def export_policy(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     
     train_cfg_dict = class_to_dict(train_cfg)
-    policy_cfg = train_cfg_dict["policy"]
+    policy_cfg = dict(train_cfg_dict["policy"])
     num_critic_obs = env_cfg.env.num_privileged_obs
     if env_cfg.terrain.measure_heights:
         num_critic_obs = env_cfg.env.c_frame_stack * (env_cfg.env.single_num_privileged_obs +env_cfg.terrain.num_height)
     num_short_obs = env_cfg.env.short_frame_stack * env_cfg.env.num_single_obs
-    actor_critic_class = eval(train_cfg_dict["runner"]["policy_class_name"])
-    actor_critic: ActorCriticDH = actor_critic_class(
-        num_short_obs, env_cfg.env.num_single_obs, num_critic_obs, env_cfg.env.num_actions, **policy_cfg
-    )
+    is_amp = train_cfg_dict.get("runner_class_name") == "AMPOnPolicyRunner"
+    if is_amp:
+        from humanoid.amp.models import ActorCritic
+        from humanoid.amp.dh_models import ActorCriticDHAMP
+        # Exploration changes sampling variance only, not deterministic inference.
+        policy_cfg.pop("motion_exploration", None)
+        policy_name = train_cfg_dict["runner"]["policy_class_name"]
+        if policy_name == "ActorCriticDHAMP":
+            policy_class = ActorCriticDHAMP
+            policy_cfg.update(num_short_obs=num_short_obs, num_proprio_obs=env_cfg.env.num_single_obs)
+        elif policy_name == "ActorCritic":
+            policy_class = ActorCritic
+        else:
+            raise ValueError("Unknown AMP policy: " + policy_name)
+        actor_critic = policy_class(env_cfg.env.num_observations, num_critic_obs,
+                                   env_cfg.env.num_actions, **policy_cfg)
+    else:
+        actor_critic_class = eval(train_cfg_dict["runner"]["policy_class_name"])
+        actor_critic = actor_critic_class(
+            num_short_obs, env_cfg.env.num_single_obs, num_critic_obs, env_cfg.env.num_actions, **policy_cfg)
     # load policy
     log_root_encoder = os.path.join(LEGGED_GYM_ROOT_DIR, 'logs', train_cfg.runner.experiment_name, 'exported_data')
     model_path = get_load_path(log_root_encoder, load_run=args.load_run, checkpoint=args.checkpoint)
     print("Load model from:", model_path)
-    loaded_dict = torch.load(model_path)
+    loaded_dict = torch.load(model_path, map_location="cpu")
     actor_critic.load_state_dict(loaded_dict["model_state_dict"])
     
-    exported_policy = ExportedDH(actor_critic.actor,
-                                 actor_critic.long_history,
-                                 actor_critic.state_estimator,
-                                 num_short_obs,
-                                 policy_cfg["in_channels"],
-                                 env_cfg.env.num_single_obs)
+    if is_amp:
+        exported_policy = copy.deepcopy(actor_critic.get_policy_module()).cpu().eval()
+    else:
+        exported_policy = ExportedDH(actor_critic.actor,
+                                     actor_critic.long_history,
+                                     actor_critic.state_estimator,
+                                     num_short_obs,
+                                     policy_cfg["in_channels"],
+                                     env_cfg.env.num_single_obs)
 
     current_date_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     
@@ -102,9 +121,12 @@ def export_policy(args):
     os.makedirs(root_path, exist_ok=True)
     dir_name = "policy_dh.jit"
     path = os.path.join(root_path, dir_name)
-    exported_policy.export(path)
+    if is_amp:
+        torch.jit.script(exported_policy).save(path)
+    else:
+        exported_policy.export(path)
     print("Export policy to:", path)
-    
+
 if __name__ == '__main__':
     EXPORT_POLICY = True
     args = get_args()
@@ -113,4 +135,3 @@ if __name__ == '__main__':
     if args.checkpoint == None:
         args.checkpoint = -1
     export_policy(args)
-    

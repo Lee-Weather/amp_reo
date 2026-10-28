@@ -63,6 +63,8 @@ class TrainingLog:
         # Preserve existing AMP curves. episode_length is the historical current
         # age metric; the unambiguous name below should be used for new charts.
         scalar.update(("AMP/" + key, value) for key, value in metrics.items())
+        if "state_estimator_loss" in metrics:
+            scalar["Loss/state_estimator"] = metrics["state_estimator_loss"]
         scalar["AMP/current_episode_age"] = metrics["episode_length"]
         scalar.update({key: (total/self.metric_counts[key]).item() for key, total in self.metric_sums.items()})
         episode_values = {}
@@ -81,9 +83,17 @@ class TrainingLog:
             if self.completed_lengths:
                 for name in ("mean_reward", "mean_episode_length"):
                     runner.writer.add_scalar("Train/" + name + "/time", scalar["Train/" + name], self.total_time)
-            for index, (mean, std) in enumerate(zip(self.obs_mean.tolist(), self.obs_std.tolist())):
-                runner.writer.add_scalar("Observation/obs_mean_" + str(index), mean, iteration)
-                runner.writer.add_scalar("Observation/obs_std_" + str(index), std, iteration)
+            mean, std = self.obs_mean, self.obs_std
+            prefix = "Observation/obs_"
+            if getattr(runner, "state_estimator_obs_index", None) is not None:
+                # Historical copies would create 12,672 per-feature curves for
+                # DH. Keep the same statistics for the newest 96-D frame only.
+                width = runner.env.cfg.env.num_single_obs
+                mean, std = mean[-width:], std[-width:]
+                prefix = "Observation/current_frame_"
+            for index, (mean_value, std_value) in enumerate(zip(mean.tolist(), std.tolist())):
+                runner.writer.add_scalar(prefix+"mean_"+str(index), mean_value, iteration)
+                runner.writer.add_scalar(prefix+"std_"+str(index), std_value, iteration)
         lines = ["#" * 80, " Learning iteration {}/{} ".format(iteration, end).center(80), ""]
         def line(label, value):
             lines.append("{:>35} {}".format(label + ":", value))
@@ -102,7 +112,7 @@ class TrainingLog:
             line("Mean episode style reward", "{:.4f}".format(scalar["AMP/mean_episode_style_reward"]))
         for key in ("task_reward", "style_reward", "disc_loss", "grad_penalty", "expert_score", "policy_score", "entropy", "kl", "done_fraction"):
             line("AMP " + key, "{:.6f}".format(metrics[key]))
-        for key in ("style_score", "kl_max", "kl_early_stop", "policy_updates"):
+        for key in ("style_score", "kl_max", "kl_early_stop", "policy_updates", "state_estimator_loss"):
             if key in metrics:
                 line("AMP " + key, "{:.6f}".format(metrics[key]))
         line("PPO learning rate", "{:.8f}".format(runner.optimizer.param_groups[0]["lr"]))
