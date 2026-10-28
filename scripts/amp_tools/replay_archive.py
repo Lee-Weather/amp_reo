@@ -22,7 +22,7 @@ def main():
     parser.add_argument("--experiment", required=True)
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--resource_source", required=True)
-    parser.add_argument("--task", choices=("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111"), default="x1_amp")
+    parser.add_argument("--task", choices=("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112"), default="x1_amp")
     parser.add_argument("--training-task-id", default="TASK_20261022_177")
     parser.add_argument("--record_dir", type=Path)
     parser.add_argument("--extra_seeds", type=int, nargs="*", default=[])

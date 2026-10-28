@@ -79,6 +79,9 @@ class AMPOnPolicyRunner:
 
     def collect_rollout(self):
         env, model = self.env, self.actor_critic
+        if hasattr(env, "set_training_iteration"):
+            # Absolute completed-update count preserves curricula after resume.
+            env.set_training_iteration(self.current_learning_iteration)
         steps, n = self.num_steps_per_env, env.num_envs
         data = {"obs": torch.empty(steps, n, env.num_obs, device=self.device),
                 "critic_obs": torch.empty(steps, n, env.num_privileged_obs, device=self.device),
@@ -188,6 +191,7 @@ class AMPOnPolicyRunner:
                 loss.backward()
                 nn.utils.clip_grad_norm_(model.parameters(), cfg["max_grad_norm"])
                 self.optimizer.step()
+                model.constrain_noise_std()
                 kl = ((ratio-1)-log_ratio).mean().detach().clamp(min=0)
                 for key, x in zip(("value_loss", "surrogate_loss", "entropy", "kl"), (value_loss, surrogate, entropy, kl)):
                     totals[key] += x.item()
@@ -251,6 +255,7 @@ class AMPOnPolicyRunner:
                 loss.backward()
                 nn.utils.clip_grad_norm_(model.parameters(), cfg["max_grad_norm"])
                 self.optimizer.step()
+                model.constrain_noise_std()
                 for key, value in zip(("value_loss", "surrogate_loss", "entropy"), (value_loss, surrogate, entropy)):
                     totals[key] += value.item()
                 count += 1
@@ -357,6 +362,10 @@ class AMPOnPolicyRunner:
                 "history_order": "oldest_to_newest",
                 "critic_velocity_index": self.state_estimator_obs_index,
                 "estimated_velocity_units": "body_linear_velocity_times_obs_scale_lin_vel"})
+        if self.actor_critic.max_noise_std is not None:
+            metadata.update(schema_version=4, max_noise_std=self.actor_critic.max_noise_std)
+        if hasattr(self.env, "checkpoint_training_metadata"):
+            metadata.update(schema_version=4, training=self.env.checkpoint_training_metadata())
         return metadata
 
     def save(self, path, infos=None):

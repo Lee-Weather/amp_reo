@@ -15,8 +15,13 @@ def mlp(inputs, hidden, outputs):
 
 class ActorCritic(nn.Module):
     def __init__(self, num_obs, num_critic_obs, num_actions, actor_hidden_dims,
-                 critic_hidden_dims, init_noise_std, motion_exploration=None, actor_input_dim=None):
+                 critic_hidden_dims, init_noise_std, motion_exploration=None, actor_input_dim=None,
+                 max_noise_std=None):
         super().__init__()
+        if max_noise_std is not None and (not math.isfinite(max_noise_std)
+                or not math.exp(-5) <= init_noise_std <= max_noise_std <= math.exp(2)):
+            raise ValueError("Invalid exploration noise upper bound")
+        self.max_noise_std = max_noise_std
         self.actor = mlp(num_obs if actor_input_dim is None else actor_input_dim, actor_hidden_dims, num_actions)
         self.critic = mlp(num_critic_obs, critic_hidden_dims, 1)
         self.log_std = nn.Parameter(torch.full((num_actions,), float(init_noise_std)).log())
@@ -33,6 +38,8 @@ class ActorCritic(nn.Module):
                 raise ValueError("Invalid motion exploration joints")
             if not math.isfinite(floor) or not 0 < floor <= math.exp(2) or not 0 <= index < num_obs or not math.isfinite(threshold) or threshold < 0:
                 raise ValueError("Invalid motion exploration settings")
+            if max_noise_std is not None and floor > max_noise_std:
+                raise ValueError("Motion exploration floor exceeds noise upper bound")
             mask[indices] = True
             self.motion_std_floor, self.motion_command_index, self.motion_command_threshold = floor, index, threshold
         # Device-aware mask without adding keys to existing checkpoint weights.
@@ -40,11 +47,20 @@ class ActorCritic(nn.Module):
 
     def distribution(self, obs):
         mean = self.act_inference(obs)
-        std = self.log_std.clamp(-5, 2).exp().expand_as(mean)
+        std = self.noise_std().expand_as(mean)
         if self.motion_std_floor > 0:
             moving = obs[..., self.motion_command_index].abs().gt(self.motion_command_threshold).unsqueeze(-1)
             std = torch.where(moving & self.motion_std_mask, std.clamp(min=self.motion_std_floor), std)
         return Normal(mean, std)
+
+    def noise_std(self):
+        maximum = 2. if self.max_noise_std is None else math.log(self.max_noise_std)
+        return self.log_std.clamp(-5, maximum).exp()
+
+    @torch.no_grad()
+    def constrain_noise_std(self):
+        if self.max_noise_std is not None:
+            self.log_std.clamp_(min=-5, max=math.log(self.max_noise_std))
 
     def act_inference(self, obs):
         return self.actor(obs)

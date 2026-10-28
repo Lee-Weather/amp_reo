@@ -55,7 +55,7 @@ class TrainingLog:
         scalar = {
             "Loss/value_function": metrics["value_loss"], "Loss/surrogate": metrics["surrogate_loss"],
             "Loss/learning_rate": runner.optimizer.param_groups[0]["lr"],
-            "Policy/mean_noise_std": runner.actor_critic.log_std.clamp(-5, 2).exp().mean().item(),
+            "Policy/mean_noise_std": runner.actor_critic.noise_std().mean().item(),
             "Perf/total_fps": metrics["steps_per_second"],
             "Perf/collection time": collection_time, "Perf/learning_time": learn_time,
             "Perf/total_timesteps": self.total_steps, "Perf/total_time": self.total_time,

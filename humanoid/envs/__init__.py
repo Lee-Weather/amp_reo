@@ -93,3 +93,8 @@ task_registry.register("x1_amp_exp110", X1AMPExp18Env, X1AMPExp110Cfg(), X1AMPEx
 from .x1.x1_amp_exp111_config import X1AMPExp111Cfg, X1AMPExp111CfgPPO
 
 task_registry.register("x1_amp_exp111", X1AMPExp18Env, X1AMPExp111Cfg(), X1AMPExp111CfgPPO())
+
+from .x1.x1_amp_exp112_config import X1AMPExp112Cfg, X1AMPExp112CfgPPO
+from .x1.x1_amp_exp112_env import X1AMPExp112Env
+
+task_registry.register("x1_amp_exp112", X1AMPExp112Env, X1AMPExp112Cfg(), X1AMPExp112CfgPPO())

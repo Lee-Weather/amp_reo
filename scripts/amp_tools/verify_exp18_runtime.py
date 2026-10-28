@@ -21,7 +21,7 @@ def main():
     parser=argparse.ArgumentParser(add_help=False)
     parser.add_argument('--model',required=True);parser.add_argument('--output',required=True)
     custom,remaining=parser.parse_known_args();sys.argv=[sys.argv[0]]+remaining
-    args=get_args();assert args.task in ('x1_amp_exp18','x1_amp_exp19','x1_amp_exp110','x1_amp_exp111') and args.seed==5 and args.num_envs==1
+    args=get_args();assert args.task in ('x1_amp_exp18','x1_amp_exp19','x1_amp_exp110','x1_amp_exp111','x1_amp_exp112') and args.seed==5 and args.num_envs==1
     cfg,train_cfg=task_registry.get_cfgs(args.task);cfg.seed=5;cfg.env.num_envs=1
     cfg.env.capture_replay_state=True;cfg.env.enable_camera_sensors=False
     cfg.noise.add_noise=False;cfg.domain_rand.push_robots=False
@@ -29,7 +29,7 @@ def main():
     cfg.commands.ranges.lin_vel_x=[0.,0.]
     assert cfg.rewards.backward_speed_scale==.2 and cfg.rewards.scales.backward_progress==1.5
     assert cfg.rewards.brake_leg_linear_scale==.08 and cfg.rewards.brake_leg_angular_scale==.15
-    if args.task in ('x1_amp_exp19','x1_amp_exp110','x1_amp_exp111'):assert cfg.rewards.tracking_sigma==.04
+    if args.task in ('x1_amp_exp19','x1_amp_exp110','x1_amp_exp111','x1_amp_exp112'):assert cfg.rewards.tracking_sigma==.04
     env,_=task_registry.make_env(args.task,args=args,env_cfg=cfg)
     runner,_,_=task_registry.make_alg_runner(env,args.task,args=args,log_root=None)
     runner.load(custom.model,load_optimizer=False);policy=runner.get_inference_policy()
