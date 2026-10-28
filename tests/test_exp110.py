@@ -82,6 +82,37 @@ class Exp110Tests(unittest.TestCase):
         torch.testing.assert_close(current.estimate_velocity(obs), current.estimate_velocity(changed))
         self.assertFalse(torch.allclose(current.act_inference(obs), current.act_inference(changed)))
 
+    def test_exp111_cadence_runs_eight_ppo_updates_with_24_step_rollout(self):
+        ns = experiment_config()
+        for n in (14, 15, 16, 17, 18, 19, 110, 111):
+            definitions("humanoid/envs/x1/x1_amp_exp%d_config.py" % n, ns)
+        parent, current = ns["X1AMPExp110CfgPPO"], ns["X1AMPExp111CfgPPO"]
+        self.assertEqual((current.runner.num_steps_per_env,
+                          current.algorithm.num_learning_epochs,
+                          current.algorithm.num_mini_batches), (24, 2, 4))
+        self.assertEqual(current.runner.max_iterations*4096*24, 589824000)
+        self.assertIs(current.policy, parent.policy)
+        self.assertIs(current.discriminator, parent.discriminator)
+        self.assertEqual(current.algorithm.lam, parent.algorithm.lam)
+        self.assertIs(ns["X1AMPExp111Cfg"].rewards, ns["X1AMPExp110Cfg"].rewards)
+        cfg = dh_config()
+        cfg["runner"]["num_steps_per_env"] = current.runner.num_steps_per_env
+        cfg["algorithm"].update(num_learning_epochs=current.algorithm.num_learning_epochs,
+                                 num_mini_batches=current.algorithm.num_mini_batches)
+        runner = AMPOnPolicyRunner(DHFakeEnv(self.lib), cfg)
+        batch = runner.collect_rollout()
+        self.assertEqual(batch["obs"].shape, (4*24, 6336))
+        calls = []
+        original = runner.optimizer.step
+        def step(*args, **kwargs):
+            calls.append(1)
+            return original(*args, **kwargs)
+        runner.optimizer.step = step
+        runner.alg_cfg["desired_kl"] = None  # Exercise all scheduled minibatches.
+        metrics = runner.update_policy(batch)
+        self.assertEqual(len(calls), 8)
+        self.assertTrue(all(math.isfinite(value) for value in metrics.values()))
+
     def test_velocity_target_uses_scaled_critic_tail_without_privileged_leak(self):
         runner = AMPOnPolicyRunner(DHFakeEnv(self.lib), dh_config())
         for p in runner.actor_critic.state_estimator.parameters():

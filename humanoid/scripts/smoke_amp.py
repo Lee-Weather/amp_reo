@@ -42,8 +42,8 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     sys.argv = [sys.argv[0]]+remaining
     args = get_args()
-    if args.task not in ("x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp110"):
-        raise ValueError("This preflight validates x1_amp_exp3, x1_amp_exp14 or x1_amp_exp110")
+    if args.task not in ("x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp110", "x1_amp_exp111"):
+        raise ValueError("This preflight validates x1_amp_exp3, x1_amp_exp14 or x1_amp_exp110/exp111")
     args.resume = False
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     if args.seed is not None:
@@ -66,8 +66,8 @@ def main():
     assert env.motion_library.history_steps == 3
     assert runner.disc_cfg["style_reward_scale"] == 10.
     assert cfg.rewards.tracking_lin_sigma == .09
-    assert cfg.rewards.tracking_sigma == (.04 if args.task == "x1_amp_exp110" else .25)
-    if args.task == "x1_amp_exp110":
+    assert cfg.rewards.tracking_sigma == (.04 if args.task in ("x1_amp_exp110", "x1_amp_exp111") else .25)
+    if args.task in ("x1_amp_exp110", "x1_amp_exp111"):
         assert env.num_obs == 6336 and env.num_privileged_obs == 99
         assert runner.state_estimator_obs_index == 96
     records = []
@@ -78,14 +78,14 @@ def main():
             assert torch.isfinite(batch["obs"]).all()
             assert torch.isfinite(batch["returns"]).all()
             assert torch.isfinite(batch["amp"]).all()
-            if args.task == "x1_amp_exp110":
+            if args.task in ("x1_amp_exp110", "x1_amp_exp111"):
                 assert (batch["style_rewards"] >= 0).all()
                 assert (batch["style_rewards"] <= batch["style_scores"]*10*env.dt+1e-6).all()
             else:
                 torch.testing.assert_close(batch["style_rewards"], batch["style_scores"]*10*env.dt)
             metrics = original(batch)
             assert all(math.isfinite(value) for value in metrics.values())
-            if args.task == "x1_amp_exp110":
+            if args.task in ("x1_amp_exp110", "x1_amp_exp111"):
                 assert "state_estimator_loss" in metrics
                 for module in (current.actor_critic.long_history, current.actor_critic.state_estimator):
                     assert all(p in current.optimizer.state for p in module.parameters())
@@ -135,7 +135,7 @@ def main():
                   resumed_iterations=smoke.resume_iterations, final_iteration=resumed.current_learning_iteration,
                   checkpoint_restore_exact=True, temporary_checkpoint_removed=True,
                   inference_shape=list(actions.shape), status="passed", updates=records)
-    if args.task == "x1_amp_exp110":
+    if args.task in ("x1_amp_exp110", "x1_amp_exp111"):
         report.update(observation_shape=[env.num_envs, env.num_obs],
                       state_estimator_supervision_index=runner.state_estimator_obs_index,
                       cuda_peak_allocated_bytes=torch.cuda.max_memory_allocated())
