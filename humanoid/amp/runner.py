@@ -58,6 +58,13 @@ class AMPOnPolicyRunner:
                 raise ValueError("Invalid adaptive PPO learning-rate bounds")
             if self.alg_cfg.get("desired_kl", 0) <= 0:
                 raise ValueError("Minibatch KL checks require positive desired_kl")
+        warmup = self.alg_cfg.get("policy_transfer_warmup_iterations", 0)
+        warmup_lr = self.alg_cfg.get("policy_transfer_warmup_max_lr", self.alg_cfg["learning_rate"])
+        if (any(key in self.alg_cfg for key in ("policy_transfer_warmup_iterations", "policy_transfer_warmup_max_lr"))
+                and (not isinstance(warmup, int) or isinstance(warmup, bool) or warmup < 0
+                or not self.alg_cfg.get("min_learning_rate", 1e-5) <= warmup_lr
+                <= self.alg_cfg.get("max_learning_rate", self.alg_cfg["learning_rate"]))):
+            raise ValueError("Invalid policy-transfer learning-rate warmup")
         self.disc_optimizer = torch.optim.Adam(self.discriminator.network.parameters(),
                                                lr=self.disc_cfg["learning_rate"],
                                                weight_decay=self.disc_cfg["weight_decay"])
@@ -156,7 +163,18 @@ class AMPOnPolicyRunner:
             data["advantages"] = (advantages-advantages.mean())/(advantages.std(unbiased=False)+1e-8)
         return {name: x.flatten(0, 1) for name, x in data.items()}
 
+    def _policy_learning_rate_cap(self):
+        cap = self.alg_cfg.get("max_learning_rate", self.alg_cfg["learning_rate"])
+        origin = self.training_origin or {}
+        if (origin.get("mode") == "policy_transfer_fresh_critic_amp_optimizers"
+                and self.current_learning_iteration < self.alg_cfg.get("policy_transfer_warmup_iterations", 0)):
+            cap = min(cap, self.alg_cfg["policy_transfer_warmup_max_lr"])
+        return cap
+
     def update_policy(self, batch):
+        if self.alg_cfg.get("policy_transfer_warmup_iterations", 0):
+            for group in self.optimizer.param_groups:
+                group["lr"] = min(group["lr"], self._policy_learning_rate_cap())
         cfg, model = self.alg_cfg, self.actor_critic
         if cfg.get("kl_check") == "minibatch":
             return self._update_policy_minibatch(batch)
@@ -279,7 +297,7 @@ class AMPOnPolicyRunner:
                     lr /= 1.5
                 elif maximum_kl < .5*target:
                     lr *= 1.5
-                group["lr"] = min(cfg.get("max_learning_rate", cfg["learning_rate"]),
+                group["lr"] = min(self._policy_learning_rate_cap(),
                                   max(cfg.get("min_learning_rate", 1e-5), lr))
         result = {key: value/max(count, 1) for key, value in totals.items()}
         result.update(kl=final_kl, kl_max=maximum_kl, kl_early_stop=float(stopped), policy_updates=count)
@@ -313,6 +331,9 @@ class AMPOnPolicyRunner:
         return {key: x/cfg["num_updates"] for key, x in totals.items()}
 
     def learn(self, num_learning_iterations, init_at_random_ep_len=False):
+        if (self.cfg.get("require_policy_transfer", False)
+                and (self.training_origin or {}).get("mode") != "policy_transfer_fresh_critic_amp_optimizers"):
+            raise ValueError("This task requires --warm_start with its source policy checkpoint, or an exact resume of that transferred run")
         if init_at_random_ep_len:
             self.env.episode_length_buf.random_(int(self.env.max_episode_length))
         end = self.current_learning_iteration+num_learning_iterations
@@ -406,7 +427,12 @@ class AMPOnPolicyRunner:
         return state.get("infos")
 
     def warm_start(self, path, expected_sha256=None):
-        """Retain all learned weights and update count, start fresh optimizers."""
+        """Apply the task's explicit transfer mode; legacy tasks retain all weights."""
+        mode = self.cfg.get("warm_start_mode", "all_weights")
+        if mode == "policy_only":
+            return self._warm_start_policy(path, expected_sha256)
+        if mode != "all_weights":
+            raise ValueError("Unknown warm-start mode: " + str(mode))
         with open(path, "rb") as stream:
             digest = hashlib.sha256(stream.read()).hexdigest()
         if expected_sha256 is not None and digest != expected_sha256:
@@ -419,6 +445,66 @@ class AMPOnPolicyRunner:
         self.training_origin = {"mode": "warm_start_fresh_optimizers", "source_file": os.path.basename(path),
                                 "source_sha256": digest, "source_iteration": self.current_learning_iteration}
         print("WARM_START_OK "+json.dumps(dict(self.training_origin, learning_rate=self.alg_cfg["learning_rate"])), flush=True)
+
+    def _warm_start_policy(self, path, expected_sha256=None):
+        """Transfer DH inference weights/noise into a fresh training experiment.
+
+        Training-reward metadata may change only through this explicit mode.
+        Robot, PD, history, observation and policy conventions remain exact.
+        All compatibility checks finish before any model state is changed.
+        """
+        if (not isinstance(self.actor_critic, ActorCriticDHAMP)
+                or self.current_learning_iteration != 0 or self.training_origin is not None
+                or self.optimizer.state or self.disc_optimizer.state or self.replay.size):
+            raise ValueError("Policy transfer requires a fresh DH runner")
+        with open(path, "rb") as stream:
+            digest = hashlib.sha256(stream.read()).hexdigest()
+        for expected in (expected_sha256, self.cfg.get("policy_transfer_source_sha256")):
+            if expected is not None and digest != expected:
+                raise ValueError("Policy-transfer checkpoint SHA256 mismatch")
+        state = torch.load(path, map_location=self.device)
+        source_metadata = dict(state.get("metadata", {}))
+        target_metadata = dict(self._metadata())
+        source_training = source_metadata.pop("training", {})
+        target_metadata.pop("training", None)
+        if source_metadata != target_metadata:
+            raise ValueError("Policy-transfer robot/observation/policy/control conventions do not match")
+        expected_curriculum = self.cfg.get("policy_transfer_source_curriculum")
+        if expected_curriculum is not None and source_training.get("curriculum") != expected_curriculum:
+            raise ValueError("Policy-transfer source training metadata does not match")
+        source_iteration = state.get("iter")
+        if not isinstance(source_iteration, int) or source_iteration < 0:
+            raise ValueError("Invalid policy-transfer source iteration")
+        fresh = self.actor_critic.state_dict()
+        source = state["model_state_dict"]
+        if source.keys() != fresh.keys():
+            raise ValueError("Policy-transfer model components do not match")
+        for key, value in source.items():
+            if (not isinstance(value, torch.Tensor) or value.shape != fresh[key].shape
+                    or value.dtype != fresh[key].dtype or not torch.isfinite(value).all()):
+                raise ValueError("Invalid policy-transfer tensor: " + key)
+        retained = ("actor.", "long_history.", "state_estimator.")
+        transfer = {key: value for key, value in source.items()
+                    if key == "log_std" or key.startswith(retained)}
+        expected_keys = {key for key in fresh if not key.startswith("critic.")}
+        if transfer.keys() != expected_keys:
+            raise ValueError("Policy-transfer inference components do not match")
+        fresh.update(transfer)
+        self.actor_critic.load_state_dict(fresh, strict=True)
+        self.actor_critic.constrain_noise_std()
+        # Critic, D/normalizer and replay retain their fresh constructor state.
+        self.optimizer = torch.optim.Adam(self.actor_critic.parameters(), lr=self.alg_cfg["learning_rate"])
+        self.disc_optimizer = torch.optim.Adam(self.discriminator.network.parameters(),
+                                               lr=self.disc_cfg["learning_rate"],
+                                               weight_decay=self.disc_cfg["weight_decay"])
+        self.training_origin = {
+            "mode": "policy_transfer_fresh_critic_amp_optimizers",
+            "source_file": os.path.basename(path), "source_sha256": digest,
+            "source_iteration": source_iteration, "new_iteration": 0,
+            "retained": ["actor", "long_history", "state_estimator", "log_std"],
+            "reset": ["critic", "discriminator", "normalizer", "optimizers", "replay"]}
+        print("POLICY_TRANSFER_OK "+json.dumps(dict(self.training_origin,
+              learning_rate=self.optimizer.param_groups[0]["lr"])), flush=True)
 
     def get_inference_policy(self, device=None):
         self.actor_critic.eval()

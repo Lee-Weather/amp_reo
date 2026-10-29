@@ -167,7 +167,7 @@ def get_args():
         {"name": "--checkpoint_dir", "type": str,
          "help": "Fixed fresh AMP log/checkpoint directory; warm_start must reside in this directory"},
         {"name": "--warm_start", "type": str,
-         "help": "AMP checkpoint path: retain weights/iteration, reset both optimizers"},
+         "help": "AMP checkpoint path: task selects all weights or policy-only transfer; fresh optimizers"},
         {"name": "--warm_start_sha256", "type": str,
          "help": "Required checkpoint SHA256 when downloading a warm-start checkpoint"},
         {"name": "--warm_start_url_b64", "type": str,

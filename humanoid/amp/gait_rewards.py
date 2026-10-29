@@ -74,6 +74,25 @@ def backward_velocity_reward(command_vx, actual_vx, speed_scale=.2):
     return torch.where(command_vx < -.05, reward, torch.zeros_like(reward))
 
 
+def motion_velocity_reward(command_vx, actual_vx, speed_scale=.2):
+    """Normalized signed improvement over rest, for either walking direction.
+
+    At a fixed moving command this is concave in velocity: a zero-net
+    forward/backward oscillation cannot earn positive mean progress credit.
+    Do not clip negative values, which would break that property.
+    """
+    if not math.isfinite(speed_scale) or speed_scale <= 0:
+        raise ValueError("Motion reward speed scale must be finite and positive")
+
+    def huber(value):
+        magnitude = value.abs()
+        return torch.where(magnitude <= 1, .5*value.square(), magnitude-.5)
+
+    baseline = huber(command_vx/speed_scale)
+    reward = 1-huber((actual_vx-command_vx)/speed_scale)/baseline.clamp(min=1e-8)
+    return torch.where(command_vx.abs() > .05, reward, torch.zeros_like(reward))
+
+
 def braking_leg_gate(planar_velocity, yaw_rate, pending, linear_scale=.08, angular_scale=.15):
     """Relax leg quiet/pose costs only during an unconfirmed moving-to-zero transition."""
     if not all(math.isfinite(s) and s > 0 for s in (linear_scale, angular_scale)):

@@ -42,8 +42,9 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     sys.argv = [sys.argv[0]]+remaining
     args = get_args()
-    if args.task not in ("x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112"):
-        raise ValueError("This preflight validates x1_amp_exp3, x1_amp_exp14 or x1_amp_exp110/exp111")
+    dh_tasks = ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113")
+    if args.task not in ("x1_amp_exp3", "x1_amp_exp14")+dh_tasks:
+        raise ValueError("Use a supported x1_amp preflight task")
     args.resume = False
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     if args.seed is not None:
@@ -53,10 +54,19 @@ def main():
     runner, _, _ = task_registry.make_alg_runner(env, args=args, train_cfg=train_cfg, log_root=None)
     initial_iteration = runner.current_learning_iteration
     if args.warm_start:
-        assert initial_iteration == 6000
         expected_source = torch.load(args.warm_start, map_location=runner.device)
-        equal_state(expected_source["model_state_dict"], runner.actor_critic.state_dict())
-        equal_state(expected_source["discriminator_state_dict"], runner.discriminator.state_dict())
+        if getattr(train_cfg.runner, "warm_start_mode", "all_weights") == "policy_only":
+            assert initial_iteration == 0
+            for key, value in runner.actor_critic.state_dict().items():
+                if not key.startswith("critic."):
+                    equal_state(expected_source["model_state_dict"][key], value)
+            assert runner.training_origin["source_iteration"] == expected_source["iter"]
+            assert runner.replay.size == 0
+            assert abs(runner.discriminator.normalizer.count.item()-1e-4) < 1e-8
+        else:
+            assert initial_iteration == expected_source["iter"]
+            equal_state(expected_source["model_state_dict"], runner.actor_critic.state_dict())
+            equal_state(expected_source["discriminator_state_dict"], runner.discriminator.state_dict())
         assert not runner.optimizer.state and not runner.disc_optimizer.state
         assert runner.optimizer.param_groups[0]["lr"] == train_cfg.algorithm.learning_rate
         del expected_source
@@ -66,8 +76,8 @@ def main():
     assert env.motion_library.history_steps == 3
     assert runner.disc_cfg["style_reward_scale"] == 10.
     assert cfg.rewards.tracking_lin_sigma == .09
-    assert cfg.rewards.tracking_sigma == (.04 if args.task in ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112") else .25)
-    if args.task in ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112"):
+    assert cfg.rewards.tracking_sigma == (.04 if args.task in dh_tasks else .25)
+    if args.task in dh_tasks:
         assert env.num_obs == 6336 and env.num_privileged_obs == 99
         assert runner.state_estimator_obs_index == 96
     records = []
@@ -78,14 +88,14 @@ def main():
             assert torch.isfinite(batch["obs"]).all()
             assert torch.isfinite(batch["returns"]).all()
             assert torch.isfinite(batch["amp"]).all()
-            if args.task in ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112"):
+            if args.task in dh_tasks:
                 assert (batch["style_rewards"] >= 0).all()
                 assert (batch["style_rewards"] <= batch["style_scores"]*10*env.dt+1e-6).all()
             else:
                 torch.testing.assert_close(batch["style_rewards"], batch["style_scores"]*10*env.dt)
             metrics = original(batch)
             assert all(math.isfinite(value) for value in metrics.values())
-            if args.task in ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112"):
+            if args.task in dh_tasks:
                 assert "state_estimator_loss" in metrics
                 for module in (current.actor_critic.long_history, current.actor_critic.state_estimator):
                     assert all(p in current.optimizer.state for p in module.parameters())
@@ -135,7 +145,7 @@ def main():
                   resumed_iterations=smoke.resume_iterations, final_iteration=resumed.current_learning_iteration,
                   checkpoint_restore_exact=True, temporary_checkpoint_removed=True,
                   inference_shape=list(actions.shape), status="passed", updates=records)
-    if args.task in ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112"):
+    if args.task in dh_tasks:
         report.update(observation_shape=[env.num_envs, env.num_obs],
                       state_estimator_supervision_index=runner.state_estimator_obs_index,
                       cuda_peak_allocated_bytes=torch.cuda.max_memory_allocated())
