@@ -166,7 +166,8 @@ class AMPOnPolicyRunner:
     def _policy_learning_rate_cap(self):
         cap = self.alg_cfg.get("max_learning_rate", self.alg_cfg["learning_rate"])
         origin = self.training_origin or {}
-        if (origin.get("mode") == "policy_transfer_fresh_critic_amp_optimizers"
+        if ((origin.get("mode") == "policy_transfer_fresh_critic_amp_optimizers"
+                or self.alg_cfg.get("policy_transfer_warmup_for_scratch", False))
                 and self.current_learning_iteration < self.alg_cfg.get("policy_transfer_warmup_iterations", 0)):
             cap = min(cap, self.alg_cfg["policy_transfer_warmup_max_lr"])
         return cap
@@ -331,6 +332,17 @@ class AMPOnPolicyRunner:
         return {key: x/cfg["num_updates"] for key, x in totals.items()}
 
     def learn(self, num_learning_iterations, init_at_random_ep_len=False):
+        if self.cfg.get("require_fresh_initialization", False):
+            if self.training_origin is not None:
+                raise ValueError("This scratch control must not inherit a transferred policy")
+            if self.current_learning_iteration == 0:
+                if self.optimizer.state or self.disc_optimizer.state or self.replay.size:
+                    raise ValueError("Scratch initialization must have fresh optimizers and replay")
+                print("FRESH_START_OK "+json.dumps({"iteration": 0, "training_origin": None,
+                      "source_checkpoint": None, "optimizer_state_count": len(self.optimizer.state),
+                      "disc_optimizer_state_count": len(self.disc_optimizer.state), "replay_size": self.replay.size,
+                      "learning_rate": self.optimizer.param_groups[0]["lr"],
+                      "mean_noise_std": self.actor_critic.noise_std().mean().item()}), flush=True)
         if (self.cfg.get("require_policy_transfer", False)
                 and (self.training_origin or {}).get("mode") != "policy_transfer_fresh_critic_amp_optimizers"):
             raise ValueError("This task requires --warm_start with its source policy checkpoint, or an exact resume of that transferred run")
@@ -429,6 +441,8 @@ class AMPOnPolicyRunner:
     def warm_start(self, path, expected_sha256=None):
         """Apply the task's explicit transfer mode; legacy tasks retain all weights."""
         mode = self.cfg.get("warm_start_mode", "all_weights")
+        if mode == "scratch":
+            raise ValueError("This scratch control does not accept --warm_start")
         if mode == "policy_only":
             return self._warm_start_policy(path, expected_sha256)
         if mode != "all_weights":
