@@ -42,7 +42,7 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     sys.argv = [sys.argv[0]]+remaining
     args = get_args()
-    dh_tasks = ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t")
+    dh_tasks = ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114t")
     if args.task not in ("x1_amp_exp3", "x1_amp_exp14")+dh_tasks:
         raise ValueError("Use a supported x1_amp preflight task")
     args.resume = False
@@ -57,9 +57,10 @@ def main():
         expected_source = torch.load(args.warm_start, map_location=runner.device)
         if getattr(train_cfg.runner, "warm_start_mode", "all_weights") == "policy_only":
             assert initial_iteration == 0
+            source_state = expected_source["model_state_dict"]
             for key, value in runner.actor_critic.state_dict().items():
                 if not key.startswith("critic."):
-                    equal_state(expected_source["model_state_dict"][key], value)
+                    equal_state(source_state[key], value)
             assert runner.training_origin["source_iteration"] == expected_source["iter"]
             assert runner.replay.size == 0
             assert abs(runner.discriminator.normalizer.count.item()-1e-4) < 1e-8
@@ -78,8 +79,9 @@ def main():
     assert cfg.rewards.tracking_lin_sigma == .09
     assert cfg.rewards.tracking_sigma == (.04 if args.task in dh_tasks else .25)
     if args.task in dh_tasks:
-        assert env.num_obs == 6336 and env.num_privileged_obs == 99
-        assert runner.state_estimator_obs_index == 96
+        assert env.num_obs == cfg.env.frame_stack*cfg.env.num_single_obs
+        assert env.num_privileged_obs == cfg.env.num_single_obs+3
+        assert runner.state_estimator_obs_index == cfg.env.num_single_obs
     records = []
 
     def watch(current, phase):
