@@ -42,7 +42,7 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     sys.argv = [sys.argv[0]]+remaining
     args = get_args()
-    dh_tasks = ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114")
+    dh_tasks = ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp115", "x1_amp_exp115t")
     if args.task not in ("x1_amp_exp3", "x1_amp_exp14")+dh_tasks:
         raise ValueError("Use a supported x1_amp preflight task")
     args.resume = False

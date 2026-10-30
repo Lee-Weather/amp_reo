@@ -332,6 +332,9 @@ class AMPOnPolicyRunner:
         return {key: x/cfg["num_updates"] for key, x in totals.items()}
 
     def learn(self, num_learning_iterations, init_at_random_ep_len=False):
+        teacher = self.cfg.get('teacher_sha256')
+        if teacher and (self.training_origin or {}).get('teacher', {}).get('source_sha256') != teacher:
+            raise ValueError('This comparison requires its verified MLP teacher initialization')
         if self.cfg.get("require_fresh_initialization", False):
             if self.training_origin is not None:
                 raise ValueError("This scratch control must not inherit a transferred policy")

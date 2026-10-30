@@ -30,7 +30,7 @@ def main():
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114"):
+    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp115", "x1_amp_exp115t"):
         raise ValueError("Use a registered x1_amp task")
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     # The shared helper applies --seed only to train_cfg, not env_cfg.
@@ -49,7 +49,7 @@ def main():
     cfg.noise.add_noise = False
     cfg.domain_rand.push_robots = False
     cfg.amp.reference_state_initialization = play.reset_mode == "rsi"
-    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114")
+    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp115", "x1_amp_exp115t")
     if shared_buffer:
         cfg.amp.rsi_probability = 1. if play.reset_mode == "rsi" else 0.
         cfg.amp.stand_buffer_seconds = play.stand_buffer_seconds
@@ -57,6 +57,8 @@ def main():
     cfg.commands.ranges.lin_vel_x = [initial_vx, initial_vx]
     cfg.commands.ranges.lin_vel_y = [play.vy, play.vy]
     cfg.commands.ranges.ang_vel_yaw = [play.yaw_rate, play.yaw_rate]
+    if args.task in ('x1_amp_exp115', 'x1_amp_exp115t'):
+        cfg.commands.guidance_evaluation = True
     env, _ = task_registry.make_env(args.task, args=args, env_cfg=cfg)
     if play.checkpoint_path:
         args.resume = False
@@ -115,13 +117,13 @@ def main():
                                "maximum_std": cfg.rewards.tracking_max_std,
                                "maximum_speed": cfg.rewards.tracking_max_speed} if dynamic_tracking else {"type": "fixed_denominator"}),
         "standing_style_multiplier": getattr(cfg.amp, "standing_style_multiplier", 1.),
-        "motion_style_velocity_sigma": None if args.task in ("x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114") else getattr(cfg.amp, "motion_style_velocity_sigma", None),
-        "moving_style_rule": "ungated_v1" if args.task in ("x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114") else "inherited",
+        "motion_style_velocity_sigma": None if args.task in ("x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp115", "x1_amp_exp115t") else getattr(cfg.amp, "motion_style_velocity_sigma", None),
+        "moving_style_rule": "ungated_v1" if args.task in ("x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp115", "x1_amp_exp115t") else "inherited",
         "motion_progress_speed_scale": getattr(cfg.rewards, "motion_velocity_scale", None),
         "training_motion_exploration": getattr(train_cfg.policy, "motion_exploration", None),
         "tracking_ang_sigma": cfg.rewards.tracking_sigma,
         "tracking_lateral_std": getattr(cfg.rewards,"tracking_lateral_std",None),
-        "foot_scuff_velocity_reference": "lowest_material_point_from_COM" if args.task in ("x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114") else "rigid_body_COM",
+        "foot_scuff_velocity_reference": "lowest_material_point_from_COM" if args.task in ("x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp115", "x1_amp_exp115t") else "rigid_body_COM",
         "backward_reward_speed_scale": getattr(cfg.rewards,"backward_speed_scale",None),
         "braking_leg_gate_scales": ({"linear":cfg.rewards.brake_leg_linear_scale,"angular":cfg.rewards.brake_leg_angular_scale}
                                     if hasattr(cfg.rewards,"brake_leg_linear_scale") else None),
