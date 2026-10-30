@@ -443,8 +443,8 @@ class AMPOnPolicyRunner:
         mode = self.cfg.get("warm_start_mode", "all_weights")
         if mode == "scratch":
             raise ValueError("This scratch control does not accept --warm_start")
-        if mode == "policy_only":
-            return self._warm_start_policy(path, expected_sha256)
+        if mode in ("policy_only", "policy_append_phase"):
+            return self._warm_start_policy(path, expected_sha256, append_phase=mode == "policy_append_phase")
         if mode != "all_weights":
             raise ValueError("Unknown warm-start mode: " + str(mode))
         with open(path, "rb") as stream:
@@ -460,7 +460,7 @@ class AMPOnPolicyRunner:
                                 "source_sha256": digest, "source_iteration": self.current_learning_iteration}
         print("WARM_START_OK "+json.dumps(dict(self.training_origin, learning_rate=self.alg_cfg["learning_rate"])), flush=True)
 
-    def _warm_start_policy(self, path, expected_sha256=None):
+    def _warm_start_policy(self, path, expected_sha256=None, append_phase=False):
         """Transfer DH inference weights/noise into a fresh training experiment.
 
         Training-reward metadata may change only through this explicit mode.
@@ -481,6 +481,15 @@ class AMPOnPolicyRunner:
         target_metadata = dict(self._metadata())
         source_training = source_metadata.pop("training", {})
         target_metadata.pop("training", None)
+        if append_phase:
+            source_policy, target_policy = source_metadata.get("policy", {}), target_metadata.get("policy", {})
+            if ((source_metadata.get("num_obs"), target_metadata.get("num_obs")) != (6336, 6468)
+                    or (source_policy.get("num_single_obs"), target_policy.get("num_single_obs")) != (96, 98)
+                    or (source_policy.get("critic_velocity_index"), target_policy.get("critic_velocity_index")) != (96, 98)
+                    or source_policy.get("frame_stack") != 66 or source_policy.get("short_frame_stack") != 5):
+                raise ValueError("Phase transfer requires the explicit66x96 to66x98 DH mapping")
+            target_metadata["num_obs"] = source_metadata["num_obs"]
+            target_metadata["policy"] = dict(target_policy, num_single_obs=96, critic_velocity_index=96)
         if source_metadata != target_metadata:
             raise ValueError("Policy-transfer robot/observation/policy/control conventions do not match")
         expected_curriculum = self.cfg.get("policy_transfer_source_curriculum")
@@ -491,6 +500,9 @@ class AMPOnPolicyRunner:
             raise ValueError("Invalid policy-transfer source iteration")
         fresh = self.actor_critic.state_dict()
         source = state["model_state_dict"]
+        if append_phase:
+            from .dh_models import append_phase_policy_state
+            source = append_phase_policy_state(source, fresh)
         if source.keys() != fresh.keys():
             raise ValueError("Policy-transfer model components do not match")
         for key, value in source.items():
@@ -517,6 +529,8 @@ class AMPOnPolicyRunner:
             "source_iteration": source_iteration, "new_iteration": 0,
             "retained": ["actor", "long_history", "state_estimator", "log_std"],
             "reset": ["critic", "discriminator", "normalizer", "optimizers", "replay"]}
+        if append_phase:
+            self.training_origin["observation_mapping"] = "append_phase_96_to_98_zero_columns_v1"
         print("POLICY_TRANSFER_OK "+json.dumps(dict(self.training_origin,
               learning_rate=self.optimizer.param_groups[0]["lr"])), flush=True)
 

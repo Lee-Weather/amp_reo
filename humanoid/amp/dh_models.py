@@ -10,6 +10,39 @@ from torch import nn
 from .models import ActorCritic, mlp
 
 
+def append_phase_policy_state(source, fresh):
+    """Map five96-D short frames to five98-D frames; keep the new critic fresh."""
+    if source.keys() != fresh.keys():
+        raise ValueError("Phase transfer model components do not match")
+    special = {"actor.0.weight": (547, 557), "state_estimator.0.weight": (480, 490),
+               "critic.0.weight": (99, 101)}
+    for key, value in source.items():
+        if not isinstance(value, torch.Tensor) or value.dtype != fresh[key].dtype or not torch.isfinite(value).all():
+            raise ValueError("Invalid phase-transfer tensor: "+key)
+        if key in special:
+            old_width, new_width = special[key]
+            if (value.ndim != 2 or fresh[key].ndim != 2 or value.shape[0] != fresh[key].shape[0]
+                    or value.shape[1] != old_width or fresh[key].shape[1] != new_width):
+                raise ValueError("Unexpected phase-transfer layer shape: "+key)
+        elif value.shape != fresh[key].shape:
+            raise ValueError("Phase transfer cannot alter other layer shapes: "+key)
+    result = dict(fresh)
+    columns = torch.cat([torch.arange(96, device=fresh["actor.0.weight"].device)+98*i for i in range(5)])
+    for key, value in source.items():
+        if key.startswith("critic."):
+            continue
+        if key in ("actor.0.weight", "state_estimator.0.weight"):
+            mapped = torch.zeros_like(fresh[key])
+            destination = columns
+            if key == "actor.0.weight":
+                destination = torch.cat((columns, torch.arange(490, 557, device=columns.device)))
+            mapped[:, destination] = value
+            result[key] = mapped
+        else:
+            result[key] = value
+    return result
+
+
 class DHPolicy(nn.Module):
     """Exportable policy including both history branches and velocity estimation."""
     def __init__(self, actor, long_history, state_estimator, num_short_obs,
