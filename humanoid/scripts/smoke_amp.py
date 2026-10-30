@@ -42,7 +42,7 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     sys.argv = [sys.argv[0]]+remaining
     args = get_args()
-    dh_tasks = ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp115", "x1_amp_exp115t")
+    dh_tasks = ("x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116")
     if args.task not in ("x1_amp_exp3", "x1_amp_exp14")+dh_tasks:
         raise ValueError("Use a supported x1_amp preflight task")
     args.resume = False
@@ -55,7 +55,8 @@ def main():
     initial_iteration = runner.current_learning_iteration
     if args.warm_start:
         expected_source = torch.load(args.warm_start, map_location=runner.device)
-        if getattr(train_cfg.runner, "warm_start_mode", "all_weights") in ("policy_only", "policy_append_phase"):
+        transfer_mode = getattr(train_cfg.runner, "warm_start_mode", "all_weights")
+        if transfer_mode in ("policy_only", "policy_append_phase"):
             assert initial_iteration == 0
             source_state = expected_source["model_state_dict"]
             if train_cfg.runner.warm_start_mode == "policy_append_phase":
@@ -67,11 +68,21 @@ def main():
             assert runner.training_origin["source_iteration"] == expected_source["iter"]
             assert runner.replay.size == 0
             assert abs(runner.discriminator.normalizer.count.item()-1e-4) < 1e-8
+        elif transfer_mode == "policy_amp_fresh_critic":
+            assert initial_iteration == expected_source["iter"]
+            for key, value in runner.actor_critic.state_dict().items():
+                if not key.startswith("critic."):
+                    equal_state(expected_source["model_state_dict"][key], value)
+            equal_state(expected_source["discriminator_state_dict"], runner.discriminator.state_dict())
+            equal_state(expected_source["disc_optimizer_state_dict"], runner.disc_optimizer.state_dict())
+            assert runner.disc_optimizer.state
         else:
             assert initial_iteration == expected_source["iter"]
             equal_state(expected_source["model_state_dict"], runner.actor_critic.state_dict())
             equal_state(expected_source["discriminator_state_dict"], runner.discriminator.state_dict())
-        assert not runner.optimizer.state and not runner.disc_optimizer.state
+        assert not runner.optimizer.state
+        if transfer_mode != "policy_amp_fresh_critic":
+            assert not runner.disc_optimizer.state
         assert runner.optimizer.param_groups[0]["lr"] == train_cfg.algorithm.learning_rate
         del expected_source
     assert env.device.startswith("cuda"), "Expected CUDA simulation"

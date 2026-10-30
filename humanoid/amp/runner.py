@@ -166,6 +166,10 @@ class AMPOnPolicyRunner:
     def _policy_learning_rate_cap(self):
         cap = self.alg_cfg.get("max_learning_rate", self.alg_cfg["learning_rate"])
         origin = self.training_origin or {}
+        if origin.get("mode") == "reward_refinement_preserve_policy_amp":
+            if self.current_learning_iteration-origin["source_iteration"] < self.alg_cfg.get("policy_transfer_warmup_iterations", 0):
+                cap = min(cap, self.alg_cfg["policy_transfer_warmup_max_lr"])
+            return cap
         if ((origin.get("mode") == "policy_transfer_fresh_critic_amp_optimizers"
                 or self.alg_cfg.get("policy_transfer_warmup_for_scratch", False))
                 and self.current_learning_iteration < self.alg_cfg.get("policy_transfer_warmup_iterations", 0)):
@@ -349,6 +353,12 @@ class AMPOnPolicyRunner:
         if (self.cfg.get("require_policy_transfer", False)
                 and (self.training_origin or {}).get("mode") != "policy_transfer_fresh_critic_amp_optimizers"):
             raise ValueError("This task requires --warm_start with its source policy checkpoint, or an exact resume of that transferred run")
+        if self.cfg.get("require_reward_transfer", False):
+            origin = self.training_origin or {}
+            if (origin.get("mode") != "reward_refinement_preserve_policy_amp"
+                    or origin.get("source_sha256") != self.cfg.get("policy_transfer_source_sha256")
+                    or origin.get("source_iteration") != self.cfg.get("policy_transfer_source_iteration")):
+                raise ValueError("This task requires its explicit policy/AMP-preserving reward-refinement transfer")
         if init_at_random_ep_len:
             self.env.episode_length_buf.random_(int(self.env.max_episode_length))
         end = self.current_learning_iteration+num_learning_iterations
@@ -446,6 +456,9 @@ class AMPOnPolicyRunner:
         mode = self.cfg.get("warm_start_mode", "all_weights")
         if mode == "scratch":
             raise ValueError("This scratch control does not accept --warm_start")
+        if mode == "policy_amp_fresh_critic":
+            from .reward_transfer import transfer_for_reward_refinement
+            return transfer_for_reward_refinement(self, path, expected_sha256)
         if mode in ("policy_only", "policy_append_phase"):
             return self._warm_start_policy(path, expected_sha256, append_phase=mode == "policy_append_phase")
         if mode != "all_weights":

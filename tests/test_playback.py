@@ -53,6 +53,8 @@ class PlaybackTests(unittest.TestCase):
                  "gravity": torch.tensor([[0., 0., -1.]]), "q": torch.tensor([[.2]]),
                  "dq": torch.zeros(1, 1), "torque": torch.ones(1, 1), "action": torch.ones(1, 1),
                  "target": torch.tensor([[.4]]), "timeout": torch.tensor([True]),
+                 "reference_phase": torch.tensor([.75]), "reference_q": torch.tensor([[.7]]),
+                 "reference_dq": torch.tensor([[.1]]),
                  "episode_step": torch.tensor([1001]), "torque_clip_step": torch.tensor([7]),
                  "command": torch.tensor([[.4, 0., 0.]]), "command_observed": torch.tensor([[.4, 0., 0.]]),
                  "contact": torch.tensor([[[0., 0., 20.], [0., 0., 30.]]]), "feet": torch.zeros(1, 2, 13)}
@@ -72,6 +74,9 @@ class PlaybackTests(unittest.TestCase):
             self.assertEqual(float(row["foot_force_r"]), 30.)
             self.assertAlmostEqual(float(row["pos_des_raw_joint"]), .4)
             self.assertEqual(int(row["clip_count"]), 7)
+            self.assertAlmostEqual(float(row["reference_phase"]), .75)
+            self.assertAlmostEqual(float(row["reference_q_joint"]), .7)
+            self.assertAlmostEqual(float(row["reference_dq_joint"]), .1)
             metadata = json.loads((Path(tmp)/"replay_metadata.json").read_text())
             self.assertEqual(metadata["timeouts"], 1)
             self.assertEqual(metadata["captured_steps"], 1)

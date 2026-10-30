@@ -69,6 +69,10 @@ class ReplayRecorder:
             row[label] = value
         for key in ("q", "dq", "torque", "action", "target"):
             row.update((key + "_" + name, float(value)) for name, value in zip(env.dof_names, state[key]))
+        if "reference_phase" in state:
+            row["reference_phase"] = float(state["reference_phase"][0])
+            for key in ("reference_q", "reference_dq"):
+                row.update((key+"_"+name, float(value)) for name, value in zip(env.dof_names, state[key]))
         if "raw_target" in state:
             row.update(standing_reset=int(state["standing_reset"][0]), stand_steps_left=int(state["stand_steps_left"][0]))
             for key, prefix in (("raw_target", "pd_target_raw"), ("effective_target", "pd_target_effective"),
