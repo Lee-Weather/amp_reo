@@ -56,7 +56,6 @@ def main():
     args = get_args()
     if args.task != 'x1_amp_exp115t' or bool(known.teacher_url_b64) == bool(known.teacher_path):
         raise ValueError('This entrypoint requires the exp1.15t private teacher input')
-    prepare_warm_start(args)
     # Keep the old MLP file entirely in memory: the SDK must only discover
     # the persistent input/output checkpoint directory, never a temporary PT.
     if known.teacher_path:
@@ -73,6 +72,9 @@ def main():
     _, train_cfg = task_registry.get_cfgs(args.task)
     if hashlib.sha256(teacher_bytes).hexdigest() != train_cfg.runner.teacher_sha256:
         raise ValueError('Teacher download hash mismatch')
+    if known.teacher_path and Path(known.teacher_path).resolve().parent == Path(args.checkpoint_dir).resolve():
+        args.checkpoint_extra_inputs = {str(Path(known.teacher_path).resolve()): train_cfg.runner.teacher_sha256}
+    prepare_warm_start(args)
     env, _ = task_registry.make_env(name=args.task, args=args)
     runner, train_cfg, _ = task_registry.make_alg_runner(env=env, name=args.task, args=args)
     apply_mlp_teacher(runner, io.BytesIO(teacher_bytes), train_cfg.runner.teacher_sha256)

@@ -1,5 +1,8 @@
 """Temporal credit isolation, stationary counterexamples and explicit curriculum."""
 import sys
+import hashlib
+import tempfile
+from types import SimpleNamespace
 import unittest
 from pathlib import Path
 
@@ -7,6 +10,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'scripts/amp_tools'))
 from humanoid.amp.gait_guidance import GaitWindow, span_improvement
+from humanoid.amp.checkpoint import checkpoint_directory
 from preflight_gait_curriculum import configuration115, audit
 from test_amp import library
 from test_exp3 import definitions
@@ -44,6 +48,20 @@ class Exp115Tests(unittest.TestCase):
         torch.testing.assert_close(span_improvement(torch.zeros_like(target), target), torch.zeros(2))
         torch.testing.assert_close(span_improvement(target, target), torch.ones(2))
         self.assertTrue((span_improvement(3*target, target) < 0).all())
+
+    def test_shared_directory_only_accepts_verified_teacher_not_old_training_outputs(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            teacher = folder/'input_teacher.pt'; teacher.write_bytes(b'teacher input')
+            digest = hashlib.sha256(teacher.read_bytes()).hexdigest()
+            args = SimpleNamespace(checkpoint_dir=str(folder), warm_start=str(folder/'input_source.pt'),
+                                   checkpoint_extra_inputs={str(teacher):digest})
+            self.assertEqual(checkpoint_directory(args, 'training'), str(folder.resolve()))
+            teacher.write_bytes(b'corrupt')
+            with self.assertRaises(ValueError): checkpoint_directory(args, 'training')
+            teacher.write_bytes(b'teacher input')
+            (folder/'model_100.pt').write_bytes(b'old result')
+            with self.assertRaises(FileExistsError): checkpoint_directory(args, 'training')
 
     def test_amp_ramp_and_both_branches_share_the_objective(self):
         ns = configuration115()

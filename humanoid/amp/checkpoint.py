@@ -25,6 +25,11 @@ def checkpoint_directory(args, default_directory):
         if not directory.is_dir():
             raise FileExistsError("checkpoint_dir is not a directory")
         allowed = {initial.name} if initial is not None else set()
+        for extra_path, extra_digest in getattr(args, 'checkpoint_extra_inputs', {}).items():
+            extra = Path(extra_path).resolve()
+            if extra.parent != directory or not extra.is_file() or hashlib.sha256(extra.read_bytes()).hexdigest() != extra_digest:
+                raise ValueError('Additional checkpoint input must be hash-verified in the persistent output directory')
+            allowed.add(extra.name)
         if any(p.name not in allowed for p in directory.iterdir()):
             raise FileExistsError("checkpoint_dir already contains run artifacts; preserve it and choose a fresh directory")
     return str(directory)

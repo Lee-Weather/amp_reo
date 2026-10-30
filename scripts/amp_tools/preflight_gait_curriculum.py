@@ -4,11 +4,14 @@ import contextlib
 import copy
 import hashlib
 import io
+import importlib.util
 import json
 import math
 from pathlib import Path
 import sys
 import tempfile
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import torch
 
@@ -142,6 +145,39 @@ def check(route, source_path, teacher_path):
     teacher = torch.load(teacher_path, map_location='cpu', weights_only=False)
     if route.endswith('t'):
         with contextlib.redirect_stdout(io.StringIO()): apply_mlp_teacher(target, teacher_path, cfg['runner']['teacher_sha256'])
+    bootstrap_verified = None
+    if route.endswith('t'):
+        # Execute the actual cloud entrypoint on CPU with a mocked Gym registry,
+        # real co-located input files and real hash/metadata/teacher transfer.
+        with tempfile.TemporaryDirectory(prefix='amp-bootstrap-cpu-') as temp:
+            folder = Path(temp)
+            student_file, teacher_file = folder/'input_source.pt', folder/'input_teacher.pt'
+            student_file.write_bytes(source_path.read_bytes()); teacher_file.write_bytes(teacher_path.read_bytes())
+            arguments = SimpleNamespace(task='x1_amp_exp115t', checkpoint_dir=str(folder),
+                                        warm_start=str(student_file), warm_start_sha256=digest, warm_start_url_b64=None)
+            bootstrap = AMPOnPolicyRunner(environment(), cfg)
+            learned = []
+            def make_runner(**kwargs):
+                bootstrap.warm_start(str(student_file), digest)
+                return bootstrap, ns['X1AMPExp115tCfgPPO'](), None
+            def learn(count, init_at_random_ep_len):
+                assert count == 1000 and init_at_random_ep_len is False
+                assert bootstrap.training_origin['teacher']['source_sha256'] == cfg['runner']['teacher_sha256']
+                assert not bootstrap.optimizer.state and not bootstrap.disc_optimizer.state
+                learned.append(True)
+            bootstrap.learn = learn
+            registry = SimpleNamespace(get_cfgs=lambda task:(settings, ns['X1AMPExp115tCfgPPO']()),
+                make_env=lambda **kwargs:(bootstrap.env, settings), make_alg_runner=make_runner)
+            spec = importlib.util.spec_from_file_location('guided_cpu_entrypoint', ROOT/'humanoid/scripts/train_guided_amp.py')
+            module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+            with patch.dict(sys.modules, {'train': SimpleNamespace(get_args=lambda:arguments, task_registry=registry)}), \
+                    patch.object(sys, 'argv', ['train_guided_amp.py', '--teacher_path='+str(teacher_file)]), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                module.main()
+            assert learned == [True]
+            for key, value in target.actor_critic.state_dict().items():
+                if not key.startswith('critic.'): assert torch.equal(value, bootstrap.actor_critic.state_dict()[key])
+            bootstrap_verified = True
     assert not target.optimizer.state and not target.disc_optimizer.state and target.replay.size == 0
     for key, value in fresh_critic.items(): assert torch.equal(value, target.actor_critic.critic.state_dict()[key])
     for key, value in fresh_disc.items(): assert torch.equal(value, target.discriminator.state_dict()[key])
@@ -180,6 +216,7 @@ def check(route, source_path, teacher_path):
                 teacher_sha256=cfg['runner'].get('teacher_sha256'), inference_max_error=maximum,
                 finite_inference_samples=4096, fresh_critic_discriminator_optimizers_replay=True,
                 dh_history_estimator_exploration_preserved=True, complete_jit_max_error=jit_error,
+                runtime_checkpoint_inputs_bootstrap_verified=bootstrap_verified,
                 update_metrics=metrics, reward_audit=rewards, formal_gpu_physics_verified=False)
 
 
