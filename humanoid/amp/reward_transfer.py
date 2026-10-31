@@ -38,7 +38,9 @@ def transfer_for_reward_refinement(runner, path, expected_sha256=None):
             raise ValueError('Reward refinement changed protected configuration: '+section)
     amp = dict(runner.config['amp'])
     amp.pop('fixed_style_weight', None)
-    if amp != state['config']['amp']:
+    source_amp = dict(state['config']['amp'])
+    source_amp.pop('fixed_style_weight', None)
+    if amp != source_amp:
         raise ValueError('Reward refinement changed AMP expert or initialization semantics')
     for name, fresh in (('model_state_dict', runner.actor_critic.state_dict()),
                         ('discriminator_state_dict', runner.discriminator.state_dict())):

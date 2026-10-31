@@ -80,7 +80,6 @@ class Exp116Tests(unittest.TestCase):
         cfg['runner']['num_steps_per_env'] = 4
         if source:
             cfg['runner'].update(experiment_name='x1_amp_exp115t', require_reward_transfer=False)
-            cfg['amp'].pop('fixed_style_weight')
         return cfg, settings
 
     def test_original_control_budget_and_commands_remain_exact(self):
