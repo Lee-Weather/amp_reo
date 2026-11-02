@@ -3,7 +3,7 @@ from .x1_amp_exp21_config import X1AMPExp21Cfg,X1AMPExp21CfgPPO
 
 class X1AMPExp22Cfg(X1AMPExp21Cfg):
     class amp(X1AMPExp21Cfg.amp):
-        policy_state_bank_sha256='3bbdea1bea5344835a56879269f5a135d86b4d853c8cd57c2be85354f8398ed5'
+        policy_state_bank_sha256='dd3484954a5689a5936a5b30fcfbc8687cdcf7bfdfa15ca55edcafde6be56153'
 
 class X1AMPExp22CfgPPO(X1AMPExp21CfgPPO):
     runner_class_name='AnchoredAMPOnPolicyRunner'

@@ -49,7 +49,7 @@ def main():
         quiet_histories=[[frame(r)[:-2]+[0.,0.] for r in rows[i-65:i+1]] for i in quiet],
         source_rows=selected)
     output=ROOT/'humanoid/amp/reference_data/exp22_policy_state_bank.json'
-    output.write_text(json.dumps(payload,separators=(',',':'))+'\n',encoding='utf-8')
+    output.write_bytes((json.dumps(payload,separators=(',',':'))+'\n').encode('utf-8'))
     print(json.dumps(dict(states=len(selected),quiet_anchors=len(quiet),bytes=output.stat().st_size,sha256=hashlib.sha256(output.read_bytes()).hexdigest())))
 
 if __name__=='__main__':main()

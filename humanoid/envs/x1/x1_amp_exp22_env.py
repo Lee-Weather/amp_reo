@@ -29,7 +29,7 @@ class X1AMPExp22Env(X1AMPExp21Env):
         raw=path.read_bytes();bank=json.loads(raw)
         validate_policy_bank(bank,self.dof_names,self.dt)
         self.policy_bank_sha256=hashlib.sha256(raw).hexdigest()
-        assert self.policy_bank_sha256==self.cfg.amp.policy_state_bank_sha256,'Private policy-state bank SHA mismatch'
+        assert self.policy_bank_sha256==self.cfg.amp.policy_state_bank_sha256,'Policy-state bank SHA mismatch'
         self.bank={k:torch.tensor(bank[k],device=self.device,dtype=torch.float) for k in ('states','phases','histories','amp_states')}
         anchors=torch.cat((self.bank['histories'],torch.tensor(bank['quiet_histories'],device=self.device,dtype=torch.float)))
         self.source_anchor_observations=anchors.flatten(1)

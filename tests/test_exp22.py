@@ -3,6 +3,7 @@ import contextlib
 import copy
 import io
 import json
+import hashlib
 import os
 from pathlib import Path
 import tempfile
@@ -47,6 +48,24 @@ class AnchoredTests(unittest.TestCase):
         validate(bank,['a'],float(torch.tensor(.001,dtype=torch.float32))*20)
         with self.assertRaises(ValueError):validate(bank,['a'],.01)
         with self.assertRaises(ValueError):validate(bank,['b'],.02)
+
+    def test_full_bank_initialization_validates_exact_published_file(self):
+        # Execute the actual initialization method against the immutable-tree
+        # asset, including its byte SHA, rather than just parsing its contents.
+        class Base:
+            def _init_buffers(self):pass
+        ns=dict(torch=torch,json=json,hashlib=hashlib,Path=Path,LEGGED_GYM_ROOT_DIR=str(ROOT),
+            GaitCurriculum=GaitCurriculum,X1AMPExp21Env=Base)
+        definitions('humanoid/envs/x1/x1_amp_exp22_env.py',ns)
+        cfg=configuration21();definitions('humanoid/envs/x1/x1_amp_exp22_config.py',cfg)
+        env=object.__new__(ns['X1AMPExp22Env'])
+        env.cfg=cfg['X1AMPExp22Cfg']();env.device='cpu'
+        env.dt=float(torch.tensor(.001,dtype=torch.float32))*20
+        env.dof_names=self.source['metadata']['dof_names']
+        env._init_buffers()
+        self.assertEqual(tuple(env.bank['histories'].shape),(64,66,98))
+        self.assertEqual(tuple(env.source_anchor_observations.shape),(76,6468))
+        self.assertEqual(env.policy_bank_sha256,env.cfg.amp.policy_state_bank_sha256)
 
     def test_sampling_gain_is_in_distribution_and_log_probability(self):
         r=self.runner();obs=r.env.source_anchor_observations
