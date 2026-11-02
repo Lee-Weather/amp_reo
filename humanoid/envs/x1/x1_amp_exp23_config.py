@@ -15,6 +15,8 @@ class X1AMPExp23CfgPPO(X1AMPExp22CfgPPO):
         experiment_name='x1_amp_exp23'
         run_name='exp2.3'
         max_iterations=200
+        # The explicit continuation runner validates its preserved-state mode.
+        require_policy_transfer=False
         policy_transfer_source_curriculum='anchored_policy_state_native_v1'
         policy_transfer_source_iteration=950
         policy_transfer_source_task='x1_amp_exp22'

@@ -7,6 +7,15 @@ import torch
 from .anchored_runner import AnchoredAMPOnPolicyRunner
 
 class Exp23AMPOnPolicyRunner(AnchoredAMPOnPolicyRunner):
+    def learn(self,*args,**kwargs):
+        origin=self.training_origin or {}
+        if (origin.get('mode')!='anchored_continuation_preserve_critic_optimizers'
+                or origin.get('source_sha256')!=self.cfg['policy_transfer_source_sha256']
+                or origin.get('source_iteration')!=self.cfg['policy_transfer_source_iteration']
+                or not all(k in origin.get('retained',[]) for k in ('critic','policy_optimizer','original7000_anchor'))):
+            raise ValueError('exp2.3 requires its explicitly verified preserved-state continuation')
+        return super().learn(*args,**kwargs)
+
     def warm_start(self,path,expected_sha256=None):
         # Reuse the strict robot/control/source compatibility contract before
         # restoring training heads. Suppress its fresh-critic success message.

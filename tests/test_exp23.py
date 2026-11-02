@@ -77,6 +77,13 @@ class Exp23Tests(unittest.TestCase):
             self.assertEqual(loaded.current_learning_iteration,1)
             self.assertEqual(loaded.env.gait_curriculum.state_dict(),r.env.gait_curriculum.state_dict())
 
+    def test_complete_learning_entry_accepts_continuation_and_rejects_wrong_origin(self):
+        r=self.runner()
+        with contextlib.redirect_stdout(io.StringIO()):r.learn(num_learning_iterations=1,init_at_random_ep_len=False)
+        self.assertEqual(r.current_learning_iteration,1)
+        r.training_origin['source_iteration']=7000
+        with self.assertRaises(ValueError):r.learn(num_learning_iterations=1,init_at_random_ep_len=False)
+
 class EntryTests(unittest.TestCase):
     def controller(self):
         c=Exp23Curriculum();c.baseline=dict(standing=dict(mean_seconds=14.1,non_timeout_rate=.67),rsi=dict(mean_seconds=11.66,non_timeout_rate=.77))
