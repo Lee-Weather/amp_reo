@@ -59,7 +59,7 @@ class Exp24AMPOnPolicyRunner(Exp23AMPOnPolicyRunner):
                 # Save the last model under the previous stage before commit.
                 if self.log_dir:self.save(os.path.join(self.log_dir,'stable_model_'+str(self.current_learning_iteration)+'.pt'))
                 self.env.gait_curriculum.commit(report['next_stage'])
-                print('EXP24_STAGE_CHANGED '+json.dumps(report),flush=True)
+                print(getattr(self,'stage_change_marker','EXP24_STAGE_CHANGED')+' '+json.dumps(report),flush=True)
         if self.current_learning_iteration-self.session_start_iteration==50:saved=True
         if saved and self.log_dir:self.save(os.path.join(self.log_dir,'model_'+str(self.current_learning_iteration)+'.pt'))
         if self.log_dir and self.best_record is not None:
