@@ -31,14 +31,14 @@ def main():
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20"):
+    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20", "x1_amp_exp21"):
         raise ValueError("Use a registered x1_amp task")
     cfg, train_cfg = task_registry.get_cfgs(args.task)
-    if play.source_policy and (args.task!='x1_amp_exp20' or not play.checkpoint_path):
+    if play.source_policy and (args.task not in ('x1_amp_exp20','x1_amp_exp21') or not play.checkpoint_path):
         raise ValueError('--source_policy requires exp2.0 and its explicit source checkpoint_path')
     if play.source_policy:
         train_cfg.runner.policy_transfer_diagnostic_mode = True
-    if args.task=='x1_amp_exp20' and play.vx is not None and abs(play.vx)>1e-7:
+    if args.task in ('x1_amp_exp20','x1_amp_exp21') and play.vx is not None and abs(play.vx)>1e-7:
         if abs(play.vx-cfg.commands.native_speed)>.002:
             raise ValueError('exp2.0 uses its native forward speed; no other steady walking speeds')
         play.vx = cfg.commands.native_speed
@@ -59,8 +59,8 @@ def main():
         raise ValueError("stand_buffer_seconds must be non-negative")
     cfg.noise.add_noise = False
     cfg.domain_rand.push_robots = False
-    cfg.amp.reference_state_initialization = play.reset_mode == "rsi"
-    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20")
+    cfg.amp.reference_state_initialization = play.reset_mode == "rsi" and args.task != "x1_amp_exp21"
+    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20", "x1_amp_exp21")
     if shared_buffer:
         cfg.amp.rsi_probability = 1. if play.reset_mode == "rsi" else 0.
         cfg.amp.stand_buffer_seconds = play.stand_buffer_seconds
@@ -68,9 +68,11 @@ def main():
     cfg.commands.ranges.lin_vel_x = [initial_vx, initial_vx]
     cfg.commands.ranges.lin_vel_y = [play.vy, play.vy]
     cfg.commands.ranges.ang_vel_yaw = [play.yaw_rate, play.yaw_rate]
-    if args.task in ('x1_amp_exp115', 'x1_amp_exp115t', 'x1_amp_exp116', 'x1_amp_exp117', 'x1_amp_exp118', 'x1_amp_exp20'):
+    if args.task in ('x1_amp_exp115', 'x1_amp_exp115t', 'x1_amp_exp116', 'x1_amp_exp117', 'x1_amp_exp118', 'x1_amp_exp20', 'x1_amp_exp21'):
         cfg.commands.guidance_evaluation = True
     env, _ = task_registry.make_env(args.task, args=args, env_cfg=cfg)
+    if args.task == "x1_amp_exp21":
+        env.evaluation_reset_mode = play.reset_mode
     if play.checkpoint_path:
         args.resume = False
         train_cfg.runner.resume = False
@@ -82,9 +84,12 @@ def main():
     else:
         train_cfg.runner.resume = True
         runner, _, _ = task_registry.make_alg_runner(env, args=args, train_cfg=train_cfg, log_root="default")
+    if args.task == "x1_amp_exp21":
+        from humanoid.amp.gait_curriculum import STAGES
+        env.gait_curriculum.stage = len(STAGES)-1
     policy = runner.get_inference_policy(device=env.device)
     profile = speed_profile(env.dt, play.stage_seconds)
-    if args.task == "x1_amp_exp20" and play.vx is None:
+    if args.task in ("x1_amp_exp20","x1_amp_exp21") and play.vx is None:
         count = max(1, round(play.stage_seconds/env.dt))
         profile = [(count, 0.), (count, cfg.commands.native_speed), (count, 0.)]
     if play.vx is not None:
@@ -136,7 +141,7 @@ def main():
                                "maximum_std": cfg.rewards.tracking_max_std,
                                "maximum_speed": cfg.rewards.tracking_max_speed} if dynamic_tracking else {"type": "fixed_denominator"}),
         "standing_style_multiplier": getattr(cfg.amp, "standing_style_multiplier", 1.),
-        "motion_style_velocity_sigma": None if args.task in ("x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20") else getattr(cfg.amp, "motion_style_velocity_sigma", None),
+        "motion_style_velocity_sigma": None if args.task in ("x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20", "x1_amp_exp21") else getattr(cfg.amp, "motion_style_velocity_sigma", None),
         "moving_style_rule": ('native_category_mask_v1' if args.task=='x1_amp_exp20' else
             "ungated_v1" if args.task in ("x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118") else "inherited"),
         'command_transition_seconds':getattr(cfg.commands,'transition_seconds',None),
@@ -146,7 +151,7 @@ def main():
         "training_motion_exploration": getattr(train_cfg.policy, "motion_exploration", None),
         "tracking_ang_sigma": cfg.rewards.tracking_sigma,
         "tracking_lateral_std": getattr(cfg.rewards,"tracking_lateral_std",None),
-        "foot_scuff_velocity_reference": "lowest_material_point_from_COM" if args.task in ("x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20") else "rigid_body_COM",
+        "foot_scuff_velocity_reference": "lowest_material_point_from_COM" if args.task in ("x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20", "x1_amp_exp21") else "rigid_body_COM",
         "backward_reward_speed_scale": getattr(cfg.rewards,"backward_speed_scale",None),
         "braking_leg_gate_scales": ({"linear":cfg.rewards.brake_leg_linear_scale,"angular":cfg.rewards.brake_leg_angular_scale}
                                     if hasattr(cfg.rewards,"brake_leg_linear_scale") else None),

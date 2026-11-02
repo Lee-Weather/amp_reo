@@ -405,6 +405,9 @@ class AMPOnPolicyRunner:
                            done_fraction=batch["dones"].mean().item(),
                            episode_length=self.env.episode_length_buf.float().mean().item())
             self.current_learning_iteration += 1
+            hook = getattr(self, 'after_training_iteration', None)
+            if hook is not None:
+                metrics.update(hook())
             learn_time = time.time()-learn_start
             metrics["steps_per_second"] = len(batch["obs"])/(collection_time+learn_time)
             self.training_log.log(self, metrics, collection_time, learn_time, end, first_iteration)
