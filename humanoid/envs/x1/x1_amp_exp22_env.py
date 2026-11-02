@@ -8,6 +8,12 @@ from humanoid.amp.gait_curriculum import GaitCurriculum
 from humanoid.envs.base.legged_robot import LeggedRobot
 from .x1_amp_exp21_env import X1AMPExp21Env
 
+def validate_policy_bank(bank,names,dt):
+    if bank['dof_names']!=list(names):raise ValueError('Policy-state bank joint order mismatch')
+    # Isaac Gym exposes SimParams.dt through a C float; .001*20 is not
+    # bitwise equal to the Python literal .02 stored in the replay manifest.
+    if abs(bank['control_dt']-dt)>1e-7:raise ValueError('Policy-state bank control period mismatch')
+
 class PolicyStateCurriculum(GaitCurriculum):
     @property
     def weights(self):
@@ -21,7 +27,7 @@ class X1AMPExp22Env(X1AMPExp21Env):
         self.gait_curriculum=PolicyStateCurriculum()
         path=Path(LEGGED_GYM_ROOT_DIR)/'humanoid/amp/reference_data/exp22_policy_state_bank.json'
         raw=path.read_bytes();bank=json.loads(raw)
-        assert bank['dof_names']==self.dof_names and bank['control_dt']==self.dt
+        validate_policy_bank(bank,self.dof_names,self.dt)
         self.policy_bank_sha256=hashlib.sha256(raw).hexdigest()
         assert self.policy_bank_sha256==self.cfg.amp.policy_state_bank_sha256,'Private policy-state bank SHA mismatch'
         self.bank={k:torch.tensor(bank[k],device=self.device,dtype=torch.float) for k in ('states','phases','histories','amp_states')}

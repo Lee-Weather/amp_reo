@@ -40,6 +40,14 @@ class AnchoredTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):r.warm_start(str(SOURCE))
         return r
 
+    def test_bank_identity_accepts_simulator_float_but_rejects_wrong_rate(self):
+        ns=dict(X1AMPExp21Env=object,GaitCurriculum=GaitCurriculum)
+        definitions('humanoid/envs/x1/x1_amp_exp22_env.py',ns)
+        validate=ns['validate_policy_bank'];bank=dict(dof_names=['a'],control_dt=.02)
+        validate(bank,['a'],float(torch.tensor(.001,dtype=torch.float32))*20)
+        with self.assertRaises(ValueError):validate(bank,['a'],.01)
+        with self.assertRaises(ValueError):validate(bank,['b'],.02)
+
     def test_sampling_gain_is_in_distribution_and_log_probability(self):
         r=self.runner();obs=r.env.source_anchor_observations
         reduced=r.actor_critic.distribution(obs)
