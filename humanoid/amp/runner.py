@@ -69,6 +69,8 @@ class AMPOnPolicyRunner:
                                                lr=self.disc_cfg["learning_rate"],
                                                weight_decay=self.disc_cfg["weight_decay"])
         self.replay = ReplayBuffer(self.disc_cfg["replay_size"], (lib.history_steps, lib.feature_dim), device)
+        if self.disc_cfg.get('conditional_experts',False):
+            self.replay_categories = torch.empty(self.disc_cfg['replay_size'],dtype=torch.bool,device=device)
         if not 0 <= self.disc_cfg["task_reward_weight"] <= 1:
             raise ValueError("task_reward_weight must be in [0, 1]")
         self.num_steps_per_env = self.cfg["num_steps_per_env"]
@@ -100,6 +102,9 @@ class AMPOnPolicyRunner:
             data[name] = torch.empty(steps, n, device=self.device)
         data["amp"] = torch.empty(steps, n, env.motion_library.history_steps,
                                     env.motion_library.feature_dim, device=self.device)
+        if self.disc_cfg.get('conditional_experts',False):
+            data['amp_valid'] = torch.empty(steps,n,dtype=torch.bool,device=self.device)
+            data['amp_moving'] = torch.empty(steps,n,dtype=torch.bool,device=self.device)
         obs = env.get_observations().to(self.device)
         critic = env.get_privileged_observations().to(self.device)
         self.training_log.begin_rollout(obs)
@@ -147,6 +152,9 @@ class AMPOnPolicyRunner:
                 data["rewards"][step].copy_(reward)
                 data["dones"][step].copy_(dones)
                 data["amp"][step].copy_(amp)
+                if 'amp_valid' in data:
+                    data['amp_valid'][step].copy_(info['amp_valid'].to(self.device))
+                    data['amp_moving'][step].copy_(info['amp_moving'].to(self.device))
                 data["task_rewards"][step].copy_(task_reward)
                 data["style_rewards"][step].copy_(style)
                 data["style_scores"][step].copy_(style_score)
@@ -308,14 +316,31 @@ class AMPOnPolicyRunner:
         result.update(kl=final_kl, kl_max=maximum_kl, kl_early_stop=float(stopped), policy_updates=count)
         return result
 
-    def update_discriminator(self, amp):
+    def update_discriminator(self, amp, valid=None, moving=None):
         cfg, disc = self.disc_cfg, self.discriminator
+        conditional = cfg.get('conditional_experts',False)
+        if conditional:
+            if valid is None or moving is None or valid.shape!=(len(amp),) or moving.shape!=valid.shape:
+                raise ValueError('Conditional AMP requires one eligibility/category per policy history')
+            amp,moving = amp[valid.bool()],moving[valid.bool()]
+            amp,moving = amp[-self.replay.capacity:],moving[-self.replay.capacity:]
+            cursor,count = self.replay.cursor,len(amp)
+            first = min(count,self.replay.capacity-cursor)
+            self.replay_categories[cursor:cursor+first] = moving[:first]
+            self.replay_categories[:count-first] = moving[first:]
         self.replay.insert(amp)
         totals = {"disc_loss": 0., "grad_penalty": 0., "expert_score": 0., "policy_score": 0.}
+        if not self.replay.size:
+            return dict(totals,discriminator_samples=0.)
         for _ in range(cfg["num_updates"]):
-            policy = self.replay.sample(cfg["batch_size"])
-            sampler = getattr(self.env, "sample_amp_expert", self.env.motion_library.sample)
-            expert = sampler(cfg["batch_size"]).to(self.device)
+            if conditional:
+                ids = torch.randint(self.replay.size,(cfg['batch_size'],),device=self.device)
+                policy = self.replay.data[ids]
+                expert = self.env.sample_amp_expert_by_category(self.replay_categories[ids]).to(self.device)
+            else:
+                policy = self.replay.sample(cfg["batch_size"])
+                sampler = getattr(self.env, "sample_amp_expert", self.env.motion_library.sample)
+                expert = sampler(cfg["batch_size"]).to(self.device)
             with torch.no_grad():
                 disc.normalizer.update(torch.cat((policy, expert)))
             # Penalty is with respect to normalized expert input, as in the reference.
@@ -370,7 +395,10 @@ class AMPOnPolicyRunner:
             collection_time = time.time()-start
             learn_start = time.time()
             metrics = self.update_policy(batch)
-            metrics.update(self.update_discriminator(batch["amp"]))
+            if self.disc_cfg.get('conditional_experts',False):
+                metrics.update(self.update_discriminator(batch['amp'],batch['amp_valid'],batch['amp_moving']))
+            else:
+                metrics.update(self.update_discriminator(batch["amp"]))
             metrics.update(task_reward=batch["task_rewards"].mean().item(),
                            style_reward=batch["style_rewards"].mean().item(),
                            style_score=batch["style_scores"].mean().item(),
@@ -514,6 +542,27 @@ class AMPOnPolicyRunner:
         source_iteration = state.get("iter")
         if not isinstance(source_iteration, int) or source_iteration < 0:
             raise ValueError("Invalid policy-transfer source iteration")
+        expected_iteration = self.cfg.get('policy_transfer_source_iteration')
+        expected_task = self.cfg.get('policy_transfer_source_task')
+        if expected_iteration is not None and source_iteration!=expected_iteration:
+            raise ValueError('Policy-transfer source iteration does not match its contract')
+        if expected_task is not None and state['config']['runner']['experiment_name']!=expected_task:
+            raise ValueError('Policy-transfer source task does not match its contract')
+        for section in self.cfg.get('policy_transfer_protected_sections',()):
+            source_section,target_section = dict(state['config'][section]),dict(self.config[section])
+            if section=='env':
+                for field in self.cfg.get('policy_transfer_runtime_env_fields',()):
+                    source_section.pop(field,None)
+                    target_section.pop(field,None)
+            if section=='noise' and self.cfg.get('policy_transfer_diagnostic_mode',False):
+                source_section.pop('add_noise',None)
+                target_section.pop('add_noise',None)
+            if source_section!=target_section:
+                raise ValueError('Policy-transfer protected configuration changed: '+section)
+        if self.cfg.get('policy_transfer_require_raw_reference_match',False):
+            target_sources = self._metadata().get('training',{}).get('reference_source_sha256')
+            if not target_sources or target_sources!=source_training.get('reference_source_sha256'):
+                raise ValueError('Policy-transfer underlying raw reference resources changed')
         fresh = self.actor_critic.state_dict()
         source = state["model_state_dict"]
         if append_phase:

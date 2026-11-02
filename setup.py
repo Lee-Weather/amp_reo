@@ -30,8 +30,7 @@
 
 # Copyright (c) 2024, AgiBot Inc. All rights reserved.
 
-from setuptools import find_packages
-from distutils.core import setup
+from setuptools import find_packages, setup
 
 setup(
     name='humanoid',
@@ -39,6 +38,7 @@ setup(
     author='AgiBot',
     license="BSD-3-Clause",
     packages=find_packages(),
+    package_data={'humanoid.amp': ['reference_data/*.json']},
     author_email='developer@zhiyuan-robot.com',
     description='Isaac Gym environments for Legged Robots',
     install_requires=['isaacgym',  # preview4

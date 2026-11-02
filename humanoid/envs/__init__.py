@@ -114,14 +114,21 @@ from .x1.x1_amp_exp114_env import X1AMPExp114Env
 
 task_registry.register("x1_amp_exp114", X1AMPExp114Env, X1AMPExp114Cfg(), X1AMPExp114CfgPPO())
 
+from .x1.x1_amp_exp114t_config import X1AMPExp114tCfg, X1AMPExp114tCfgPPO
+from .x1.x1_amp_exp114t_env import X1AMPExp114tEnv
+
+task_registry.register("x1_amp_exp114t", X1AMPExp114tEnv, X1AMPExp114tCfg(), X1AMPExp114tCfgPPO())
+
 from .x1.x1_amp_exp115_config import X1AMPExp115Cfg, X1AMPExp115CfgPPO
 from .x1.x1_amp_exp115t_config import X1AMPExp115tCfg, X1AMPExp115tCfgPPO
 from .x1.x1_amp_exp115_env import X1AMPExp115Env
+
 task_registry.register("x1_amp_exp115", X1AMPExp115Env, X1AMPExp115Cfg(), X1AMPExp115CfgPPO())
 task_registry.register("x1_amp_exp115t", X1AMPExp115Env, X1AMPExp115tCfg(), X1AMPExp115tCfgPPO())
 
 from .x1.x1_amp_exp116_config import X1AMPExp116Cfg, X1AMPExp116CfgPPO
 from .x1.x1_amp_exp116_env import X1AMPExp116Env
+
 task_registry.register("x1_amp_exp116", X1AMPExp116Env, X1AMPExp116Cfg(), X1AMPExp116CfgPPO())
 
 from .x1.x1_amp_exp117_config import X1AMPExp117Cfg, X1AMPExp117CfgPPO
@@ -130,4 +137,10 @@ from .x1.x1_amp_exp117_env import X1AMPExp117Env
 task_registry.register("x1_amp_exp117", X1AMPExp117Env, X1AMPExp117Cfg(), X1AMPExp117CfgPPO())
 
 from .x1.x1_amp_exp118_config import X1AMPExp118Cfg, X1AMPExp118CfgPPO
+
 task_registry.register("x1_amp_exp118", X1AMPExp117Env, X1AMPExp118Cfg(), X1AMPExp118CfgPPO())
+
+from .x1.x1_amp_exp20_config import X1AMPExp20Cfg,X1AMPExp20CfgPPO
+from .x1.x1_amp_exp20_env import X1AMPExp20Env
+
+task_registry.register('x1_amp_exp20',X1AMPExp20Env,X1AMPExp20Cfg(),X1AMPExp20CfgPPO())

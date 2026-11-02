@@ -8,6 +8,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import tarfile
 import tempfile
 
 import cv2
@@ -20,7 +21,7 @@ SCP = "C:/Windows/System32/OpenSSH/scp.exe"
 HOST = "robot@10.12.201.5"
 
 
-def collect_checks(state, remote, temp, context):
+def collect_checks(state, remote, temp, context, artifacts):
     reports = []
     for index, check in enumerate(state.get("checks", [])):
         case_dir = temp / ("check_"+str(index))
@@ -28,6 +29,8 @@ def collect_checks(state, remote, temp, context):
         for name in ("isaac_diag.csv", "replay_metadata.json"):
             subprocess.run([SCP, "-o", "BatchMode=yes", HOST + ":" + remote + "/" + check["output"] + "/" + name,
                             str(case_dir/name)], check=True)
+        subprocess.run([SCP, "-o", "BatchMode=yes", HOST+":"+remote+"/"+Path(check["output"]).name+".log",
+                        str(case_dir/"replay.log")], check=True)
         metadata = json.loads((case_dir/"replay_metadata.json").read_text())
         expected_steps = check.get("steps", 3000)
         assert metadata["checkpoint"] == context["iteration"] and metadata["captured_steps"] == expected_steps
@@ -44,6 +47,16 @@ def collect_checks(state, remote, temp, context):
                             steps=expected_steps, vx=check.get("vx"), evaluation=report,
                             csv_sha256=hashlib.sha256((case_dir/"isaac_diag.csv").read_bytes()).hexdigest(),
                             replay_conditions={k:metadata[k] for k in ("seed","noise","pushes","reset_mode")}))
+    if reports:
+        archive = artifacts/"auxiliary_replays.tar.gz"
+        with tarfile.open(archive, "w:gz") as stream:
+            for index in range(len(reports)):
+                folder = temp/("check_"+str(index))
+                stream.add(folder, arcname=folder.name)
+        with tarfile.open(archive, "r:gz") as stream:
+            for index, report in enumerate(reports):
+                data = stream.extractfile("check_{}/isaac_diag.csv".format(index)).read()
+                assert hashlib.sha256(data).hexdigest() == report["csv_sha256"]
     return reports
 
 
@@ -56,9 +69,9 @@ def main():
     mode.add_argument("--primary_only", action="store_true", help="Archive the main trio while auxiliary checks run")
     mode.add_argument("--checks_only", action="store_true", help="Add finished auxiliary checks to an existing report")
     args = parser.parse_args()
-    if not re.fullmatch(r"exp[1-9][0-9]*(?:\.[1-9][0-9]*)?|exp_[0-9]+(?:\.[0-9]+)?", args.experiment):
+    if not re.fullmatch(r"exp[1-9][0-9]*(?:\.[0-9]+)?t?|exp_[0-9]+(?:\.[0-9]+)?", args.experiment):
         raise ValueError("Use an experiment name such as exp1.4 (or a historical exp_N name)")
-    artifacts = args.record_dir.resolve() if args.record_dir else ROOT / "czy/exp1/artifacts" / args.experiment
+    artifacts = args.record_dir.resolve() if args.record_dir else ROOT / "czy/exp1/records" / (args.experiment+"_evaluation")
     state = json.loads((artifacts / "replay_job.json").read_text())
     context = load_context(args.model)
     iteration = state.get("checkpoint_iteration", 6000)
@@ -99,7 +112,7 @@ def main():
         summary = json.loads(summary_path.read_text())
         assert hashlib.sha256(args.model.read_bytes()).hexdigest() == summary["checkpoint_sha256"]
         with tempfile.TemporaryDirectory(prefix="x1_amp_checks_") as temp:
-            summary["auxiliary_checks"] = collect_checks(state, remote, Path(temp), context)
+            summary["auxiliary_checks"] = collect_checks(state, remote, Path(temp), context, artifacts)
         summary["checks_pending"] = []
         summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
         print("Auxiliary checks added: " + str(len(summary["auxiliary_checks"])))
@@ -114,14 +127,18 @@ def main():
         assert metadata["captured_steps"] == 3000 and metadata["checkpoint"] == iteration
         assert metadata["policy_metadata"] == context["metadata"]
         assert not metadata["noise"] and not metadata["pushes"]
-        assert metadata["video_frames"] == 1500 and len(metadata["segments"]) == 6
+        expected_profile = state.get("profile", [0, .4, .6, 0, .4, 0])
+        assert metadata["video_frames"] == 1500 and len(metadata["segments"]) == len(expected_profile)
+        assert len(metadata["profile"]) == len(expected_profile)
+        for (_, actual_vx), expected_vx in zip(metadata["profile"], expected_profile):
+            assert abs(actual_vx-expected_vx) < 1e-6
         with (temp / "isaac_diag.csv").open() as stream:
             rows = list(csv.DictReader(stream))
         assert len(rows) == 3000
         numeric = {key: np.array([float(row[key]) for row in rows]) for key in rows[0]}
         assert all(np.isfinite(values).all() for values in numeric.values())
         assert np.max(np.abs(numeric["command_applied"] - numeric["command_observed"])) < 1e-6
-        assert set(numeric["active_stage"].astype(int)) == set(range(6))
+        assert set(numeric["active_stage"].astype(int)) == set(range(len(expected_profile)))
         video = cv2.VideoCapture(str(temp / "play_output.mp4"))
         assert video.isOpened()
         assert (video.get(cv2.CAP_PROP_FRAME_WIDTH), video.get(cv2.CAP_PROP_FRAME_HEIGHT)) == (1920, 1080)
@@ -152,7 +169,7 @@ def main():
         summary["evaluation"] = evaluate_csv(temp / "isaac_diag.csv", context)
         if "style_score" in numeric:
             summary["mean_style_score"] = float(numeric["style_score"].mean())
-        summary["auxiliary_checks"] = [] if args.primary_only else collect_checks(state, remote, temp, context)
+        summary["auxiliary_checks"] = [] if args.primary_only else collect_checks(state, remote, temp, context, artifacts)
         summary["checks_pending"] = state.get("checks", []) if args.primary_only else []
         destination.mkdir(parents=True, exist_ok=True)
         if args.model.resolve() != (destination / model_name).resolve():
@@ -164,6 +181,14 @@ def main():
         summary["file_bytes"] = {path.name: path.stat().st_size for path in destination.iterdir()}
         summary["file_sha256"] = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in destination.iterdir()}
         (artifacts / "replay_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    if state.get("training_commit"):
+        subprocess.run([SCP, "-o", "BatchMode=yes", HOST+":"+remote+"/deployment_verification.json",
+                        str(artifacts/"deployment_verification.json")], check=True)
+        deployment = json.loads((artifacts/"deployment_verification.json").read_text())
+        assert deployment["verified"] and deployment["training_commit"] == state["training_commit"]
+        expected = dict(state["source_file_sha256"], **state["resource_file_sha256"])
+        expected["checkpoints/"+model_name] = state["checkpoint_sha256"]
+        assert deployment["file_sha256"] == expected
     assert sorted(p.name for p in destination.iterdir()) == ["isaac_diag.csv", model_name, "play_output.mp4"]
     print(json.dumps({key: value for key, value in summary.items() if key not in ("evaluation", "auxiliary_checks")}, indent=2))
     print("Detailed evaluation: " + str(artifacts / "replay_summary.json"))
