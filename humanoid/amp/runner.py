@@ -394,6 +394,11 @@ class AMPOnPolicyRunner:
         first_iteration = self.current_learning_iteration
         self.training_log.call_start_time = self.training_log.total_time
         while self.current_learning_iteration < end:
+            stop_check = getattr(self, 'training_stop_reason', None)
+            reason = stop_check() if stop_check is not None else None
+            if reason:
+                print('TRAINING_STOPPED '+json.dumps(dict(reason=reason,iteration=self.current_learning_iteration)),flush=True)
+                break
             start = time.time()
             batch = self.collect_rollout()
             collection_time = time.time()-start
