@@ -148,3 +148,7 @@ task_registry.register('x1_amp_exp20',X1AMPExp20Env,X1AMPExp20Cfg(),X1AMPExp20Cf
 from .x1.x1_amp_exp21_config import X1AMPExp21Cfg,X1AMPExp21CfgPPO
 from .x1.x1_amp_exp21_env import X1AMPExp21Env
 task_registry.register('x1_amp_exp21',X1AMPExp21Env,X1AMPExp21Cfg(),X1AMPExp21CfgPPO())
+
+from .x1.x1_amp_exp22_config import X1AMPExp22Cfg,X1AMPExp22CfgPPO
+from .x1.x1_amp_exp22_env import X1AMPExp22Env
+task_registry.register('x1_amp_exp22',X1AMPExp22Env,X1AMPExp22Cfg(),X1AMPExp22CfgPPO())

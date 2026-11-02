@@ -22,6 +22,8 @@ class ActorCritic(nn.Module):
                 or not math.exp(-5) <= init_noise_std <= max_noise_std <= math.exp(2)):
             raise ValueError("Invalid exploration noise upper bound")
         self.max_noise_std = max_noise_std
+        # Runtime sampling scale; deterministic/exported weights stay unchanged.
+        self.exploration_gain = 1.
         self.actor = mlp(num_obs if actor_input_dim is None else actor_input_dim, actor_hidden_dims, num_actions)
         self.critic = mlp(num_critic_obs, critic_hidden_dims, 1)
         self.log_std = nn.Parameter(torch.full((num_actions,), float(init_noise_std)).log())
@@ -51,7 +53,7 @@ class ActorCritic(nn.Module):
         if self.motion_std_floor > 0:
             moving = obs[..., self.motion_command_index].abs().gt(self.motion_command_threshold).unsqueeze(-1)
             std = torch.where(moving & self.motion_std_mask, std.clamp(min=self.motion_std_floor), std)
-        return Normal(mean, std)
+        return Normal(mean, std*self.exploration_gain)
 
     def noise_std(self):
         maximum = 2. if self.max_noise_std is None else math.log(self.max_noise_std)

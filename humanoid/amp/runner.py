@@ -216,6 +216,8 @@ class AMPOnPolicyRunner:
                 if estimator_loss is not None:
                     loss = loss+cfg.get("state_estimator_loss_coef", 1.)*estimator_loss
                     totals["state_estimator_loss"] += estimator_loss.item()
+                if hasattr(self, 'policy_regularization_loss'):
+                    loss = loss+self.policy_regularization_loss(batch['obs'][ids])
                 if not torch.isfinite(loss):
                     raise FloatingPointError("Non-finite PPO loss")
                 self.optimizer.zero_grad()
@@ -280,6 +282,8 @@ class AMPOnPolicyRunner:
                 if estimator_loss is not None:
                     loss = loss+cfg.get("state_estimator_loss_coef", 1.)*estimator_loss
                     totals["state_estimator_loss"] += estimator_loss.item()
+                if hasattr(self, 'policy_regularization_loss'):
+                    loss = loss+self.policy_regularization_loss(batch['obs'][ids])
                 if not torch.isfinite(loss):
                     raise FloatingPointError("Non-finite PPO loss")
                 self.optimizer.zero_grad()
