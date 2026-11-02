@@ -154,7 +154,7 @@ class TaskRegistry():
         
         runner_name = train_cfg_dict["runner_class_name"]
         if getattr(args, "checkpoint_dir", None):
-            if runner_name not in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner"):
+            if runner_name not in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner"):
                 raise ValueError("checkpoint_dir is supported for AMP training")
             from humanoid.amp.checkpoint import checkpoint_directory
             log_dir = checkpoint_directory(args, log_dir)
@@ -162,6 +162,9 @@ class TaskRegistry():
         if runner_name == "AMPOnPolicyRunner":
             from humanoid.amp.runner import AMPOnPolicyRunner
             runner_class = AMPOnPolicyRunner
+        elif runner_name == "Exp23AMPOnPolicyRunner":
+            from humanoid.amp.exp23_runner import Exp23AMPOnPolicyRunner
+            runner_class = Exp23AMPOnPolicyRunner
         elif runner_name == "AnchoredAMPOnPolicyRunner":
             from humanoid.amp.anchored_runner import AnchoredAMPOnPolicyRunner
             runner_class = AnchoredAMPOnPolicyRunner
@@ -178,14 +181,14 @@ class TaskRegistry():
         resume = train_cfg.runner.resume
         warm_start = getattr(args, "warm_start", None)
         if warm_start:
-            if resume or runner_name not in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner"):
+            if resume or runner_name not in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner"):
                 raise ValueError("AMP warm_start must be used without --resume")
             runner.warm_start(os.path.abspath(warm_start), getattr(args, "warm_start_sha256", None))
         elif resume:
             # load previously trained model
             resume_path = get_load_path(log_root, load_run=train_cfg.runner.load_run, checkpoint=train_cfg.runner.checkpoint)
             print(f"Loading model from: {resume_path}")
-            runner.load(resume_path, load_optimizer=(runner_name in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner")))
+            runner.load(resume_path, load_optimizer=(runner_name in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner")))
         return runner, train_cfg, log_dir
 
 # make global task registry
