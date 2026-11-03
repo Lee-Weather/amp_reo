@@ -172,3 +172,7 @@ task_registry.register('x1_amp_exp26',X1AMPExp26Env,X1AMPExp26Cfg(),X1AMPExp26Cf
 from .x1.x1_amp_exp27_config import X1AMPExp27Cfg,X1AMPExp27CfgPPO
 from .x1.x1_amp_exp27_env import X1AMPExp27Env
 task_registry.register('x1_amp_exp27',X1AMPExp27Env,X1AMPExp27Cfg(),X1AMPExp27CfgPPO())
+
+from .x1.x1_amp_exp28_config import X1AMPExp28Cfg,X1AMPExp28CfgPPO
+from .x1.x1_amp_exp28_env import X1AMPExp28Env
+task_registry.register('x1_amp_exp28',X1AMPExp28Env,X1AMPExp28Cfg(),X1AMPExp28CfgPPO())
