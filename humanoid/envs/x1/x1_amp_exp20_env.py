@@ -208,6 +208,9 @@ class X1AMPExp20Env(X1AMPExp113Env):
     def sample_amp_expert(self,count):
         raise ValueError('exp2.0 requires sample_amp_expert_by_category with paired policy categories')
 
+    def _support_terms(self,height,target,force,weight,speed):
+        return support_terms(height,target,force,weight,speed)
+
     def compute_reward(self):
         blend,derivative = self.standing_commands.blend()
         reference_state = self.reference_guide.blended_pose(self.gait_phase,self.standing_state,blend,derivative)
@@ -215,7 +218,7 @@ class X1AMPExp20Env(X1AMPExp113Env):
         self.reference_feet = self.motion_library.fk.key_positions(self.reference_q)[:,self.native_foot_ids].flatten(-2)
         target_height = self.reference_guide.sole_height(reference_state).clamp(min=0)
         height,speed = lowest_sole_kinematics(self.rigid_state[:,self.feet_indices],self.sole_vertices,self.foot_com_local,self.env_origins[:,2])
-        self.swing_score,self.support_score,self.slip_cost = support_terms(height,target_height,
+        self.swing_score,self.support_score,self.slip_cost = self._support_terms(height,target_height,
             self.contact_forces[:,self.feet_indices,2],self.total_mass[:,0]*9.81,speed)
         super().compute_reward()
         failure = self.reset_buf.bool()&~self.time_out_buf

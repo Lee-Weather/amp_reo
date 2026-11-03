@@ -18,8 +18,9 @@ class Exp25AMPOnPolicyRunner(Exp24AMPOnPolicyRunner):
             ConservativeAMPOnPolicyRunner.warm_start(self,path,expected_sha256)
         source=torch.load(path,map_location=self.device)
         saved=source['infos']['exp21'];curriculum=saved['learning_state']['curriculum']
-        if not source['disc_optimizer_state_dict']['state'] or curriculum['d_updates']!=900:
-            raise ValueError('Expected audited exp2.4 model1100 with900 D updates')
+        expected_d=self.cfg.get('policy_transfer_source_discriminator_updates',900)
+        if not source['disc_optimizer_state_dict']['state'] or curriculum['d_updates']!=expected_d:
+            raise ValueError('Source discriminator update count differs from audited continuation contract')
         for section in ('model_state_dict','discriminator_state_dict'):
             if any(not torch.isfinite(v).all() for v in source[section].values()):raise ValueError('Nonfinite source model')
         for section in ('optimizer_state_dict','disc_optimizer_state_dict'):
@@ -38,7 +39,8 @@ class Exp25AMPOnPolicyRunner(Exp24AMPOnPolicyRunner):
             new_iteration=source['iter'],retained=['actor','critic','long_history','state_estimator','log_std',
                 'discriminator','normalizer','policy_optimizer','disc_optimizer','original7000_anchor'],
             reset=['replay','curriculum_windows','stop_flags'],
-            curriculum_migration='exp24_to_pooled_low_amp_exp25',parent_training_origin=source['training_origin'])
+            curriculum_migration=self.cfg.get('curriculum_migration','exp24_to_pooled_low_amp_exp25'),
+            parent_training_origin=source['training_origin'])
         window=curriculum['last_window']
         self.best_record=dict(iteration=source['iter'],score=self._stability_score(window),
             file=os.path.basename(path),source_input=True,standing=window['standing'],rsi=window['rsi'])
