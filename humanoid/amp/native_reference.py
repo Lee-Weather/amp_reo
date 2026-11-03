@@ -129,12 +129,14 @@ class NativeCycle:
         state = self.state(phase)
         return state[:,13:42],state[:,42:]
 
-    def blended_pose(self,phase,standing,blend,derivative,ground_transition=True):
+    def blended_pose(self,phase,standing,blend,derivative,ground_transition=True,phase_rate_scale=None):
         """Transition pose/geometry only: never an AMP expert or root dynamics claim."""
         native = self.state(phase)
         state = native.clone()
         state[:,13:42] = torch.lerp(standing[13:42].expand(len(phase),-1),native[:,13:42],blend[:,None])
         state[:,42:] = blend[:,None]*native[:,42:]+derivative[:,None]*(native[:,13:42]-standing[13:42])
+        if phase_rate_scale is not None:
+            state[:,42:] = (blend*phase_rate_scale)[:,None]*native[:,42:]+derivative[:,None]*(native[:,13:42]-standing[13:42])
         state[:,2] = torch.lerp(standing[2].expand(len(phase)),native[:,2],blend)
         start = standing[3:7].expand(len(phase),-1)
         target = torch.where((start*native[:,3:7]).sum(-1,keepdim=True)<0,-native[:,3:7],native[:,3:7])

@@ -134,7 +134,13 @@ class X1AMPExp20Env(X1AMPExp113Env):
     def _post_physics_step_callback(self):
         super()._post_physics_step_callback()
         active = (self.standing_commands.value>1e-7)|self.standing_commands.transition
+        self._advance_reference_phase(active)
+
+    def _advance_reference_phase(self,active):
         self.gait_phase[active] = (self.gait_phase[active]+self.dt/self.reference_guide.period).remainder(1)
+
+    def _blended_reference(self,blend,derivative):
+        return self.reference_guide.blended_pose(self.gait_phase,self.standing_state,blend,derivative)
 
     def reset_idx(self,env_ids):
         if not len(env_ids): return
@@ -213,7 +219,7 @@ class X1AMPExp20Env(X1AMPExp113Env):
 
     def compute_reward(self):
         blend,derivative = self.standing_commands.blend()
-        reference_state = self.reference_guide.blended_pose(self.gait_phase,self.standing_state,blend,derivative)
+        reference_state = self._blended_reference(blend,derivative)
         self.reference_q,self.reference_dq = reference_state[:,13:42],reference_state[:,42:]
         self.reference_feet = self.motion_library.fk.key_positions(self.reference_q)[:,self.native_foot_ids].flatten(-2)
         target_height = self.reference_guide.sole_height(reference_state).clamp(min=0)
