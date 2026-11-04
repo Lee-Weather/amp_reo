@@ -27,6 +27,9 @@ class X1AMPExp21Env(X1AMPExp20Env):
         weight=self.gait_curriculum.weights['slip'] if hasattr(self,'gait_curriculum') else 0.
         return self.slip_cost*weight*self._reference_valid()
 
+    def _adjust_reset_states(self,env_ids,standing,phase,state):
+        return standing,phase,state
+
     def reset_idx(self,env_ids):
         if not len(env_ids): return
         count=len(env_ids)
@@ -40,6 +43,7 @@ class X1AMPExp21Env(X1AMPExp20Env):
         state=self.reference_guide.state(phase)
         state[standing]=self.standing_state
         state[standing,13:42]+=(2*torch.rand(int(standing.sum()),29,device=self.device)-1)*self.cfg.amp.standing_joint_noise
+        standing,phase,state=self._adjust_reset_states(env_ids,standing,phase,state)
         state[:,13:42]=state[:,13:42].maximum(self.hard_dof_limits[:,0]).minimum(self.hard_dof_limits[:,1])
         if standing.any():
             state[standing,2]+=self.cfg.amp.ground_clearance-self.reference_guide.sole_height(state[standing]).amin(-1)
