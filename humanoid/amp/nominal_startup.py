@@ -16,5 +16,6 @@ def training_metadata(parent):
     result=copy.deepcopy(parent)
     result.update(curriculum='nominal_startup_coverage_v1',
         initialization='25pct_exact_standing_forward_75pct_original_mixture',
+        nominal_reset_entrypoint='exp22.reset_idx_hook_v1',
         nominal_startup_training=copy.deepcopy(COHORT))
     return result

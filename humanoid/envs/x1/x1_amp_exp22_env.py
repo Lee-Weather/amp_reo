@@ -53,6 +53,7 @@ class X1AMPExp22Env(X1AMPExp21Env):
         phase=self.bank['phases'][samples].clone()
         state[standing]=self.standing_state
         state[standing,13:42]+=(2*torch.rand(int(standing.sum()),29,device=self.device)-1)*self.cfg.amp.standing_joint_noise
+        standing,phase,state=self._adjust_reset_states(env_ids,standing,phase,state)
         state[:,13:42]=state[:,13:42].maximum(self.hard_dof_limits[:,0]).minimum(self.hard_dof_limits[:,1])
         if standing.any():
             state[standing,2]+=self.cfg.amp.ground_clearance-self.reference_guide.sole_height(state[standing]).amin(-1)

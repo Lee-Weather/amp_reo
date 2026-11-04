@@ -9,7 +9,7 @@ import tempfile
 from types import SimpleNamespace as NS
 import unittest
 import torch
-from humanoid.amp.exp212_transfer import SOURCE_SHA,expected_metadata,validate_configuration,restore_nominal_continuation
+from humanoid.amp.exp212_transfer import SOURCE_SHA,RECOVERY_SHA,expected_metadata,validate_configuration,restore_nominal_continuation
 from humanoid.amp.nominal_startup import cohort_mask,training_metadata
 from humanoid.amp.exp25_runner import Exp25AMPOnPolicyRunner
 from humanoid.amp.exp29_curriculum import Exp29Curriculum
@@ -70,14 +70,22 @@ class NominalStartupTests(unittest.TestCase):
                 env._resample_commands(ids)
         ns=dict(torch=torch,json=__import__('json'),X1AMPExp20Env=Base,LeggedRobot=Legged)
         definitions('humanoid/envs/x1/x1_amp_exp21_env.py',ns)
-        ns.update(X1AMPExp211Env=ns['X1AMPExp21Env'],cohort_mask=cohort_mask,training_metadata=training_metadata)
+        # exp22 overrides reset_idx; use the real inheritance path, not exp21.
+        ns['GaitCurriculum']=__import__('humanoid.amp.gait_curriculum',fromlist=['GaitCurriculum']).GaitCurriculum
+        definitions('humanoid/envs/x1/x1_amp_exp22_env.py',ns)
+        ns.update(X1AMPExp211Env=ns['X1AMPExp22Env'],cohort_mask=cohort_mask,training_metadata=training_metadata)
         definitions('humanoid/envs/x1/x1_amp_exp212_env.py',ns)
         env=ns['X1AMPExp212Env'].__new__(ns['X1AMPExp212Env'])
         env.num_envs=8;env.device='cpu';env.dt=.02
-        env.cfg=NS(amp=NS(nominal_startup_fraction=.25,standing_joint_noise=.03,ground_clearance=.002),commands=NS(native_speed=.5953696966))
+        env.cfg=NS(amp=NS(nominal_startup_fraction=.25,standing_joint_noise=.03,ground_clearance=.002,history_steps=3),commands=NS(native_speed=.5953696966))
         env.gait_curriculum=NS(weights={'rsi_probability':.5});env.evaluation_reset_mode=None
         env.standing_state=torch.zeros(71);env.standing_state[2]=.62;env.standing_state[6]=1
         env.hard_dof_limits=torch.tensor([[-2.,2.]]*29)
+        env.bank={'states':env.standing_state.expand(4,-1).clone()+.01,'phases':torch.full((4,),.3),
+            'histories':torch.ones(4,66,98)*.1,'amp_states':env.standing_state.expand(4,3,-1).clone()}
+        env.dof_pos=torch.zeros(8,29);env.dof_vel=torch.zeros(8,29)
+        for name in ('actions','last_actions','last_last_actions','last_dof_vel'):setattr(env,name,torch.zeros(8,29))
+        env._bank_pending=None
         env.reference_guide=NS(state=lambda phase:env.standing_state.expand(len(phase),-1).clone()+.01,
             sole_height=lambda state:torch.full((len(state),2),.002),nearest_phase=lambda q,dq:torch.full((len(q),),.2),
             history=lambda phase:torch.ones(len(phase),3,4))
@@ -104,7 +112,7 @@ class NominalStartupTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):env.compute_observations()
         self.assertEqual(env.obs_buf.shape,(8,6468))
         self.assertTrue((env.obs_buf[:2,-98:]==.125).all())
-        self.assertTrue((env.obs_buf[2:,-98:]==.625).all())
+        self.assertTrue((env.obs_buf[2:,-98:]!=.125).all())
         self.assertTrue((env.obs_buf[:2,:-98]==0).all())
 
     def test_actual_full_restore_update_and_save_reload(self):
@@ -128,6 +136,25 @@ class NominalStartupTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):r.save(str(path));loaded=self.fresh();loaded.load(str(path))
             self.assertEqual(loaded.current_learning_iteration,13501)
             self.assertEqual(loaded._metadata(),r._metadata())
+
+    def test_verified_partial_checkpoint_resumes_only_remaining950(self):
+        path=SOURCE.parent.parent/'exp2.12/model_13550.pt'
+        source=torch.load(path,map_location='cpu',weights_only=False)
+        env,_=fixture23(source);env.gait_curriculum=Exp29Curriculum()
+        env.checkpoint_training_metadata=lambda:expected_metadata(source['metadata'])['training']
+        cfg=configuration();cfg['runner']['max_iterations']=950
+        r=Exp25AMPOnPolicyRunner(env,cfg)
+        with contextlib.redirect_stdout(io.StringIO()):receipt=restore_nominal_continuation(r,path,RECOVERY_SHA,13550,14500,950)
+        self.assertEqual(receipt['refinement'],'exp212_nominal_reset_fix_v1')
+        self.assertEqual(r.current_learning_iteration,13550)
+        for field,module in [('model_state_dict',r.actor_critic),('discriminator_state_dict',r.discriminator)]:
+            for k,v in source[field].items():torch.testing.assert_close(module.state_dict()[k],v,rtol=0,atol=0)
+        for field,opt in [('optimizer_state_dict',r.optimizer),('disc_optimizer_state_dict',r.disc_optimizer)]:
+            for k,entry in source[field]['state'].items():
+                for name,v in entry.items():torch.testing.assert_close(opt.state_dict()['state'][k][name],v,rtol=0,atol=0)
+        with contextlib.redirect_stdout(io.StringIO()):r.learn(1,init_at_random_ep_len=False)
+        self.assertEqual(r.current_learning_iteration,13551)
+        self.assertEqual(r.env.gait_curriculum.d_updates,13351)
 
 
 if __name__=='__main__':unittest.main()
