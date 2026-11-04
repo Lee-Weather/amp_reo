@@ -49,6 +49,12 @@ def main():
         raise ValueError("Use a supported x1_amp preflight task")
     args.resume = False
     cfg, train_cfg = task_registry.get_cfgs(args.task)
+    if args.task == "x1_amp":
+        # The production runner requires a verified continuation origin, which a
+        # fresh smoke cannot satisfy. Exercise the shared PPO/discriminator/
+        # checkpoint path with the base runner; the exp2.12 continuation itself
+        # is covered by its own task record.
+        train_cfg.runner_class_name = "AMPOnPolicyRunner"
     if args.seed is not None:
         cfg.seed = args.seed
     train_cfg.runner.resume = False
@@ -152,6 +158,10 @@ def main():
         watch(resumed, "resumed")
         resumed.learn(smoke.resume_iterations)
         assert resumed.current_learning_iteration == initial_iteration+smoke.smoke_iterations+smoke.resume_iterations
+        if hasattr(env, "checkpoint_learning_state") and hasattr(env, "restore_learning_state"):
+            # Prove the curriculum/statistics payload survives a checkpoint-style
+            # JSON round trip, as the exp2.x runners store it in the checkpoint.
+            env.restore_learning_state(json.loads(json.dumps(env.checkpoint_learning_state())))
         policy = resumed.get_inference_policy(device=env.device)
         with torch.no_grad():
             actions = policy(env.get_observations())
