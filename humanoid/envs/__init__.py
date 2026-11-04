@@ -185,3 +185,8 @@ from .x1.x1_amp_exp210_config import X1AMPExp210Cfg,X1AMPExp210CfgPPO
 from .x1.x1_amp_exp210_env import X1AMPExp210Env
 
 task_registry.register('x1_amp_exp210',X1AMPExp210Env,X1AMPExp210Cfg(),X1AMPExp210CfgPPO())
+
+from .x1.x1_amp_exp211_config import X1AMPExp211Cfg,X1AMPExp211CfgPPO
+from .x1.x1_amp_exp211_env import X1AMPExp211Env
+
+task_registry.register('x1_amp_exp211',X1AMPExp211Env,X1AMPExp211Cfg(),X1AMPExp211CfgPPO())
