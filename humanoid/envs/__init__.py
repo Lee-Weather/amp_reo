@@ -180,3 +180,8 @@ task_registry.register('x1_amp_exp28',X1AMPExp28Env,X1AMPExp28Cfg(),X1AMPExp28Cf
 from .x1.x1_amp_exp29_config import X1AMPExp29Cfg,X1AMPExp29CfgPPO
 from .x1.x1_amp_exp29_env import X1AMPExp29Env
 task_registry.register('x1_amp_exp29',X1AMPExp29Env,X1AMPExp29Cfg(),X1AMPExp29CfgPPO())
+
+from .x1.x1_amp_exp210_config import X1AMPExp210Cfg,X1AMPExp210CfgPPO
+from .x1.x1_amp_exp210_env import X1AMPExp210Env
+
+task_registry.register('x1_amp_exp210',X1AMPExp210Env,X1AMPExp210Cfg(),X1AMPExp210CfgPPO())

@@ -41,7 +41,7 @@ def restore_continuation(runner, path, digest, source_iteration, target_iteratio
             "limits": "Checkpoint does not store simulator/RNG/replay/episode-buffer state; these restart. Policy, critic, D, normalizer, both Adam states and absolute iteration are restored."}
 
 
-def main():
+def main(restore=restore_continuation):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--recovery_model", type=Path, required=True)
     parser.add_argument("--recovery_sha256", required=True)
@@ -68,7 +68,7 @@ def main():
                        warm_start_url_b64=recovery.recovery_url_b64, resume=False))
     env, _ = task_registry.make_env(name=args.task, args=args)
     runner, _, _ = task_registry.make_alg_runner(env=env, name=args.task, args=args, log_root=None)
-    receipt = restore_continuation(runner, path, recovery.recovery_sha256,
+    receipt = restore(runner, path, recovery.recovery_sha256,
                                   recovery.source_iteration, recovery.target_iteration, args.max_iterations)
     runner.log_dir = str(path.parent)
     runner.writer = SummaryWriter(runner.log_dir)
