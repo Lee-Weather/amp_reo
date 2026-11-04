@@ -2,6 +2,8 @@
 import contextlib
 import copy
 import io
+import subprocess
+import sys
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace as NS
@@ -38,6 +40,12 @@ class NominalStartupTests(unittest.TestCase):
         env,_=fixture23(self.source);env.gait_curriculum=Exp29Curriculum()
         env.checkpoint_training_metadata=lambda:expected_metadata(self.source['metadata'])['training']
         return Exp25AMPOnPolicyRunner(env,configuration())
+
+    def test_production_entry_preserves_isaac_before_torch_import_order(self):
+        p=subprocess.run([sys.executable,'-c',
+            "import sys;import humanoid.scripts.train_nominal_amp;assert 'torch' not in sys.modules"],
+            capture_output=True,text=True)
+        self.assertEqual(p.returncode,0,p.stderr)
 
     def test_config_preserves_rewards_controller_and_rejects_extra_changes(self):
         cfg=configuration();validate_configuration(self.source['config'],cfg)

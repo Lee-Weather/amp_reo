@@ -1,6 +1,5 @@
 """A fixed deployment-condition cohort; never alter reference or policy dimensions."""
 import copy
-import torch
 
 COHORT=dict(fraction=.25,standing_joint_noise=0.,observation_noise=False,
     forward_only=True,friction=.8,contact_offset_m=.001,
