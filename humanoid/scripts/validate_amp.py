@@ -9,8 +9,8 @@ from humanoid.amp.motion import quat_inverse_rotate
 
 def main():
     args = get_args()
-    if args.task != "x1_amp":
-        raise ValueError("Use --task=x1_amp")
+    if args.task not in ("x1_amp", "x1_amp_base"):
+        raise ValueError("Use --task=x1_amp or --task=x1_amp_base")
     cfg, _ = task_registry.get_cfgs(args.task)
     cfg.env.num_envs = args.num_envs or 8
     cfg.noise.add_noise = False
@@ -25,14 +25,15 @@ def main():
     error = (measured-expected).norm(dim=-1).max().item()
     print("SIM_FK_MAX_ERROR_M={:.8f}".format(error), flush=True)
     assert error < 0.002, "Simulator link origins disagree with reference kinematics"
-    assert obs.shape == (env.num_envs, 480) and critic.shape == (env.num_envs, 99)
+    expected_obs, expected_critic = cfg.env.num_observations, cfg.env.num_privileged_obs
+    assert obs.shape == (env.num_envs, expected_obs) and critic.shape == (env.num_envs, expected_critic)
     assert torch.isfinite(obs).all() and torch.isfinite(critic).all()
     # Force a simultaneous timeout to exercise reset indexing and true terminal history.
     env.episode_length_buf[:] = int(env.max_episode_length)
     _, _, _, done, info = env.step(action)
     assert done.all() and info["time_outs"].all()
     assert (env.episode_length_buf == 0).all()
-    assert info["amp_obs"].shape == (env.num_envs, 3, 86)
+    assert info["amp_obs"].shape == (env.num_envs, cfg.amp.history_steps, 86)
     assert not torch.equal(info["amp_obs"], env.get_amp_observations())
     assert torch.isfinite(env.get_amp_observations()).all()
     _, _, _, _, info = env.step(action)
@@ -40,7 +41,8 @@ def main():
     for _ in range(30):
         obs, critic, reward, done, _ = env.step(torch.randn_like(action)*0.1)
         assert all(torch.isfinite(x).all() for x in (obs, critic, reward))
-    print("AMP_SIM_VALIDATION_OK dofs=29 obs=480 critic=99 amp=3x86", flush=True)
+    print("AMP_SIM_VALIDATION_OK dofs=29 obs={} critic={} amp={}x86".format(
+        expected_obs, expected_critic, cfg.amp.history_steps), flush=True)
 
 
 if __name__ == "__main__":

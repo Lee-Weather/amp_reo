@@ -42,10 +42,17 @@ from humanoid.utils.task_registry import task_registry
 
 task_registry.register( "x1_dh_stand", X1DHStandEnv, X1DHStandCfg(), X1DHStandCfgPPO() )
 
-from .x1.x1_amp_config import X1AMPCfg, X1AMPCfgPPO
-from .x1.x1_amp_env import X1AMPEnv
+from .x1.x1_amp_config import (X1AMPCfg, X1AMPCfgPPO,
+                               X1AMPFinalCfg, X1AMPFinalCfgPPO)
+from .x1.x1_amp_env import X1AMPEnv, X1AMPFinalEnv
 
-task_registry.register("x1_amp", X1AMPEnv, X1AMPCfg(), X1AMPCfgPPO())
+# x1_amp is the consolidated exp2.12 behaviour (one config + one env file).
+# The original exp1.0 baseline remains runnable as x1_amp_base and is still the
+# base class of every x1_amp_exp* task.
+_x1_amp_base_ppo = X1AMPCfgPPO()
+_x1_amp_base_ppo.runner.experiment_name = "x1_amp_base"
+task_registry.register("x1_amp", X1AMPFinalEnv, X1AMPFinalCfg(), X1AMPFinalCfgPPO())
+task_registry.register("x1_amp_base", X1AMPEnv, X1AMPCfg(), _x1_amp_base_ppo)
 
 from .x1.x1_amp_exp11_config import X1AMPExp11Cfg, X1AMPExp11CfgPPO
 from .x1.x1_amp_exp11_env import X1AMPExp11Env

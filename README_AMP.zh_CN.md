@@ -2,6 +2,11 @@
 
 新增任务名 `x1_amp`。保留原来的 `x1_dh_stand`；新任务使用 29 关节全身 PD 控制、PPO 和 AMP 动作风格判别器。参考 `czy/roboparty_train` 的 LSGAN 奖励和梯度惩罚方式，在本工程的 Isaac Gym Preview 4 中实现，不需要安装 Isaac Lab。
 
+> **2026-11-04 合并**：`x1_amp` 现在直接运行 exp2.12 的最终行为，配置和环境各只有一个文件
+> （`x1_amp_config.py` 的 `X1AMPFinalCfg` / `X1AMPFinalCfgPPO`，`x1_amp_env.py` 的 `X1AMPFinalEnv`），
+> 不再依赖任何 `x1_amp_exp*.py`。有效观测为 66×98=6468，价值输入 101。下文“算法和尺寸”表中的
+> 480/99 对应原始 exp1.0 基线；该基线仍注册为 `x1_amp_base`，`x1_amp_exp*.py` 文件全部保留。
+
 ## 输入与模型约定
 
 - URDF：`resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf`，网格来自其相对路径 `../meshes/`。
