@@ -23,6 +23,73 @@ from humanoid.amp.student_distillation import (SCHEMA, SOURCE_SHA, validate_plan
     restore_checkpoint, trusted_load, checkpoint_directory)
 
 
+class RecoveryDistillationTests(unittest.TestCase):
+    def test_recovery_validator_rejects_mask_history_and_execution_corruption(self):
+        from humanoid.amp.recovery_distillation import validate_data, DATA_SCHEMA
+        meta = dict(schema=DATA_SCHEMA, requires_label_mask=True, seed=5, training_updates=0,
+            independent_validation_episodes=0, context_rows=768, supervised_rows=748,
+            original_supervised_rows=384, recovery_supervised_rows=364,
+            frame_width=14, frame_stack=2, dof_names=['j'], policy_dt=.02,
+            action_scale=.25, default_dof_pos=[0.], hard_limits=[[-1., 1.]],
+            teacher_lock={}, condition_profile={}, command_scale=[2., 2., .25],
+            observation_scales=dict(ang_vel=.25, dof_pos=1., dof_vel=.1), observation_clip=100.,
+            episodes=[dict(id=0), dict(id=1, case='step20_target_equivalent', student_context_steps=20)])
+        base = dict(meta, action_clip=5.)
+        profile = SimpleNamespace(data=dict(commands=np.zeros((385, 3)), features=np.zeros((385, 2))))
+        frame = np.zeros(14); frame[8] = -1.
+        history = np.tile(np.r_[frame, frame], (768, 1)); history[[0, 384], :14] = 0.
+        data = dict(student_observations=history, pre_roots=np.tile([0., 0., .6, 0., 0., 0., 1., 0., 0., 0., 0., 0., 0.], (768, 1)),
+            pre_q=np.zeros((768, 1)), pre_dq=np.zeros((768, 1)), previous_actions=np.zeros((768, 1)),
+            applied_actions=np.zeros((768, 1)), effective_targets=np.zeros((768, 1)), label_actions=np.zeros((768, 1)),
+            label_mask=np.r_[np.ones(384, dtype=bool), np.arange(384) >= 20],
+            episode_id=np.repeat([0, 1], 384), reference_step=np.tile(np.arange(384), 2))
+        self.assertEqual(validate_data(data, meta, base, profile)['masked_rows'], 20)
+        data['label_mask'][384] = True
+        with self.assertRaisesRegex(ValueError, 'label mask'):
+            validate_data(data, meta, base, profile)
+        data['label_mask'][384] = False; data['student_observations'][384, 0] = 1.
+        with self.assertRaisesRegex(ValueError, 'causal history'):
+            validate_data(data, meta, base, profile)
+        data['student_observations'][384, 0] = 0.; data['label_actions'][404] = .5
+        with self.assertRaisesRegex(ValueError, 'executed bounded targets'):
+            validate_data(data, meta, base, profile)
+
+    def test_masked_poison_labels_have_zero_loss_and_gradient_effect(self):
+        from humanoid.amp.recovery_distillation import masked_loss
+        prediction = torch.tensor([[1., 2.], [3., 4.], [5., 6.]], requires_grad=True)
+        mask = torch.tensor([True, False, True])
+        labels = torch.zeros_like(prediction)
+        labels[1] = float('nan')
+        loss = masked_loss(prediction, labels, mask, .25)
+        loss.backward()
+        expected = (.25*prediction.detach()[mask]).square().mean()
+        torch.testing.assert_close(loss.detach(), expected)
+        torch.testing.assert_close(prediction.grad[1], torch.zeros(2))
+        self.assertTrue(torch.isfinite(prediction.grad).all())
+        with self.assertRaisesRegex(ValueError, 'No supervised'):
+            masked_loss(prediction, labels, torch.zeros(3, dtype=torch.bool), .25)
+
+    def test_balanced_sampling_excludes_context_and_is_seed_reproducible(self):
+        from humanoid.amp.recovery_distillation import sample_balanced
+        episodes = torch.repeat_interleave(torch.tensor([0, 1]), 384)
+        mask = torch.ones(768, dtype=torch.bool); mask[384:404] = False
+        first = torch.Generator().manual_seed(5); second = torch.Generator().manual_seed(5)
+        for _ in range(30):
+            indices = sample_balanced(mask, episodes, first)
+            torch.testing.assert_close(indices, sample_balanced(mask, episodes, second))
+            self.assertEqual(len(indices.unique()), 64)
+            self.assertTrue(mask[indices].all())
+            self.assertEqual(int((episodes[indices] == 0).sum()), 32)
+            self.assertEqual(int((episodes[indices] == 1).sum()), 32)
+        with self.assertRaisesRegex(ValueError, 'at least32'):
+            sample_balanced(torch.zeros_like(mask), episodes, first)
+
+    def test_recovery_checkpoint_cannot_impersonate_legacy_bc(self):
+        from humanoid.amp.recovery_distillation import validate_checkpoint
+        with self.assertRaisesRegex(ValueError, 'identity/plan'):
+            validate_checkpoint(dict(schema=SCHEMA), dict(budget=dict(updates=200)), '0'*64)
+
+
 class DistillationSafetyTests(unittest.TestCase):
     def test_teacher_history_conversion_preserves_executed_target_across_joint_orders(self):
         from scripts.amp_tools.probe_b1_takeover import target_equivalent_history
