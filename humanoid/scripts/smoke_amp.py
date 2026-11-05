@@ -35,6 +35,8 @@ def main():
     parser.add_argument("--smoke_iterations", type=int, default=20)
     parser.add_argument("--resume_iterations", type=int, default=2)
     parser.add_argument("--output_dir", type=Path, required=True)
+    parser.add_argument("--continuation_checkpoint", type=Path,
+                        help="Use the production Exp25 runner and fully restore this compatible checkpoint")
     smoke, remaining = parser.parse_known_args()
     if min(smoke.smoke_iterations, smoke.resume_iterations) < 1:
         raise ValueError("Both training phases must have positive iteration counts")
@@ -42,13 +44,18 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     sys.argv = [sys.argv[0]]+remaining
     args = get_args()
+    if smoke.continuation_checkpoint:
+        if not smoke.continuation_checkpoint.is_file():
+            raise FileNotFoundError(smoke.continuation_checkpoint)
+        if args.warm_start or args.resume:
+            raise ValueError("continuation_checkpoint cannot be combined with warm_start or resume")
     # This branch ships only the consolidated AMP task.
     dh_tasks = ("x1_amp",)
     if args.task not in dh_tasks:
         raise ValueError("Use --task=x1_amp")
     args.resume = False
     cfg, train_cfg = task_registry.get_cfgs(args.task)
-    if args.task == "x1_amp":
+    if args.task == "x1_amp" and not smoke.continuation_checkpoint:
         # The production runner requires a verified continuation origin, which a
         # fresh smoke cannot satisfy. Exercise the shared PPO/discriminator/
         # checkpoint path with the base runner; the exp2.12 continuation itself
@@ -59,6 +66,16 @@ def main():
     train_cfg.runner.resume = False
     env, cfg = task_registry.make_env(args.task, args=args, env_cfg=cfg)
     runner, _, _ = task_registry.make_alg_runner(env, args=args, train_cfg=train_cfg, log_root=None)
+    if smoke.continuation_checkpoint:
+        runner.load(str(smoke.continuation_checkpoint.resolve()), load_optimizer=True)
+        expected_source = torch.load(str(smoke.continuation_checkpoint), map_location=runner.device)
+        equal_state(expected_source['model_state_dict'], runner.actor_critic.state_dict())
+        equal_state(expected_source['discriminator_state_dict'], runner.discriminator.state_dict())
+        equal_state(expected_source['optimizer_state_dict'], runner.optimizer.state_dict())
+        equal_state(expected_source['disc_optimizer_state_dict'], runner.disc_optimizer.state_dict())
+        equal_state(expected_source['infos']['exp21']['learning_state'], env.checkpoint_learning_state())
+        equal_state(expected_source['infos']['exp21']['anchor_state'], runner.policy_anchor.state_dict())
+        del expected_source
     initial_iteration = runner.current_learning_iteration
     if args.warm_start:
         expected_source = torch.load(args.warm_start, map_location=runner.device)
@@ -116,12 +133,17 @@ def main():
                 assert (batch["style_rewards"] <= batch["style_scores"]*10*env.dt+1e-6).all()
             else:
                 torch.testing.assert_close(batch["style_rewards"], batch["style_scores"]*10*env.dt)
+            frozen = {name: p.detach().clone() for name, p in current.actor_critic.named_parameters()
+                      if not p.requires_grad}
             metrics = original(batch)
+            for name, parameter in current.actor_critic.named_parameters():
+                if name in frozen:
+                    assert torch.equal(frozen[name], parameter), "Frozen inference parameter changed: "+name
             assert all(math.isfinite(value) for value in metrics.values())
             if args.task in dh_tasks:
                 assert "state_estimator_loss" in metrics
                 for module in (current.actor_critic.long_history, current.actor_critic.state_estimator):
-                    assert all(p in current.optimizer.state for p in module.parameters())
+                    assert all(p in current.optimizer.state for p in module.parameters() if p.requires_grad)
             if args.warm_start and current.current_learning_iteration == initial_iteration:
                 assert metrics["kl"] <= 1.5*current.alg_cfg["desired_kl"], "Warm-start first update overshot KL"
             assert (env.commands[:, 1:3] == 0).all()
@@ -139,7 +161,7 @@ def main():
             return metrics
         current.update_policy = update
 
-    watch(runner, "fresh")
+    watch(runner, "continuation" if smoke.continuation_checkpoint else "fresh")
     runner.learn(smoke.smoke_iterations)
     saved_lr = runner.optimizer.param_groups[0]["lr"]
     with tempfile.TemporaryDirectory(prefix="checkpoint_", dir=str(output)) as temporary:
@@ -152,6 +174,9 @@ def main():
         equal_state(expected["discriminator_state_dict"], resumed.discriminator.state_dict())
         equal_state(expected["optimizer_state_dict"], resumed.optimizer.state_dict())
         equal_state(expected["disc_optimizer_state_dict"], resumed.disc_optimizer.state_dict())
+        if smoke.continuation_checkpoint:
+            equal_state(expected['infos']['exp21']['learning_state'], env.checkpoint_learning_state())
+            equal_state(expected['infos']['exp21']['anchor_state'], resumed.policy_anchor.state_dict())
         assert resumed.current_learning_iteration == initial_iteration+smoke.smoke_iterations
         assert resumed.optimizer.param_groups[0]["lr"] == saved_lr
         watch(resumed, "resumed")
@@ -168,7 +193,9 @@ def main():
     report = dict(task=args.task, seed=cfg.seed, num_envs=env.num_envs, policy_dt=env.dt,
                   physics_dt=cfg.sim.dt, gpu=torch.cuda.get_device_name(),
                   torch_version=torch.__version__, initial_iteration=initial_iteration,
-                  fresh_iterations=smoke.smoke_iterations,
+                  fresh_iterations=0 if smoke.continuation_checkpoint else smoke.smoke_iterations,
+                  continuation_iterations=smoke.smoke_iterations if smoke.continuation_checkpoint else 0,
+                  runner_class=type(runner).__name__,
                   resumed_iterations=smoke.resume_iterations, final_iteration=resumed.current_learning_iteration,
                   checkpoint_restore_exact=True, temporary_checkpoint_removed=True,
                   inference_shape=list(actions.shape), status="passed", updates=records)

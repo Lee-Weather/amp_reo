@@ -455,15 +455,19 @@ class X1AMPFinalEnv(LeggedRobot):
             sampled_actor_checks=checked)),flush=True)
         self.nominal_startup_mask=self._nominal(torch.arange(self.num_envs,device=self.device))
         count=int(self.nominal_startup_mask.sum())
+        checks=self._verify_nominal_startup_shapes(count)
+        print('NOMINAL_STARTUP_READY '+json.dumps(dict(verified=True,nominal_envs=count,
+            total_envs=self.num_envs,fraction=count/self.num_envs,sampled_actor_checks=checks)),flush=True)
+
+    def _verify_nominal_startup_shapes(self,count):
         checks=[]
-        for index in sorted({0,count-1}):
+        for index in (sorted({0,count-1}) if count else []):
             props=self.gym.get_actor_rigid_shape_properties(self.envs[index],self.actor_handles[index])
             if not props or any(abs(p.friction-.8)>1e-6 or abs(p.contact_offset-.001)>1e-7 or abs(p.rest_offset)>1e-7 for p in props):
                 raise ValueError('Nominal cohort shape properties did not persist')
             checks.append(dict(env_id=index,shapes=len(props),friction=float(props[0].friction),
                 contact_offset_m=float(props[0].contact_offset)))
-        print('NOMINAL_STARTUP_READY '+json.dumps(dict(verified=True,nominal_envs=count,
-            total_envs=self.num_envs,fraction=count/self.num_envs,sampled_actor_checks=checks)),flush=True)
+        return checks
 
     def _get_noise_scale_vec(self, cfg):
         scale = torch.zeros(cfg.env.num_single_obs, device=self.device)
@@ -838,7 +842,7 @@ class X1AMPFinalEnv(LeggedRobot):
         self._reset_reference,self._reset_commands=None,None
         for value in (self.zero_steps,self.stop_hold_steps,self.previous_moving,self.stop_pending,self.stand_gate):value[_arg_env_ids]=0
         self.gait_phase[_arg_env_ids]=phase;self.completed_cycles[_arg_env_ids]=0
-        if hasattr(self,'swing_air_tracker'):self.swing_air_tracker.reset(ids)
+        if hasattr(self,'swing_air_tracker'):self.swing_air_tracker.reset(_arg_env_ids)
 
     def _reset_dofs(self, env_ids):
         if self._reset_reference is None:

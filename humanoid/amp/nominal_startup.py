@@ -7,6 +7,18 @@ COHORT=dict(fraction=.25,standing_joint_noise=0.,observation_noise=False,
     other_environments='exp211_contact_randomization_with_original_reset_noise_and_commands')
 
 
+def configure_nominal_probe(cfg):
+    """Set constant shape properties through the base importer's setter path."""
+    cfg.amp.standing_joint_noise=0.
+    # The base importer writes friction only when this flag is enabled. A
+    # degenerate interval gives constant0.8, rather than the URDF default.
+    cfg.domain_rand.randomize_friction=True
+    cfg.domain_rand.friction_range=[.8,.8]
+    cfg.domain_rand.restitution_range=[0.,0.]
+    cfg.domain_rand.randomize_contact_offset=False
+    cfg.sim.physx.contact_offset=.001
+
+
 def cohort_mask(env_ids,num_envs,fraction=.25):
     if not 0<fraction<1:raise ValueError('Cohort must leave both training populations')
     return env_ids<int(num_envs*fraction)

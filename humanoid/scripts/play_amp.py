@@ -1,5 +1,6 @@
 """Bounded X1 AMP playback with explicit commands and optional JIT export."""
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -28,11 +29,19 @@ def main():
     parser.add_argument("--checkpoint_path", type=str, help="Load a local checkpoint without optimizer states")
     parser.add_argument('--source_policy',action='store_true',help='exp2.0 only: evaluate the verified7000 source via policy migration, not target checkpoint resume')
     parser.add_argument("--reset_mode", choices=("standing", "rsi"), default="standing")
+    parser.add_argument("--transition_trace", type=str,
+                        help="Capture an exact nominal startup/action trace; stop before crossing a reset")
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
     if args.task not in ("x1_amp", "x1_amp_base"):
         raise ValueError("Use --task=x1_amp or --task=x1_amp_base")
+    if play.transition_trace:
+        if (args.task != "x1_amp" or not play.checkpoint_path or play.reset_mode != "standing"
+                or play.vx is None or play.vx <= 0 or play.vy != 0 or play.yaw_rate != 0):
+            raise ValueError("Transition capture requires x1_amp, checkpoint_path, standing reset and native forward vx")
+        if os.path.exists(play.transition_trace):
+            raise FileExistsError(play.transition_trace)
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     if play.source_policy:
         raise ValueError("--source_policy belonged to the removed exp2.0 task")
@@ -56,6 +65,11 @@ def main():
     cfg.noise.add_noise = False
     cfg.domain_rand.push_robots = False
     cfg.amp.reference_state_initialization = play.reset_mode == "rsi" and args.task != "x1_amp"
+    if play.transition_trace:
+        # A matched-state probe uses a declared nominal condition, independently
+        # of the training cohort size (25% of a single environment rounds to 0).
+        from humanoid.amp.nominal_startup import configure_nominal_probe
+        configure_nominal_probe(cfg)
     shared_buffer = False  # Historical exp1.x shared-buffer tasks were removed.
     initial_vx = play.vx if play.vx is not None else 0.
     cfg.commands.ranges.lin_vel_x = [initial_vx, initial_vx]
@@ -150,6 +164,7 @@ def main():
         "reset_mode": play.reset_mode, "policy_metadata": runner._metadata(),
     })
     stand_buffer = 0
+    trace = None
     try:
         with torch.no_grad():
             for step in range(total_steps):
@@ -157,8 +172,32 @@ def main():
                 applied = 0. if stand_buffer and not shared_buffer else requested
                 obs = inject_command(env, applied, 0. if stand_buffer else play.vy,
                                      0. if stand_buffer else play.yaw_rate)
+                before = obs[0].detach().cpu().numpy().copy() if play.transition_trace else None
+                if play.transition_trace and trace is None:
+                    from humanoid.amp.transition_trace import TransitionTrace
+                    props = env.gym.get_actor_rigid_shape_properties(env.envs[0], env.actor_handles[0])
+                    if not props or any(abs(p.friction-.8)>1e-6 or abs(p.contact_offset-.001)>1e-7
+                                        or abs(p.rest_offset)>1e-7 for p in props):
+                        raise ValueError("Transition capture nominal shape properties did not persist")
+                    root = env.root_states[0].detach().cpu().numpy().copy()
+                    root[:3] -= env.env_origins[0].detach().cpu().numpy()
+                    with open(play.checkpoint_path, "rb") as stream:
+                        digest = hashlib.sha256(stream.read()).hexdigest()
+                    trace = TransitionTrace(dict(engine="isaacgym", checkpoint_sha256=digest,
+                        dof_names=list(env.dof_names), num_observations=env.num_obs, policy_dt=float(env.dt),
+                        physics_dt=float(cfg.sim.dt), initial_phase=float(env.gait_phase[0]),
+                        requested_vx=play.vx, friction=.8, contact_offset_m=.001,
+                        root_velocity_reference="engine_reported_world"), root,
+                        env.dof_pos[0].detach().cpu().numpy(), env.dof_vel[0].detach().cpu().numpy(), before)
                 obs, _, reward, done, info = env.step(policy(obs))
                 recorder.write(step, reward, done, info, requested=requested, stage=stage)
+                if trace is not None:
+                    state = {key: value[0].detach().cpu().numpy().copy() for key, value in info["replay_state"].items()}
+                    state["root"][:3] -= env.env_origins[0].detach().cpu().numpy()
+                    trace.append(before, state["action"], state["root"], state["q"], state["dq"],
+                                 state["contact"], bool(done[0]))
+                    if done[0]:
+                        break
                 if done[0] and not shared_buffer:
                     stand_buffer = round(play.stand_buffer_seconds / env.dt)
                 elif stand_buffer:
@@ -168,6 +207,8 @@ def main():
     finally:
         if recorder:
             recorder.close()
+        if trace is not None and trace.rows:
+            trace.save(play.transition_trace)
 
 
 if __name__ == "__main__":
