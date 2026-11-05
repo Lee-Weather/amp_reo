@@ -11,6 +11,45 @@ spec.loader.exec_module(module)
 
 
 class ReplayRevisionTests(unittest.TestCase):
+    def test_velocity_intervention_changes_only_three_actor_input_features(self):
+        import torch
+        from types import SimpleNamespace
+        from humanoid.amp.velocity_diagnostic import diagnostic_action
+        observed = torch.arange(24, dtype=torch.float32).reshape(2, 12)
+        saved = observed.clone(); captured = []
+        model = SimpleNamespace(num_short_obs=4, in_channels=3, num_proprio_obs=4)
+        model.estimate_velocity = lambda obs: torch.tensor([[1., 2., 3.]]).expand(len(obs), -1)
+        model.long_history = lambda obs: obs.sum((1, 2)).unsqueeze(1)
+        def actor(features):
+            captured.append(features.clone())
+            return features.sum(-1, keepdim=True)
+        model.actor = actor
+        model.act_inference = lambda obs: actor(torch.cat((obs[:, -4:], model.estimate_velocity(obs),
+            model.long_history(obs.reshape(-1, 3, 4))), -1))
+        actual = torch.tensor([[7., 8., 9.], [10., 11., 12.]])
+        baseline, estimate, used, overridden = diagnostic_action(model, observed, actual, 'estimated', 0)
+        self.assertFalse(overridden); torch.testing.assert_close(used, estimate)
+        oracle, _, used, overridden = diagnostic_action(model, observed, actual, 'oracle_all', 0)
+        self.assertTrue(overridden); torch.testing.assert_close(used, actual)
+        torch.testing.assert_close(captured[0][:, :4], captured[1][:, :4])
+        torch.testing.assert_close(captured[0][:, 7:], captured[1][:, 7:])
+        torch.testing.assert_close(captured[1][:, 4:7], actual)
+        torch.testing.assert_close(oracle-baseline, (actual-estimate).sum(-1, keepdim=True))
+        torch.testing.assert_close(observed, saved)
+        for step, expected in ((0, True), (4, True), (5, False), (100, False)):
+            self.assertEqual(diagnostic_action(model, observed, actual, 'oracle_first5', step)[-1], expected)
+
+    def test_velocity_intervention_rejects_nonfinite_or_wrong_shape_truth(self):
+        import torch
+        from types import SimpleNamespace
+        from humanoid.amp.velocity_diagnostic import diagnostic_action
+        model = SimpleNamespace(estimate_velocity=lambda obs: torch.zeros(1, 3))
+        for actual in (torch.zeros(1, 2), torch.full((1, 3), float('nan'))):
+            with self.assertRaisesRegex(ValueError, 'Invalid diagnostic velocity'):
+                diagnostic_action(model, torch.zeros(1, 12), actual, 'estimated', 0)
+        with self.assertRaisesRegex(ValueError, 'Unknown velocity intervention'):
+            diagnostic_action(model, torch.zeros(1, 12), torch.zeros(1, 3), 'invented', 0)
+
     def test_checkpoint_controls_bind_urls_to_ordered_frozen_identities(self):
         import base64
         import json

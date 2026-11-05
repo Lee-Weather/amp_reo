@@ -1,0 +1,52 @@
+{
+  "schema": "x1_b1_velocity_controls_v1",
+  "source_task": "TASK_20261105_419",
+  "seed": 5,
+  "training_updates": 0,
+  "training_plan_sha256": "96ac722bf47e29d76ddfc74169f8da9e8e83f703d8a90b31001bfb6fbecd3501",
+  "input_bundle_sha256": "ba41a189f0ce4de9dce744a595356ae372a57144c564f0ee0db8376319439162",
+  "checkpoints": {
+    "200": "f17eba2a3a5e8a58d6aa03d4f5139cd407255e926115f1a0719eee3250f331c9"
+  },
+  "cases": [
+    {
+      "name": "parent_estimated",
+      "role": "parent",
+      "mode": "estimated"
+    },
+    {
+      "name": "parent_oracle_first5",
+      "role": "parent",
+      "mode": "oracle_first5"
+    },
+    {
+      "name": "parent_oracle_all",
+      "role": "parent",
+      "mode": "oracle_all"
+    },
+    {
+      "name": "recovery_estimated",
+      "role": "recovery",
+      "mode": "estimated"
+    },
+    {
+      "name": "recovery_oracle_first5",
+      "role": "recovery",
+      "mode": "oracle_first5"
+    },
+    {
+      "name": "recovery_oracle_all",
+      "role": "recovery",
+      "mode": "oracle_all"
+    }
+  ],
+  "diagnostic_source_sha256": {
+    "humanoid/amp/velocity_diagnostic.py": "a54109474f3e4bf9f2980bc8b9cacf2c401027671a35a0f55b97e689cd8c506e",
+    "scripts/amp_tools/probe_b1_velocity.py": "45c09944696b1d2afdeb6fc8e394be77e4ef383d17748c343bf1078b5ae27cc6",
+    "humanoid/scripts/probe_b1_velocity_platform.py": "11651484beff36cfd24c5643e89c9f2074ebf3568ebdfc969d452b84e56030f1",
+    "tests/test_replay_revision.py": "dd435eae6bce404ba285b208ac89224b4649f7c2855e938217003b38306a090d"
+  },
+  "intervention": "Only the3 scaled body-velocity actor inputs; no observation/history rewriting; freeze all weights.",
+  "evaluation": "Independent Gym process per arm; seed5/reference frame0; original384-step tracking gates.",
+  "limitation": "Oracle arms use privileged simulation velocity and are diagnostic only; zero independent validation episodes."
+}
