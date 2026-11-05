@@ -32,11 +32,7 @@ class X1AMPExp213Env(X1AMPFinalEnv):
         super()._post_physics_step_callback()
         yaw = get_euler_xyz_tensor(self.base_quat)[:, 2]
         self.heading_error[:] = heading_error(yaw, self.heading_reference)
-        cfg = self.cfg.rewards
-        moving = (self.standing_commands.value > cfg.heading_command_threshold) | self.standing_commands.transition
-        correction = (-cfg.heading_command_gain * self.heading_error).clamp(
-            -cfg.heading_command_clip, cfg.heading_command_clip)
-        self.commands[:, 2] = torch.where(moving, correction, torch.zeros_like(correction))
+        self.commands[:, 2] = self._heading_command()
 
     def _heading_observation(self):
         return heading_observation(self.heading_error, self.cfg.rewards.heading_clip,
@@ -48,6 +44,14 @@ class X1AMPExp213Env(X1AMPFinalEnv):
         frame[..., 1] = self._heading_observation()
         return frame
 
+    def _heading_command(self):
+        cfg = self.cfg.rewards
+        moving = ((self.standing_commands.value > cfg.heading_command_threshold)
+                  | self.standing_commands.transition)
+        correction = (-cfg.heading_command_gain * self.heading_error).clamp(
+            -cfg.heading_command_clip, cfg.heading_command_clip)
+        return torch.where(moving, correction, torch.zeros_like(correction))
+
     def _apply_heading_observation(self):
         value = self._heading_observation()
         self.obs_history[-1][:, 1] = value
@@ -56,11 +60,24 @@ class X1AMPExp213Env(X1AMPFinalEnv):
         if self.privileged_obs_buf is not None:
             self.privileged_obs_buf[:, 1] = value
 
+    def _apply_heading_command(self):
+        # The base step overwrites commands[:3] with [vx, 0, 0] after physics;
+        # restore both the reward-side command and the newest observation slots.
+        value = self._heading_command()
+        self.commands[:, 2] = value
+        scaled = value * self.commands_scale[2]
+        self.obs_history[-1][:, 2] = scaled
+        width = self.cfg.env.num_single_obs
+        self.obs_buf[:, -width + 2] = scaled
+        if self.privileged_obs_buf is not None:
+            self.privileged_obs_buf[:, 2] = scaled
+
     def step(self, actions):
         result = super().step(actions)
-        # sync_policy_commands rewrites the newest vy slot with zero; restore
-        # the heading observation after the simulator-side update.
+        # sync_policy_commands/standing-command sync rewrites the newest vy/wz
+        # slots; restore the heading observation and correction after physics.
         self._apply_heading_observation()
+        self._apply_heading_command()
         return result
 
     def _reference_weight(self):

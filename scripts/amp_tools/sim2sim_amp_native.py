@@ -164,7 +164,8 @@ def main():
     def frame():
         q,dq,velocity,r=state();active=bool(schedule.value[0]>1e-7 or schedule.transition[0])
         err=heading_error(r);obs=float(np.clip(err,-heading_clip,heading_clip))
-        wz=float(np.clip(-heading_gain*err,-heading_cmd_clip,heading_cmd_clip)) if active else 0.
+        moving=bool(schedule.value[0]>heading_threshold or schedule.transition[0])
+        wz=float(np.clip(-heading_gain*err,-heading_cmd_clip,heading_cmd_clip)) if moving else 0.
         return policy_frame(float(schedule.value[0]),velocity[:3],r,q,dq,previous,phase,active,default,scales,
             obs,heading_obs_scale,wz)
     history=collections.deque([np.zeros(98,dtype=np.float32) for _ in range(65)]+[frame()],maxlen=66)
@@ -218,7 +219,8 @@ def main():
             if bool(schedule.started[0] and schedule.start[0]<=1e-7 and schedule.active_goal[0]>0):
                 phase=float(ref.nearest_phase(torch.tensor(q[None],dtype=torch.float32),torch.tensor(dq[None],dtype=torch.float32))[0])
             err=heading_error(r);obs=float(np.clip(err,-heading_clip,heading_clip))
-            wz=float(np.clip(-heading_gain*err,-heading_cmd_clip,heading_cmd_clip)) if active else 0.
+            moving=bool(schedule.value[0]>heading_threshold or schedule.transition[0])
+            wz=float(np.clip(-heading_gain*err,-heading_cmd_clip,heading_cmd_clip)) if moving else 0.
             history[-1][:3]=[float(schedule.value[0])*scales['lin_vel'],obs*heading_obs_scale,wz*scales['ang_vel']]
             active=bool(schedule.value[0]>1e-7 or schedule.transition[0])
             history[-1][-2:]=[math.sin(2*math.pi*phase),math.cos(2*math.pi*phase)] if active else [0.,0.]
