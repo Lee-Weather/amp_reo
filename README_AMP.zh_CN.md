@@ -2,10 +2,13 @@
 
 新增任务名 `x1_amp`。保留原来的 `x1_dh_stand`；新任务使用 29 关节全身 PD 控制、PPO 和 AMP 动作风格判别器。参考 `czy/roboparty_train` 的 LSGAN 奖励和梯度惩罚方式，在本工程的 Isaac Gym Preview 4 中实现，不需要安装 Isaac Lab。
 
-> **2026-11-04 合并**：`x1_amp` 现在直接运行 exp2.12 的最终行为，配置和环境各只有一个文件
-> （`x1_amp_config.py` 的 `X1AMPFinalCfg` / `X1AMPFinalCfgPPO`，`x1_amp_env.py` 的 `X1AMPFinalEnv`），
-> 不再依赖任何 `x1_amp_exp*.py`。有效观测为 66×98=6468，价值输入 101。下文“算法和尺寸”表中的
-> 480/99 对应原始 exp1.0 基线；该基线仍注册为 `x1_amp_base`，`x1_amp_exp*.py` 文件全部保留。
+> **2026-11-04 合并与清理**：`x1_amp` 直接运行 exp2.12 的最终行为，配置和环境各只有一个文件
+> （`x1_amp_config.py` 的 `X1AMPFinalCfg` / `X1AMPFinalCfgPPO`，`x1_amp_env.py` 的 `X1AMPFinalEnv`）。
+> 有效观测 66×98=6468，价值输入 101；下文“算法和尺寸”表中的 480/99 对应原始 exp1.0 基线，
+> 该基线仍注册为 `x1_amp_base`。
+>
+> 本分支只保留 `x1_amp_*` 与 `x1_dh_stand_*` 四个环境文件；历史 exp1.x/exp2.x 代码、测试和运维脚本
+> 已移除，完整版本见分支 `codex/merge-exp212-flat`，实验记录见 `czy/exp1/`。
 
 ## 输入与模型约定
 
@@ -106,31 +109,9 @@ python humanoid/scripts/play_amp.py --task=x1_amp --load_run='<run>' --checkpoin
 
 主要参数位于 `humanoid/envs/x1/x1_amp_config.py`。初始默认姿态使用四段规范化轨迹的平均关节角；PD 增益参考 AMP 工程，扭矩/速度限位使用当前 URDF。先在平地、无推力随机化的基线上训练，再逐步加入扰动。当前参考动作集中于慢走与站走转换，默认指令范围也相应收窄。
 
-## exp_1.1 独立修正任务
+## 历史实验
 
-任务名为 `x1_amp_exp11`，实现位于 `x1_amp_exp11_config.py` 和 `x1_amp_exp11_env.py`。新增逐关节硬限位内的PD目标、原始目标越界代价、腰/上肢/下肢侧向姿态软约束，以及50%站姿/50%RSI初始化。站姿分支的1.5秒零指令缓冲由训练和play共用，初始化不再隐含执行一次指向平均步行姿态的零动作。旧的 `x1_amp` 保留原控制与schema=1；新任务使用schema=2，不能直接恢复旧控制方案的模型。
-
-验证发现原参考站立帧的碰撞脚底穿地约3cm。仅新任务启用碰撞网格脚底高度对齐，将最低脚底置于地面上方2mm并重算根线速度；原始轨迹文件、关节角及旧任务不变。
-
-**当前状态：功能链路通过，固定PD的5秒站立门禁未通过；2026-10-26用户明确决定暂不处理此问题，按现有配置启动6000轮训练。** 参考静止帧及几何校准候选均有失稳，静态验收失败记录保留；正式训练结果另行评估。详细结果与本次启动决定见 `czy/exp1/exp1.md` 的exp_1.1记录。
-
-可复现的诊断入口（需Isaac Gym环境）：
-
-```bash
-python humanoid/scripts/validate_exp11.py --task=x1_amp_exp11 --headless --num_envs=3 --phase=static
-python humanoid/scripts/validate_exp11.py --task=x1_amp_exp11 --headless --num_envs=64 --phase=smoke
-python humanoid/scripts/validate_exp11.py --task=x1_amp_exp11 --headless --num_envs=8 --phase=timing
-```
-
-固定PD站姿验收录像（无需模型）：
-
-```bash
-xvfb-run -a python humanoid/scripts/record_standing.py --task=x1_amp_exp11 --headless --seed=5 --seeds 5 7 11 --output_dir=logs/standing_acceptance
-```
-
-每个种子同屏录制3个关节扰动样本，各仿真5秒；1920×1080、25fps，片头和片尾各停留1秒。固定目标为B1第11帧站姿，沿用原PD增益与终止条件。录像专用入口暂停自动重置，并锁定首次失败时间；失败后的画面只展示倒下过程。输出MP4、诊断CSV和元数据，不能把它当作策略回放或正式训练三件套。
-
-新任务回放使用 `play_amp.py --task=x1_amp_exp11 --checkpoint_path=<该任务模型>`；`--reset_mode=standing` 与 `--reset_mode=rsi` 分别检查两类初始化。CSV增加raw/effective目标、逐关节限幅次数、初始化类型和缓冲剩余步数。
+exp1.1–exp2.12 的逐轮改动、失败原因与验收数据见 `czy/exp1/exp1.md`、`exp1_part2.md`、`exp1_part3.md` 和 `exp2.md`。对应代码、CPU 测试与云端启动脚本保留在分支 `codex/merge-exp212-flat`；本分支不再包含 `x1_amp_exp*` 任务。
 
 ## 训练日志口径
 

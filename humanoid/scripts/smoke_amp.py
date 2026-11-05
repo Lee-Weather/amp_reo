@@ -42,11 +42,10 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     sys.argv = [sys.argv[0]]+remaining
     args = get_args()
-    # x1_amp is the consolidated exp2.12 task: it keeps the DH actor/state
-    # estimator and the gated style reward, so it follows the same checks.
-    dh_tasks = ("x1_amp", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp20", "x1_amp_exp21")
-    if args.task not in ("x1_amp_exp3", "x1_amp_exp14")+dh_tasks:
-        raise ValueError("Use a supported x1_amp preflight task")
+    # This branch ships only the consolidated AMP task.
+    dh_tasks = ("x1_amp",)
+    if args.task not in dh_tasks:
+        raise ValueError("Use --task=x1_amp")
     args.resume = False
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     if args.task == "x1_amp":
