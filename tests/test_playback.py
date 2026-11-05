@@ -24,6 +24,15 @@ from humanoid.amp.student_distillation import (SCHEMA, SOURCE_SHA, validate_plan
 
 
 class DistillationSafetyTests(unittest.TestCase):
+    def test_teacher_history_conversion_preserves_executed_target_across_joint_orders(self):
+        from scripts.amp_tools.probe_b1_takeover import target_equivalent_history
+        teacher=WBTTeacher.__new__(WBTTeacher)
+        teacher.names=['a','b'];teacher.actor_names=['b','a'];teacher.to_actor=np.array([1,0])
+        teacher.default=np.array([.1,-.2],dtype=np.float32);teacher.meta=dict(action_scale=.5)
+        target=np.array([-.3,.2],dtype=np.float32)
+        history=target_equivalent_history(teacher,target,['b','a'])
+        np.testing.assert_allclose(teacher.target(history,['b','a']),target,rtol=0,atol=3e-8)
+
     def test_control_input_download_requires_https_and_exact_sha(self):
         import base64
         import hashlib

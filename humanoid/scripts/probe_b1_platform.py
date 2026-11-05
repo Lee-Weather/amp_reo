@@ -35,6 +35,7 @@ def main():
     parser.add_argument('--input_sha256', required=True)
     parser.add_argument('--checkpoint_url_b64', required=True)
     parser.add_argument('--checkpoint_sha256', required=True)
+    parser.add_argument('--takeover', action='store_true', help='Four scheduled teacher recovery cases, still inference only')
     args = parser.parse_args()
     os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':4096:8')
     os.environ['PYTHONPATH'] = str(ROOT)
@@ -48,10 +49,11 @@ def main():
     with trained.open('xb') as stream:
         stream.write(download(args.checkpoint_url_b64, args.checkpoint_sha256))
     (ROOT/plan['inputs']['checkpoint']['path']).touch()
-    work = ROOT/'logs/exp213_controls'
+    work = ROOT/('logs/exp213_takeover' if args.takeover else 'logs/exp213_controls')
     work.mkdir(exist_ok=False)
     state = dict(schema='x1_b1_platform_controls_v1', training_updates=0, seed=5, status='running',
-        cases=['teacher', 'source_student', 'trained_student'],
+        cases=(['step%d_%s' % (step, history) for step in (20, 40) for history in ('target_equivalent', 'shadow')]
+               if args.takeover else ['teacher', 'source_student', 'trained_student']),
         plan_sha256=hashlib.sha256(plan_path.read_bytes()).hexdigest(),
         checkpoint_sha256=args.checkpoint_sha256, input_sha256=args.input_sha256)
     def record():
@@ -76,16 +78,26 @@ def main():
     error = None
     try:
         inputs = {key: str(ROOT/item['path']) for key, item in plan['inputs'].items()}
-        teacher = run('teacher', ['scripts/amp_tools/collect_wbt_student.py', '--bundle', inputs['teacher_bundle'],
-            '--teacher-lock', inputs['teacher_lock'], '--condition-profile', inputs['profile'], '--output', str(work/'teacher')])
-        source = run('source_student', ['scripts/amp_tools/eval_b1_student.py', '--plan', str(plan_path),
-            '--output', str(work/'source_student')])
-        student = run('trained_student', ['scripts/amp_tools/eval_b1_student.py', '--plan', str(plan_path),
-            '--checkpoint', str(trained), '--checkpoint-sha256', args.checkpoint_sha256,
-            '--output', str(work/'trained_student')])
-        state.update(status='completed', teacher_completed=teacher['metadata']['completed_reference'],
-            source_steps=source['steps'], trained_steps=student['steps'],
-            source_reason=source['termination_reason'], trained_reason=student['termination_reason'])
+        if args.takeover:
+            summaries = {}
+            for step in (20, 40):
+                for history in ('target_equivalent', 'shadow'):
+                    case = 'step%d_%s' % (step, history)
+                    summaries[case] = run(case, ['scripts/amp_tools/probe_b1_takeover.py', '--plan', str(plan_path),
+                        '--checkpoint', str(trained), '--checkpoint-sha256', args.checkpoint_sha256,
+                        '--takeover-step', str(step), '--history', history, '--output', str(work/case)])
+            state.update(status='completed', takeover_results=summaries)
+        else:
+            teacher = run('teacher', ['scripts/amp_tools/collect_wbt_student.py', '--bundle', inputs['teacher_bundle'],
+                '--teacher-lock', inputs['teacher_lock'], '--condition-profile', inputs['profile'], '--output', str(work/'teacher')])
+            source = run('source_student', ['scripts/amp_tools/eval_b1_student.py', '--plan', str(plan_path),
+                '--output', str(work/'source_student')])
+            student = run('trained_student', ['scripts/amp_tools/eval_b1_student.py', '--plan', str(plan_path),
+                '--checkpoint', str(trained), '--checkpoint-sha256', args.checkpoint_sha256,
+                '--output', str(work/'trained_student')])
+            state.update(status='completed', teacher_completed=teacher['metadata']['completed_reference'],
+                source_steps=source['steps'], trained_steps=student['steps'],
+                source_reason=source['termination_reason'], trained_reason=student['termination_reason'])
     except Exception as exception:
         error = str(exception)
         state.update(status='failed', error=error)
