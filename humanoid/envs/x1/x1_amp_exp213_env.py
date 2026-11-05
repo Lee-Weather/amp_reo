@@ -35,7 +35,7 @@ class X1AMPExp213Env(X1AMPFinalEnv):
 
     def _heading_observation(self):
         return heading_observation(self.heading_error, self.cfg.rewards.heading_clip,
-                                   self.commands_scale[1])
+                                   self.cfg.rewards.heading_obs_scale)
 
     def _policy_frame(self):
         frame = super()._policy_frame()
@@ -107,6 +107,7 @@ class X1AMPExp213Env(X1AMPFinalEnv):
             heading_observation="vy_command_slot_v1",
             heading_tolerance=float(cfg.heading_tolerance),
             heading_clip=float(cfg.heading_clip),
+            heading_obs_scale=float(cfg.heading_obs_scale),
             heading_scale=float(cfg.heading_scale),
             swing_clearance_penalty=float(cfg.swing_clearance_penalty),
             contact_balance_scale=float(cfg.contact_balance_scale),

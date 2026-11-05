@@ -21,14 +21,15 @@ class X1AMPExp213Cfg(X1AMPFinalCfg):
         guide_weight_override = 0.3
         raw_weight_override = 0.3
         # Heading feedback: root yaw relative to the reset pose, in radians.
-        heading_scale = -0.5
-        heading_tolerance = 0.15
+        heading_scale = -0.15
+        heading_tolerance = 0.25
         heading_clip = 0.8
+        heading_obs_scale = 1.0
         # Penalise a reference-swing foot that stays below 5 mm.
-        swing_clearance_penalty = -0.25
+        swing_clearance_penalty = -0.2
         swing_clearance_threshold = 0.005
         # Discourage a persistent one-sided load distribution.
-        contact_balance_scale = -0.5
+        contact_balance_scale = -0.3
         contact_balance_decay = 0.99
         # Stronger straight-line correction than exp2.12.
         class scales(X1AMPFinalCfg.rewards.scales):
