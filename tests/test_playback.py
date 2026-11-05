@@ -24,6 +24,22 @@ from humanoid.amp.student_distillation import (SCHEMA, SOURCE_SHA, validate_plan
 
 
 class DistillationSafetyTests(unittest.TestCase):
+    def test_control_input_download_requires_https_and_exact_sha(self):
+        import base64
+        import hashlib
+        from unittest.mock import patch
+        from humanoid.scripts.probe_b1_platform import download
+        encoded=base64.urlsafe_b64encode(b'https://example.invalid/private?signature=hidden').decode()
+        with patch('urllib.request.urlopen',return_value=io.BytesIO(b'abc')):
+            self.assertEqual(download(encoded,hashlib.sha256(b'abc').hexdigest()),b'abc')
+        with patch('urllib.request.urlopen',return_value=io.BytesIO(b'abc')):
+            with self.assertRaisesRegex(RuntimeError,'URL withheld'):
+                download(encoded,'0'*64)
+        with patch('urllib.request.urlopen') as opener:
+            with self.assertRaisesRegex(RuntimeError,'URL withheld'):
+                download(base64.urlsafe_b64encode(b'http://example.invalid').decode(),'0'*64)
+            opener.assert_not_called()
+
     def test_platform_checkpoint_directory_rejects_existing_outputs(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)
