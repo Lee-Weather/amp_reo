@@ -1,0 +1,32 @@
+{
+  "schema": "x1_b1_video_v1",
+  "source_task": "TASK_20261105_419",
+  "seed": 5,
+  "training_updates": 0,
+  "training_plan_sha256": "96ac722bf47e29d76ddfc74169f8da9e8e83f703d8a90b31001bfb6fbecd3501",
+  "input_bundle_sha256": "ba41a189f0ce4de9dce744a595356ae372a57144c564f0ee0db8376319439162",
+  "checkpoints": {
+    "200": "f17eba2a3a5e8a58d6aa03d4f5139cd407255e926115f1a0719eee3250f331c9"
+  },
+  "cases": [
+    {
+      "name": "current_student"
+    }
+  ],
+  "diagnostic_source_sha256": {
+    "humanoid/amp/b1_video.py": "cfd70667e9802f291224805ad42a97e49e447d4ebb5eadb5cb740f306c0f4b3a",
+    "scripts/amp_tools/record_b1_student.py": "e62672ec9e3d0041e8f51a07bc4a60fda769c45dbd2ff388cbf8e1af2680758f",
+    "humanoid/scripts/record_b1_platform.py": "ac887328714b50d951a945edf9f48c8bf15dd7e736d8bc7a0a927abad6f756fb"
+  },
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "policy_hz": 50,
+    "playback_speeds": [
+      1.0,
+      0.25
+    ],
+    "include_initial_frame": true
+  },
+  "evaluation": "Unmodified student.act_inference, seed5, actual termination; video camera only; no teacher takeover or oracle input."
+}
