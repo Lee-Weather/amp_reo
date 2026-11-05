@@ -19,10 +19,10 @@ from mujoco_diagnostics import foot_contact_forces,roll_pitch_yaw
 from native_physics import align_runtime
 
 
-def policy_frame(command,angular_local,rotation,q,dq,previous,phase,active,default,scales,heading_error=0.,heading_scale=1.):
+def policy_frame(command,angular_local,rotation,q,dq,previous,phase,active,default,scales,heading_error=0.,heading_scale=1.,yaw_command=0.):
     # mj_objectVelocity returns angular first, then linear. No measured linear
     # velocity belongs in this actor's98-column input (DH estimates it).
-    return np.concatenate(([command*scales['lin_vel'],heading_error*heading_scale,0.],
+    return np.concatenate(([command*scales['lin_vel'],heading_error*heading_scale,yaw_command*scales['ang_vel']],
         angular_local*scales['ang_vel'],-rotation[2],(q-default)*scales['dof_pos'],
         dq*scales['dof_vel'],previous,
         [math.sin(2*math.pi*phase),math.cos(2*math.pi*phase)] if active else [0.,0.])).astype(np.float32)
@@ -150,19 +150,23 @@ def main():
     heading_mode=meta.get('training',{}).get('heading_observation')=='vy_command_slot_v1'
     heading_clip=float(meta.get('training',{}).get('heading_clip',1.0))
     heading_obs_scale=float(meta.get('training',{}).get('heading_obs_scale',1.0))
+    heading_gain=float(meta.get('training',{}).get('heading_command_gain',0.0))
+    heading_cmd_clip=float(meta.get('training',{}).get('heading_command_clip',0.3))
+    heading_threshold=float(meta.get('training',{}).get('heading_command_threshold',0.05))
     heading_reference=float(roll_pitch_yaw(rotation_from_wxyz(d.qpos[3:7]))[2]) if heading_mode else 0.
     def heading_error(rotation):
         if not heading_mode:return 0.
         yaw=float(roll_pitch_yaw(rotation)[2])
-        error=(yaw-heading_reference+math.pi)%(2*math.pi)-math.pi
-        return float(np.clip(error,-heading_clip,heading_clip))
+        return (yaw-heading_reference+math.pi)%(2*math.pi)-math.pi
     def state():
         velocity=np.zeros(6);mujoco.mj_objectVelocity(m,d,mujoco.mjtObj.mjOBJ_XBODY,base,velocity,1)
         return np.array(d.qpos[qa]),np.array(d.qvel[da]),velocity,rotation_from_wxyz(d.qpos[3:7])
     def frame():
         q,dq,velocity,r=state();active=bool(schedule.value[0]>1e-7 or schedule.transition[0])
+        err=heading_error(r);obs=float(np.clip(err,-heading_clip,heading_clip))
+        wz=float(np.clip(-heading_gain*err,-heading_cmd_clip,heading_cmd_clip)) if active else 0.
         return policy_frame(float(schedule.value[0]),velocity[:3],r,q,dq,previous,phase,active,default,scales,
-            heading_error(r),heading_obs_scale)
+            obs,heading_obs_scale,wz)
     history=collections.deque([np.zeros(98,dtype=np.float32) for _ in range(65)]+[frame()],maxlen=66)
     renderer=mujoco.Renderer(m,height=720,width=1280)
     video=cv2.VideoWriter(str(video_path),cv2.VideoWriter_fourcc(*'mp4v'),25.,(1280,720))
@@ -213,7 +217,9 @@ def main():
             schedule.advance(torch.tensor([False]))
             if bool(schedule.started[0] and schedule.start[0]<=1e-7 and schedule.active_goal[0]>0):
                 phase=float(ref.nearest_phase(torch.tensor(q[None],dtype=torch.float32),torch.tensor(dq[None],dtype=torch.float32))[0])
-            history[-1][:3]=[float(schedule.value[0])*scales['lin_vel'],heading_error(r)*heading_obs_scale,0.]
+            err=heading_error(r);obs=float(np.clip(err,-heading_clip,heading_clip))
+            wz=float(np.clip(-heading_gain*err,-heading_cmd_clip,heading_cmd_clip)) if active else 0.
+            history[-1][:3]=[float(schedule.value[0])*scales['lin_vel'],obs*heading_obs_scale,wz*scales['ang_vel']]
             active=bool(schedule.value[0]>1e-7 or schedule.transition[0])
             history[-1][-2:]=[math.sin(2*math.pi*phase),math.cos(2*math.pi*phase)] if active else [0.,0.]
             if step%250==0:print('SIM2SIM step={} time={:.2f} fallen={}'.format(step,time,fallen),flush=True)
@@ -237,6 +243,9 @@ def main():
         phase_clock='command_scaled_v1' if scaled_phase else 'native_constant_v1',
         heading_observation='vy_command_slot_v1' if heading_mode else None, heading_clip=heading_clip if heading_mode else None,
         heading_obs_scale=heading_obs_scale if heading_mode else None,
+        heading_command_gain=heading_gain if heading_mode else None,
+        heading_command_clip=heading_cmd_clip if heading_mode else None,
+        heading_command_threshold=heading_threshold if heading_mode else None,
         contact_force_definition='World force on each foot, contact-frame transformed; last physical substep',
         controller='substep bounded PD; no LPF; no noise or pushes',
         termination='base z<0.35 or upright<0.5, record3s after first fall; no resets',

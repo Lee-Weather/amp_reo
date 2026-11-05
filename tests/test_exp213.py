@@ -66,6 +66,9 @@ class Exp213ConfigTests(unittest.TestCase):
         self.assertEqual(cfg.rewards.raw_weight_override, 0.3)
         self.assertLess(cfg.rewards.heading_scale, 0)
         self.assertEqual(cfg.rewards.heading_obs_scale, 1.0)
+        self.assertEqual(cfg.rewards.heading_clip, 2.0)
+        self.assertGreater(cfg.rewards.heading_command_gain, 0)
+        self.assertGreater(cfg.rewards.heading_command_clip, 0)
         self.assertLess(cfg.rewards.swing_clearance_penalty, 0)
         self.assertLess(cfg.rewards.contact_balance_scale, 0)
 

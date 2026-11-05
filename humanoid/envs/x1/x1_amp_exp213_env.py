@@ -32,6 +32,11 @@ class X1AMPExp213Env(X1AMPFinalEnv):
         super()._post_physics_step_callback()
         yaw = get_euler_xyz_tensor(self.base_quat)[:, 2]
         self.heading_error[:] = heading_error(yaw, self.heading_reference)
+        cfg = self.cfg.rewards
+        moving = (self.standing_commands.value > cfg.heading_command_threshold) | self.standing_commands.transition
+        correction = (-cfg.heading_command_gain * self.heading_error).clamp(
+            -cfg.heading_command_clip, cfg.heading_command_clip)
+        self.commands[:, 2] = torch.where(moving, correction, torch.zeros_like(correction))
 
     def _heading_observation(self):
         return heading_observation(self.heading_error, self.cfg.rewards.heading_clip,
@@ -109,6 +114,9 @@ class X1AMPExp213Env(X1AMPFinalEnv):
             heading_clip=float(cfg.heading_clip),
             heading_obs_scale=float(cfg.heading_obs_scale),
             heading_scale=float(cfg.heading_scale),
+            heading_command_gain=float(cfg.heading_command_gain),
+            heading_command_clip=float(cfg.heading_command_clip),
+            heading_command_threshold=float(cfg.heading_command_threshold),
             swing_clearance_penalty=float(cfg.swing_clearance_penalty),
             contact_balance_scale=float(cfg.contact_balance_scale),
             guide_weight_override=float(cfg.guide_weight_override),
