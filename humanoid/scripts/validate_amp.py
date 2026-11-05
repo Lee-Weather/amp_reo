@@ -9,8 +9,8 @@ from humanoid.amp.motion import quat_inverse_rotate
 
 def main():
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_base"):
-        raise ValueError("Use --task=x1_amp or --task=x1_amp_base")
+    if args.task not in ("x1_amp", "x1_amp_base", "x1_amp_exp213"):
+        raise ValueError("Use --task=x1_amp, x1_amp_base or x1_amp_exp213")
     cfg, _ = task_registry.get_cfgs(args.task)
     cfg.env.num_envs = args.num_envs or 8
     cfg.noise.add_noise = False

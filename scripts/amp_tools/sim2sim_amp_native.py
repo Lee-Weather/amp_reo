@@ -19,10 +19,10 @@ from mujoco_diagnostics import foot_contact_forces,roll_pitch_yaw
 from native_physics import align_runtime
 
 
-def policy_frame(command,angular_local,rotation,q,dq,previous,phase,active,default,scales):
+def policy_frame(command,angular_local,rotation,q,dq,previous,phase,active,default,scales,heading_error=0.):
     # mj_objectVelocity returns angular first, then linear. No measured linear
     # velocity belongs in this actor's98-column input (DH estimates it).
-    return np.concatenate(([command*scales['lin_vel'],0.,0.],
+    return np.concatenate(([command*scales['lin_vel'],heading_error*scales['lin_vel'],0.],
         angular_local*scales['ang_vel'],-rotation[2],(q-default)*scales['dof_pos'],
         dq*scales['dof_vel'],previous,
         [math.sin(2*math.pi*phase),math.cos(2*math.pi*phase)] if active else [0.,0.])).astype(np.float32)
@@ -147,12 +147,21 @@ def main():
     schedule.reset(torch.tensor([0]),torch.tensor([True]));schedule.requested[0,0]=cfg['commands']['native_speed']
     phase=float(ref.nearest_phase(torch.tensor(d.qpos[qa][None],dtype=torch.float32),torch.zeros(1,n))[0])
     previous=np.zeros(n);scales=cfg['normalization']['obs_scales']
+    heading_mode=meta.get('training',{}).get('heading_observation')=='vy_command_slot_v1'
+    heading_clip=float(meta.get('training',{}).get('heading_clip',1.0))
+    heading_reference=float(roll_pitch_yaw(rotation_from_wxyz(d.qpos[3:7]))[2]) if heading_mode else 0.
+    def heading_error(rotation):
+        if not heading_mode:return 0.
+        yaw=float(roll_pitch_yaw(rotation)[2])
+        error=(yaw-heading_reference+math.pi)%(2*math.pi)-math.pi
+        return float(np.clip(error,-heading_clip,heading_clip))
     def state():
         velocity=np.zeros(6);mujoco.mj_objectVelocity(m,d,mujoco.mjtObj.mjOBJ_XBODY,base,velocity,1)
         return np.array(d.qpos[qa]),np.array(d.qvel[da]),velocity,rotation_from_wxyz(d.qpos[3:7])
     def frame():
         q,dq,velocity,r=state();active=bool(schedule.value[0]>1e-7 or schedule.transition[0])
-        return policy_frame(float(schedule.value[0]),velocity[:3],r,q,dq,previous,phase,active,default,scales)
+        return policy_frame(float(schedule.value[0]),velocity[:3],r,q,dq,previous,phase,active,default,scales,
+            heading_error(r))
     history=collections.deque([np.zeros(98,dtype=np.float32) for _ in range(65)]+[frame()],maxlen=66)
     renderer=mujoco.Renderer(m,height=720,width=1280)
     video=cv2.VideoWriter(str(video_path),cv2.VideoWriter_fourcc(*'mp4v'),25.,(1280,720))
@@ -203,7 +212,7 @@ def main():
             schedule.advance(torch.tensor([False]))
             if bool(schedule.started[0] and schedule.start[0]<=1e-7 and schedule.active_goal[0]>0):
                 phase=float(ref.nearest_phase(torch.tensor(q[None],dtype=torch.float32),torch.tensor(dq[None],dtype=torch.float32))[0])
-            history[-1][:3]=[float(schedule.value[0])*scales['lin_vel'],0.,0.]
+            history[-1][:3]=[float(schedule.value[0])*scales['lin_vel'],heading_error(r)*scales['lin_vel'],0.]
             active=bool(schedule.value[0]>1e-7 or schedule.transition[0])
             history[-1][-2:]=[math.sin(2*math.pi*phase),math.cos(2*math.pi*phase)] if active else [0.,0.]
             if step%250==0:print('SIM2SIM step={} time={:.2f} fallen={}'.format(step,time,fallen),flush=True)
@@ -225,6 +234,7 @@ def main():
         action_scale=cfg['control']['action_scale'],physics_alignment=physics_alignment,friction=friction,
         gyro_source='mj_objectVelocity XBODY local angular velocity[:3]',reference='checkpoint-native-cycle',
         phase_clock='command_scaled_v1' if scaled_phase else 'native_constant_v1',
+        heading_observation='vy_command_slot_v1' if heading_mode else None, heading_clip=heading_clip if heading_mode else None,
         contact_force_definition='World force on each foot, contact-frame transformed; last physical substep',
         controller='substep bounded PD; no LPF; no noise or pushes',
         termination='base z<0.35 or upright<0.5, record3s after first fall; no resets',

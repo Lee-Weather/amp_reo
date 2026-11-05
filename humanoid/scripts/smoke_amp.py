@@ -43,9 +43,9 @@ def main():
     sys.argv = [sys.argv[0]]+remaining
     args = get_args()
     # This branch ships only the consolidated AMP task.
-    dh_tasks = ("x1_amp",)
+    dh_tasks = ("x1_amp", "x1_amp_exp213")
     if args.task not in dh_tasks:
-        raise ValueError("Use --task=x1_amp")
+        raise ValueError("Use --task=x1_amp or x1_amp_exp213")
     args.resume = False
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     if args.task == "x1_amp":
