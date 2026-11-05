@@ -41,6 +41,10 @@ def main():
     p.add_argument('--runtime-properties',type=Path,required=True)
     p.add_argument('--passive-probe',type=Path,required=True)
     p.add_argument('--seconds',type=float,default=60.)
+    p.add_argument('--yaw-gain',type=float,default=0.,help='External heading P gain on wz command; 0 disables')
+    p.add_argument('--yaw-rate-damping',type=float,default=0.,help='External heading D gain on measured wz')
+    p.add_argument('--yaw-clip',type=float,default=0.3)
+    p.add_argument('--yaw-threshold',type=float,default=0.05)
     a=p.parse_args();torch.set_num_threads(1);torch.manual_seed(5);np.random.seed(5)
     a.out_dir.mkdir(parents=True,exist_ok=True)
     iteration=a.checkpoint.stem.removeprefix('model_')
@@ -148,14 +152,15 @@ def main():
     phase=float(ref.nearest_phase(torch.tensor(d.qpos[qa][None],dtype=torch.float32),torch.zeros(1,n))[0])
     previous=np.zeros(n);scales=cfg['normalization']['obs_scales']
     heading_mode=meta.get('training',{}).get('heading_observation')=='vy_command_slot_v1'
+    yaw_mode=heading_mode or a.yaw_gain>0 or a.yaw_rate_damping>0
     heading_clip=float(meta.get('training',{}).get('heading_clip',1.0))
     heading_obs_scale=float(meta.get('training',{}).get('heading_obs_scale',1.0))
     heading_gain=float(meta.get('training',{}).get('heading_command_gain',0.0))
     heading_cmd_clip=float(meta.get('training',{}).get('heading_command_clip',0.3))
     heading_threshold=float(meta.get('training',{}).get('heading_command_threshold',0.05))
-    heading_reference=float(roll_pitch_yaw(rotation_from_wxyz(d.qpos[3:7]))[2]) if heading_mode else 0.
+    heading_reference=float(roll_pitch_yaw(rotation_from_wxyz(d.qpos[3:7]))[2]) if yaw_mode else 0.
     def heading_error(rotation):
-        if not heading_mode:return 0.
+        if not yaw_mode:return 0.
         yaw=float(roll_pitch_yaw(rotation)[2])
         return (yaw-heading_reference+math.pi)%(2*math.pi)-math.pi
     def state():
@@ -163,9 +168,11 @@ def main():
         return np.array(d.qpos[qa]),np.array(d.qvel[da]),velocity,rotation_from_wxyz(d.qpos[3:7])
     def frame():
         q,dq,velocity,r=state();active=bool(schedule.value[0]>1e-7 or schedule.transition[0])
-        err=heading_error(r);obs=float(np.clip(err,-heading_clip,heading_clip))
-        moving=bool(schedule.value[0]>heading_threshold or schedule.transition[0])
-        wz=float(np.clip(-heading_gain*err,-heading_cmd_clip,heading_cmd_clip)) if moving else 0.
+        err=heading_error(r);obs=float(np.clip(err,-heading_clip,heading_clip)) if heading_mode else 0.
+        moving=bool(schedule.value[0]>a.yaw_threshold or schedule.transition[0])
+        gain=a.yaw_gain if a.yaw_gain>0 else heading_gain
+        clip=a.yaw_clip if a.yaw_gain>0 else heading_cmd_clip
+        wz=float(np.clip(-gain*err-a.yaw_rate_damping*velocity[2],-clip,clip)) if (yaw_mode and moving) else 0.
         return policy_frame(float(schedule.value[0]),velocity[:3],r,q,dq,previous,phase,active,default,scales,
             obs,heading_obs_scale,wz)
     history=collections.deque([np.zeros(98,dtype=np.float32) for _ in range(65)]+[frame()],maxlen=66)
@@ -218,9 +225,11 @@ def main():
             schedule.advance(torch.tensor([False]))
             if bool(schedule.started[0] and schedule.start[0]<=1e-7 and schedule.active_goal[0]>0):
                 phase=float(ref.nearest_phase(torch.tensor(q[None],dtype=torch.float32),torch.tensor(dq[None],dtype=torch.float32))[0])
-            err=heading_error(r);obs=float(np.clip(err,-heading_clip,heading_clip))
-            moving=bool(schedule.value[0]>heading_threshold or schedule.transition[0])
-            wz=float(np.clip(-heading_gain*err,-heading_cmd_clip,heading_cmd_clip)) if moving else 0.
+            err=heading_error(r);obs=float(np.clip(err,-heading_clip,heading_clip)) if heading_mode else 0.
+            moving=bool(schedule.value[0]>a.yaw_threshold or schedule.transition[0])
+            gain=a.yaw_gain if a.yaw_gain>0 else heading_gain
+            clip=a.yaw_clip if a.yaw_gain>0 else heading_cmd_clip
+            wz=float(np.clip(-gain*err-a.yaw_rate_damping*velocity[2],-clip,clip)) if (yaw_mode and moving) else 0.
             history[-1][:3]=[float(schedule.value[0])*scales['lin_vel'],obs*heading_obs_scale,wz*scales['ang_vel']]
             active=bool(schedule.value[0]>1e-7 or schedule.transition[0])
             history[-1][-2:]=[math.sin(2*math.pi*phase),math.cos(2*math.pi*phase)] if active else [0.,0.]
@@ -248,6 +257,7 @@ def main():
         heading_command_gain=heading_gain if heading_mode else None,
         heading_command_clip=heading_cmd_clip if heading_mode else None,
         heading_command_threshold=heading_threshold if heading_mode else None,
+        external_heading_controller=dict(gain=a.yaw_gain,damping=a.yaw_rate_damping,clip=a.yaw_clip,threshold=a.yaw_threshold) if (a.yaw_gain or a.yaw_rate_damping) else None,
         contact_force_definition='World force on each foot, contact-frame transformed; last physical substep',
         controller='substep bounded PD; no LPF; no noise or pushes',
         termination='base z<0.35 or upright<0.5, record3s after first fall; no resets',

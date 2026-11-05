@@ -56,14 +56,14 @@ def download_location(storage_path):
     raise RuntimeError('Private input download HTTP '+str(status))
 
 
-def upload_checkpoint(model, expected_sha256, receipt_path):
+def upload_checkpoint(model, expected_sha256, receipt_path, file_name=None):
     """Use the same private OSS input channel as the official resume dialog."""
     if receipt_path.exists():
         result = json.loads(receipt_path.read_text())
         assert result['sha256'] == expected_sha256 and result['private_acl_verified']
         return result
     assert hashlib.sha256(model.read_bytes()).hexdigest() == expected_sha256
-    policy = api('/api/common/upload-directly?'+urlencode({'fileName': 'input_exp115t_teacher_11250.pt'}))
+    policy = api('/api/common/upload-directly?'+urlencode({'fileName': file_name or model.name}))
     fields = {'success_action_status':'200', 'policy':policy['policy'], 'x-oss-signature':policy['signature'],
               'x-oss-signature-version':policy['x_oss_signature_version'], 'x-oss-credential':policy['x_oss_credential'],
               'x-oss-date':policy['x_oss_date'], 'key':policy['key'], 'x-oss-security-token':policy['security_token'],
