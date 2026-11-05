@@ -1,0 +1,98 @@
+{
+  "experiment": "exp1.9",
+  "backend": "ssh_server",
+  "host": "robot@10.12.201.5",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_203528",
+  "source_iteration": 11000,
+  "source_checkpoint_sha256": "4aa7e1552a790529aee5293b792198fcb0eca6f620a76016aadbd2ef5c3832ac",
+  "source_model": "czy/data/exp1.8/model_11000.pt",
+  "target_iteration": 11250,
+  "max_iterations": 250,
+  "num_envs": 4096,
+  "seed": 5,
+  "task": "x1_amp_exp19",
+  "resume_mode": "warm_start_fresh_optimizers",
+  "preflight": false,
+  "branch": "codex/exp1-9",
+  "commit": "a9531da7ae586a516182d660bb33625aa3e90d6a",
+  "code_sha256": "f402caefe819e60e16db376d7cfff63ddee549e0b4cd90dede62f2755ea81f79",
+  "command": "python -u humanoid/scripts/train.py --task=x1_amp_exp19 --headless --num_envs=4096 --seed=5 --max_iterations=250 --run_name=exp1.9 --warm_start=checkpoints/model_11000.pt --warm_start_sha256=4aa7e1552a790529aee5293b792198fcb0eca6f620a76016aadbd2ef5c3832ac",
+  "log_file": "train.log",
+  "success_marker": "SERVER_TRAINING_OK",
+  "resource_source": "/home/robot/czy/exp1/exp_20261026_151157/resources",
+  "phase": "running",
+  "launch_pid": "3279451",
+  "launched_at": "2026-10-27T20:35:31.361737+08:00",
+  "rollout_steps": 96,
+  "algorithm_lambda": 0.98,
+  "num_mini_batches": 16,
+  "discriminator_updates_per_iteration": 16,
+  "planned_new_transitions": 98304000,
+  "preflight_state": "czy/exp1/exp1.9_evaluation/gpu_preflight_state.json",
+  "runtime_verification": "czy/exp1/exp1.9_evaluation/runtime_reward_summary.json",
+  "status": {
+    "phase": "running",
+    "process_alive": true,
+    "iteration": 11052,
+    "target_iteration": 11250,
+    "eta_seconds": 2928.0,
+    "new_timesteps": 20447232,
+    "restored_checkpoint": null,
+    "saved_checkpoints": [
+      {
+        "iteration": 11025,
+        "path": "/home/robot/czy/exp1/exp_20261027_203528/logs/x1_amp_exp19/exported_data/2026-10-27_20-38-18exp1.9/model_11025.pt",
+        "bytes": 10777160,
+        "sha256": "6bd85eaaedc7174398ca349fa6b20293d110a4d1a4066f66d086d1b9820a83c5"
+      },
+      {
+        "iteration": 11050,
+        "path": "/home/robot/czy/exp1/exp_20261027_203528/logs/x1_amp_exp19/exported_data/2026-10-27_20-38-18exp1.9/model_11050.pt",
+        "bytes": 10777160,
+        "sha256": "50622db999eb5a699f232aa65e64bc817d82d4fe48c87983c74a12f6e2820fce"
+      }
+    ],
+    "log_tail": [
+      "     Tracking/lateral_abs_velocity: 0.040492",
+      "     Tracking/linear_tolerance_m_s: 0.143674",
+      "      Tracking/moving_abs_yaw_rate: 0.203575",
+      "Tracking/slow_forward_abs_vx_error: 0.052484",
+      "          Tracking/slow_forward_vx: 0.123630",
+      "        Tracking/zero_abs_vx_error: 0.039831",
+      "                  Tracking/zero_vx: 0.015686",
+      "--------------------------------------------------------------------------------",
+      "                   Total timesteps: 20447232",
+      "                    Iteration time: 15.38s",
+      "                        Total time: 768.96s",
+      "                               ETA: 2928.0s"
+    ],
+    "observed_at": "2026-10-27T20:49:00.786605+08:00"
+  },
+  "verified_checkpoints": {
+    "11025": {
+      "iteration": 11025,
+      "sha256": "6bd85eaaedc7174398ca349fa6b20293d110a4d1a4066f66d086d1b9820a83c5",
+      "bytes": 10777160,
+      "path": "czy/exp1/exp1.9_evaluation/interim/model_11025.pt",
+      "metadata_matches_source": true,
+      "weights_finite": true,
+      "original_training_origin_retained": false,
+      "training_mode": "warm_start_fresh_optimizers",
+      "training_origin_verified": true,
+      "optimizer_counters": {
+        "optimizer_state_dict": {
+          "minimum": 2000.0,
+          "maximum": 2000.0,
+          "state_count": 17
+        },
+        "disc_optimizer_state_dict": {
+          "minimum": 400.0,
+          "maximum": 400.0,
+          "state_count": 6
+        }
+      },
+      "normalizer_count_increased": true,
+      "verified_at": "2026-10-27T20:42:21.300278+08:00"
+    }
+  }
+}

@@ -231,3 +231,6 @@ python scripts/amp_tools/preflight_phase_refinement.py --source czy/data/exp1.15
 ```
 
 该工具检查真实源模型与AMP动量、4096条分批推理、生产train函数输入准备/新增预算、一次真实PPO/AMP更新、1001保存恢复、JIT及运动学反例；仿真为CPU fixture，不代表物理验收。`publish_phase_refinement.py`已用隔离索引发布准确快照，`launch_phase_refinement.py`已创建TASK_20261030_191；后续读取records/exp1.16_training.json，不得重建任务。新增预算3000、目标计数4000。原`launch_gait_curriculum.py`仍只支持115/115t，不得用该脚本替代116任务。输入与输出共用固定PT目录，首1100用`verify_first_checkpoint.py --state czy/exp1/records/exp1.16_training.json`和`inspect_first_refinement_checkpoint.py`核验；最终4000另行实际交付验证。
+# Native AMP物理与特征审计（2026-11-04）
+
+`export_native_runtime.py` 在准确训练快照中做单环境、零PPO更新的PhysX属性/状态导出；可用`--passive-probe-only`核实力矩模式被动阻尼。`audit_native_transfer.py`在CPU上核对固定关节合并后的完整惯量和当前NativeCycle专家特征；`native_physics.py`将验证后的link-space惯量及DOF属性映射到MuJoCo。native回放现在必须提供`--runtime-properties`与`--passive-probe`，用法见`czy/skills/flux-cli/references/sim2sim.md`。不能再把AssetOptions.armature当作MuJoCo关节armature，也不能默认清零实际生效的被动阻尼。

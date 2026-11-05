@@ -1,0 +1,71 @@
+{
+  "experiment": "exp1.8",
+  "purpose": "Frozen policy comparison with identical CPU physics/config, not GPU acceptance",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_190358",
+  "training_dir": "/home/robot/czy/exp1/exp_20261027_183624",
+  "training_pid": "3233131",
+  "code_sha256": "9958cd54c31ad759739ba2aaa9eff481c0ca07609128787e4bb81f87715b93cf",
+  "task": "x1_amp_exp18",
+  "checks": [
+    {
+      "iteration": 10000,
+      "reset_mode": "standing",
+      "vx": -0.2,
+      "steps": 1000,
+      "seed": 5,
+      "output": "logs/cpu_10000_reverse"
+    },
+    {
+      "iteration": 10000,
+      "reset_mode": "rsi",
+      "vx": -0.2,
+      "steps": 1000,
+      "seed": 5,
+      "output": "logs/cpu_10000_reverse_rsi"
+    },
+    {
+      "iteration": 10000,
+      "reset_mode": "standing",
+      "vx": null,
+      "steps": 3000,
+      "seed": 5,
+      "output": "logs/cpu_10000_profile"
+    },
+    {
+      "iteration": 10400,
+      "reset_mode": "standing",
+      "vx": -0.2,
+      "steps": 1000,
+      "seed": 5,
+      "output": "logs/cpu_10400_reverse"
+    },
+    {
+      "iteration": 10400,
+      "reset_mode": "rsi",
+      "vx": -0.2,
+      "steps": 1000,
+      "seed": 5,
+      "output": "logs/cpu_10400_reverse_rsi"
+    },
+    {
+      "iteration": 10400,
+      "reset_mode": "standing",
+      "vx": null,
+      "steps": 3000,
+      "seed": 5,
+      "output": "logs/cpu_10400_profile"
+    }
+  ],
+  "phase": "completed_and_analyzed",
+  "checkpoint_sha256": {
+    "10000": "02728ab64ea609e196dabd0899d51602611ca48a01dca70b2db85286bb6f7df9",
+    "10400": "40cc8b84856a38178dad57de7be6a42e890d0d3bc06e6dae5df7ef0428ab8149"
+  },
+  "source_iteration": 10000,
+  "candidate_iteration": 10400,
+  "sim_device": "cpu",
+  "pipeline": "cpu",
+  "rl_device": "cpu",
+  "num_threads": 1,
+  "launch_pid": "3243956"
+}

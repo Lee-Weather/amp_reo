@@ -1,0 +1,66 @@
+{
+  "passed_training_and_checkpoint": true,
+  "scope": "4096-environment GPU training/restore and numerical stability, not full gait acceptance",
+  "source_iteration": 11000,
+  "target_iteration": 11005,
+  "source_sha256": "4aa7e1552a790529aee5293b792198fcb0eca6f620a76016aadbd2ef5c3832ac",
+  "checkpoint_sha256": "0a0cd5dd57142504b9543ddca771c0442bf3c1e06b63ba560d195c390a5aef1c",
+  "num_envs": 4096,
+  "seed": 5,
+  "new_transitions": 1966080,
+  "seconds_per_environment": 9.6,
+  "runner_seconds": 66.65,
+  "code_sha256": "f402caefe819e60e16db376d7cfff63ddee549e0b4cd90dede62f2755ea81f79",
+  "checkpoint_verification": {
+    "iteration": 11005,
+    "sha256": "0a0cd5dd57142504b9543ddca771c0442bf3c1e06b63ba560d195c390a5aef1c",
+    "bytes": 10777160,
+    "path": "czy/exp1/exp1.9_evaluation/interim/model_11005.pt",
+    "metadata_matches_source": true,
+    "weights_finite": true,
+    "original_training_origin_retained": false,
+    "training_mode": "warm_start_fresh_optimizers",
+    "training_origin_verified": true,
+    "optimizer_counters": {
+      "optimizer_state_dict": {
+        "minimum": 400.0,
+        "maximum": 400.0,
+        "state_count": 17
+      },
+      "disc_optimizer_state_dict": {
+        "minimum": 80.0,
+        "maximum": 80.0,
+        "state_count": 6
+      }
+    },
+    "normalizer_count_increased": true,
+    "verified_at": "2026-10-27T20:31:37.399236+08:00"
+  },
+  "kl": [
+    0.00548285897821188,
+    0.005353823304176331,
+    0.005686018615961075,
+    0.009518643841147423,
+    0.007553896866738796
+  ],
+  "kl_max": [
+    0.023588262498378754,
+    0.007003027945756912,
+    0.009356101043522358,
+    0.010768959298729897,
+    0.01174524612724781
+  ],
+  "policy_updates": [
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0
+  ],
+  "limits": [
+    "Each environment has only 9.6 simulated seconds, shorter than the complete 20-second episode.",
+    "Completed-episode means select early terminations and cannot establish overall survival or gait improvement.",
+    "Formal training must restart from actual source 11000, not this preflight 11005."
+  ],
+  "runtime_reward_verification": "passed; zero/reverse/braking 1050 total steps, no non-timeout terminations"
+}

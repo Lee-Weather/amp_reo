@@ -16,6 +16,7 @@ import numpy as np
 import torch
 from sim2sim_amp import prepare_mjcf,rotation_from_wxyz
 from mujoco_diagnostics import foot_contact_forces,roll_pitch_yaw
+from native_physics import align_runtime
 
 
 def policy_frame(command,angular_local,rotation,q,dq,previous,phase,active,default,scales):
@@ -37,6 +38,8 @@ def main():
     p.add_argument('--video-path',type=Path)
     p.add_argument('--csv-path',type=Path)
     p.add_argument('--training-commit',required=True)
+    p.add_argument('--runtime-properties',type=Path,required=True)
+    p.add_argument('--passive-probe',type=Path,required=True)
     p.add_argument('--seconds',type=float,default=60.)
     a=p.parse_args();torch.set_num_threads(1);torch.manual_seed(5);np.random.seed(5)
     a.out_dir.mkdir(parents=True,exist_ok=True)
@@ -91,7 +94,8 @@ def main():
     actnames=[mujoco.mj_id2name(m,mujoco.mjtObj.mjOBJ_JOINT,int(m.actuator_trnid[i,0])) for i in range(m.nu)]
     assert sorted(actnames)==sorted(names)
     ai=np.array([actnames.index(k) for k in names])
-    m.dof_armature[da]=cfg['asset']['armature'];m.dof_damping[da]=0.;m.dof_frictionloss[da]=0.
+    # AssetOptions.armature is link-space inertia, not joint-space armature.
+    # Preserve the raw URDF/MJCF baseline audit below, then apply runtime data.
     floor=mujoco.mj_name2id(m,mujoco.mjtObj.mjOBJ_GEOM,'floor')
     friction=float(cfg['terrain']['static_friction'])
     m.geom_friction[:,0]=friction
@@ -123,6 +127,7 @@ def main():
         mass_error=max(mass_error,abs(m.body_mass[bid]-mass))
         inertia_error=max(inertia_error,float(np.abs(np.sort(m.body_inertia[bid])-np.linalg.eigvalsh(tensor)).max()));compared+=1
     assert compared>=30 and mass_error<1e-5 and inertia_error<1e-5,(compared,mass_error,inertia_error)
+    physics_alignment=align_runtime(m,ck,a.runtime_properties,a.passive_probe,asset_urdf=urdf)
     d.qpos[qa]=standing[13:42];d.qvel[:]=0;mujoco.mj_forward(m,d)
     feet=[mujoco.mj_name2id(m,mujoco.mjtObj.mjOBJ_BODY,s+'_ankle_roll_link') for s in ('left','right')]
     foot_geoms=[[g for g in range(m.ngeom) if m.geom_bodyid[g]==bid and m.geom_contype[g]!=0] for bid in feet]
@@ -178,8 +183,9 @@ def main():
             if active:
                 phase=float(advance_phase(phase,applied,dt,ref.period,cfg['commands']['native_speed'])) if scaled_phase else (phase+dt/ref.period)%1.
             blend,blend_derivative=schedule.blend()
+            blend_options={'phase_rate_scale':torch.tensor([phase_scale])} if scaled_phase else {}
             ref_state=ref.blended_pose(torch.tensor([phase]),torch.tensor(standing,dtype=torch.float32),blend,blend_derivative,
-                phase_rate_scale=torch.tensor([phase_scale]) if scaled_phase else None)[0]
+                **blend_options)[0]
             contact_force,contact_flags=foot_contact_forces(m,d,foot_geoms)
             if (d.qpos[2]<.35 or r[2,2]<.5) and not fallen:fallen=True;fall_time=time
             rows.append([step,time,applied,previous_phase,*d.qpos[:3],*velocity[3:],*velocity[:3],*height,r[2,2],int(fallen),*q,*dq,*action,*torque,
@@ -216,7 +222,7 @@ def main():
         settled_mean_vx=float(settled[:,7].mean()) if len(settled) else None,
         mjcf_urdf_fk_max_error_m=fk_error,compared_inertial_links=compared,mass_max_error=mass_error,inertia_eigenvalue_max_error=inertia_error,
         initial_ground_shift_m=z_shift,stiffness=kp.tolist(),damping=kd.tolist(),torque_limits=effort.tolist(),
-        action_scale=cfg['control']['action_scale'],armature=cfg['asset']['armature'],friction=friction,
+        action_scale=cfg['control']['action_scale'],physics_alignment=physics_alignment,friction=friction,
         gyro_source='mj_objectVelocity XBODY local angular velocity[:3]',reference='checkpoint-native-cycle',
         phase_clock='command_scaled_v1' if scaled_phase else 'native_constant_v1',
         contact_force_definition='World force on each foot, contact-frame transformed; last physical substep',

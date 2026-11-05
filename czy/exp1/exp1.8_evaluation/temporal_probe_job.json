@@ -1,0 +1,14 @@
+{
+  "purpose": "Frozen GPU exploration diagnosis, no training or acceptance",
+  "server_dir": "/home/robot/czy/exp1/exp_20261027_201433",
+  "training_dir": "/home/robot/czy/exp1/exp_20261027_183624",
+  "checkpoint_iteration": 11000,
+  "checkpoint_sha256": "4aa7e1552a790529aee5293b792198fcb0eca6f620a76016aadbd2ef5c3832ac",
+  "checkpoint_source": "/home/robot/czy/exp1/exp_20261027_183624/logs/x1_amp_exp18/exported_data/2026-10-27_18-39-14exp1.8/model_11000.pt",
+  "code_sha256": "9958cd54c31ad759739ba2aaa9eff481c0ca07609128787e4bb81f87715b93cf",
+  "probe_sha256": "b6e15a4433ea31a8f94c9a4867720683f76a9c91729b5301dbc0b11314ae739e",
+  "num_envs": 4096,
+  "seed": 5,
+  "phase": "completed_and_analyzed",
+  "launch_pid": "3270376"
+}

@@ -1,0 +1,35 @@
+{
+  "cpu_regression": "60 tests passed",
+  "inherited_control_blocks": [
+    "control",
+    "env",
+    "asset",
+    "commands",
+    "amp",
+    "sim",
+    "noise",
+    "domain_rand"
+  ],
+  "reward_weights_inherited": true,
+  "source_sha256": "4aa7e1552a790529aee5293b792198fcb0eca6f620a76016aadbd2ef5c3832ac",
+  "config": {
+    "exp1.8": {
+      "rollout": 24,
+      "minibatch_samples": 24576,
+      "total_transitions": 98304000,
+      "maximum_actor_adam_steps": 20000,
+      "discriminator_adam_steps": 4000,
+      "lambda_": 0.95,
+      "td_error_weight_44": 0.06726469774125432
+    },
+    "exp1.9": {
+      "rollout": 96,
+      "minibatch_samples": 24576,
+      "total_transitions": 98304000,
+      "maximum_actor_adam_steps": 20000,
+      "discriminator_adam_steps": 4000,
+      "lambda_": 0.98,
+      "td_error_weight_44": 0.2641775406175665
+    }
+  }
+}

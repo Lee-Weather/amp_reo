@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+from datetime import datetime, timezone, timedelta
 
 import flux_ops
 from flux_ops import CLI, call, credentials, sanitize
@@ -13,6 +14,7 @@ from flux_ops import CLI, call, credentials, sanitize
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--state", type=Path, required=True, help="Archived flux_training.json")
+    parser.add_argument('--compact', action='store_true', help='Save one structured evaluation snapshot, without a full log file')
     args = parser.parse_args()
     state_path = args.state.resolve()
     state = json.loads(state_path.read_text(encoding="utf-8"))
@@ -24,10 +26,33 @@ def main():
     summary["commit"] = info["taskCodeInfo"].get("commitId")
     print(json.dumps(summary,ensure_ascii=False),flush=True)
     env = os.environ.copy()
-    env.update(FLUX_API_KEY=credentials()["api_key"],FLUX_BASE_URL="https://internal.limxdynamics.com/dev-api")
+    env.update(FLUX_API_KEY=credentials()["api_key"],FLUX_BASE_URL=os.environ.get('FLUX_LOCAL_BASE_URL', "https://internal.limxdynamics.com/dev-api"))
     proc = subprocess.run([str(CLI), "--yes", "--timeout", "30s", "--retry", "1", "task", "logs",
                            "--task-id", task, "--raw", "--no-request-log"],
                           env=env,capture_output=True,encoding="utf-8",errors="replace")
+    if args.compact:
+        if proc.returncode: raise RuntimeError('Task log request failed')
+        text = proc.stdout
+        updates = list(re.finditer(r'Learning iteration\s+(\d+)\s*/\s*(\d+)', text))
+        latest = text[updates[-1].start():] if updates else text
+        def metric(label):
+            matches = re.findall(r'^\s*'+re.escape(label)+r':\s*([-+0-9.eE]+)', latest, re.M)
+            return float(matches[-1]) if matches else None
+        snapshot = dict(task_id=task, account=state['account'], commit=summary['commit'],
+            checked_at=datetime.now(timezone(timedelta(hours=8))).isoformat(), platform_status=str(base['taskStatus']),
+            start_time=base.get('startTime'), iteration=int(updates[-1][1]) if updates else 0,
+            target_iteration=state['target_iteration'], total_timesteps=metric('Total timesteps'),
+            mean_reward=metric('Mean reward'), mean_episode_length_steps=metric('Mean episode length'),
+            iteration_seconds=metric('Iteration time'), amp_curriculum_weight=metric('AMP/curriculum_weight'),
+            forward_vx=metric('Tracking/forward_vx'), zero_applied_fraction=metric('Commands/zero_applied_fraction'),
+            guide_weight=metric('Reference/guide_weight'),
+            error_lines=[sanitize(line) for line in text.splitlines() if re.search(r'Traceback|\w+Error:', line)][-5:])
+        assert snapshot['commit'] in ('', None, state['commit'])
+        directory = state_path.parent/(state['experiment']+'_evaluation')
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory/'runtime_progress.json').write_text(json.dumps(snapshot, indent=2)+'\n', encoding='utf-8')
+        print(json.dumps(snapshot), flush=True)
+        return
     if proc.returncode:
         print("LOGS_NOT_READY exit="+str(proc.returncode))
     else:

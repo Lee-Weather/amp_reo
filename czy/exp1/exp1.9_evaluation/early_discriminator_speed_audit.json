@@ -1,0 +1,280 @@
+{
+  "scope": "Frozen discriminator counterfactual reference-speed audit; no physics or training",
+  "resource_manifest_sha256": "57ebaa9433efe4a83ef446f82f145f0d65841fa300b0b9856486144c4183af37",
+  "resource_sha256": {
+    "resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf": "f45f8b3bffd95d1d3b664a78901e58f40168d9787c8364b9e1e95b587627c5c9",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B1_stand_to_walk.pkl": "b52e494467fff02d7476713b28d4e45d29ab5fe8f174e7c48b53f8ccf78e6da0",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B2_walk_to_stand.pkl": "c0ac857c3fe663eafd5d533811e7cd4fc3bd538b397b8bb160fdeda7f300751a",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B3_continuous_walk.pkl": "85d13aa13bb688faf5cb35dabbb8df0c105b614996b74f8f5035aafdda281dc0",
+    "resources/motions/slow_walk_amp_v1.2/normalized/F1_B4_walk_backwards.pkl": "0ba8de827a0eaba66aa0a8c593d6825a7078d53017b282a89c9b9675186c25eb",
+    "resources/robots/x1_29/meshes/left_ankle_roll.STL": "6346fce8cc33295fa00d61852c7415e356dabf634b99eb8a4f10b9d41e66f901",
+    "resources/robots/x1_29/meshes/right_ankle_roll_physically_mirrored.STL": "c369b3d3ea578c19e18c1d46fa767a48631f0e34b577f1b423a8ef2b3227f7ce"
+  },
+  "results": [
+    {
+      "iteration": 11000,
+      "checkpoint_sha256": "4aa7e1552a790529aee5293b792198fcb0eca6f620a76016aadbd2ef5c3832ac",
+      "groups": {
+        "F1_B4_walk_backwards": [
+          {
+            "command_vx": -0.2,
+            "examples": 269,
+            "time_scale_p05_p50_p95": [
+              0.3616884648799896,
+              0.5612570643424988,
+              0.9246197938919067
+            ],
+            "endpoint_vx_error_max": 5.960464477539063e-08,
+            "original_mean_style": 0.9999727606773376,
+            "retimed_mean_D": 0.8631717562675476,
+            "retimed_mean_style": 0.9932796955108643,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.3113604485988617,
+            "retimed_mean_shaped_style": 0.9932796955108643
+          },
+          {
+            "command_vx": -0.15,
+            "examples": 269,
+            "time_scale_p05_p50_p95": [
+              0.271266371011734,
+              0.4209427833557129,
+              0.6934648752212524
+            ],
+            "endpoint_vx_error_max": 4.470348358154297e-08,
+            "original_mean_style": 0.9999727606773376,
+            "retimed_mean_D": 0.7718951106071472,
+            "retimed_mean_style": 0.9843153357505798,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.17754261195659637,
+            "retimed_mean_shaped_style": 0.9843153357505798
+          },
+          {
+            "command_vx": -0.1,
+            "examples": 269,
+            "time_scale_p05_p50_p95": [
+              0.1808442324399948,
+              0.2806285321712494,
+              0.46230989694595337
+            ],
+            "endpoint_vx_error_max": 2.9802322387695312e-08,
+            "original_mean_style": 0.9999727606773376,
+            "retimed_mean_D": 0.6458379626274109,
+            "retimed_mean_style": 0.965219259262085,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.08123717457056046,
+            "retimed_mean_shaped_style": 0.965219259262085
+          },
+          {
+            "command_vx": -0.075,
+            "examples": 269,
+            "time_scale_p05_p50_p95": [
+              0.135633185505867,
+              0.21047139167785645,
+              0.3467324376106262
+            ],
+            "endpoint_vx_error_max": 2.2351741790771484e-08,
+            "original_mean_style": 0.9999727606773376,
+            "retimed_mean_D": 0.573435366153717,
+            "retimed_mean_style": 0.9502618908882141,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.050718989223241806,
+            "retimed_mean_shaped_style": 0.9502618312835693
+          }
+        ],
+        "F1_B3_continuous_walk": [
+          {
+            "command_vx": 0.1,
+            "examples": 367,
+            "time_scale_p05_p50_p95": [
+              0.13814502954483032,
+              0.16418735682964325,
+              0.19723622500896454
+            ],
+            "endpoint_vx_error_max": 3.725290298461914e-08,
+            "original_mean_style": 0.9998539686203003,
+            "retimed_mean_D": 0.2501848042011261,
+            "retimed_mean_style": 0.8403401970863342,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 1.7005529571179068e-06,
+            "retimed_mean_shaped_style": 0.8403400778770447
+          },
+          {
+            "command_vx": 0.4,
+            "examples": 367,
+            "time_scale_p05_p50_p95": [
+              0.5525801181793213,
+              0.656749427318573,
+              0.7889449000358582
+            ],
+            "endpoint_vx_error_max": 1.4901161193847656e-07,
+            "original_mean_style": 0.9998539686203003,
+            "retimed_mean_D": 0.8383644223213196,
+            "retimed_mean_style": 0.9891789555549622,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.12396222352981567,
+            "retimed_mean_shaped_style": 0.9891789555549622
+          },
+          {
+            "command_vx": 0.6,
+            "examples": 367,
+            "time_scale_p05_p50_p95": [
+              0.8288702368736267,
+              0.9851241707801819,
+              1.1834174394607544
+            ],
+            "endpoint_vx_error_max": 1.7881393432617188e-07,
+            "original_mean_style": 0.9998539686203003,
+            "retimed_mean_D": 0.9713236093521118,
+            "retimed_mean_style": 0.9996541738510132,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.7034657001495361,
+            "retimed_mean_shaped_style": 0.9996541738510132
+          }
+        ]
+      }
+    },
+    {
+      "iteration": 11025,
+      "checkpoint_sha256": "6bd85eaaedc7174398ca349fa6b20293d110a4d1a4066f66d086d1b9820a83c5",
+      "groups": {
+        "F1_B4_walk_backwards": [
+          {
+            "command_vx": -0.2,
+            "examples": 269,
+            "time_scale_p05_p50_p95": [
+              0.3616884648799896,
+              0.5612570643424988,
+              0.9246197938919067
+            ],
+            "endpoint_vx_error_max": 5.960464477539063e-08,
+            "original_mean_style": 0.9999902248382568,
+            "retimed_mean_D": 0.8641989827156067,
+            "retimed_mean_style": 0.9931492209434509,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.31136250495910645,
+            "retimed_mean_shaped_style": 0.9931492209434509
+          },
+          {
+            "command_vx": -0.15,
+            "examples": 269,
+            "time_scale_p05_p50_p95": [
+              0.271266371011734,
+              0.4209427833557129,
+              0.6934648752212524
+            ],
+            "endpoint_vx_error_max": 4.470348358154297e-08,
+            "original_mean_style": 0.9999902248382568,
+            "retimed_mean_D": 0.7732710838317871,
+            "retimed_mean_style": 0.9841562509536743,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.1775437891483307,
+            "retimed_mean_shaped_style": 0.9841562509536743
+          },
+          {
+            "command_vx": -0.1,
+            "examples": 269,
+            "time_scale_p05_p50_p95": [
+              0.1808442324399948,
+              0.2806285321712494,
+              0.46230989694595337
+            ],
+            "endpoint_vx_error_max": 2.9802322387695312e-08,
+            "original_mean_style": 0.9999902248382568,
+            "retimed_mean_D": 0.6479566693305969,
+            "retimed_mean_style": 0.9651309847831726,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.08123773336410522,
+            "retimed_mean_shaped_style": 0.9651308655738831
+          },
+          {
+            "command_vx": -0.075,
+            "examples": 269,
+            "time_scale_p05_p50_p95": [
+              0.135633185505867,
+              0.21047139167785645,
+              0.3467324376106262
+            ],
+            "endpoint_vx_error_max": 2.2351741790771484e-08,
+            "original_mean_style": 0.9999902248382568,
+            "retimed_mean_D": 0.5761243104934692,
+            "retimed_mean_style": 0.9502984285354614,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.05071935057640076,
+            "retimed_mean_shaped_style": 0.9502984285354614
+          }
+        ],
+        "F1_B3_continuous_walk": [
+          {
+            "command_vx": 0.1,
+            "examples": 367,
+            "time_scale_p05_p50_p95": [
+              0.13814502954483032,
+              0.16418735682964325,
+              0.19723622500896454
+            ],
+            "endpoint_vx_error_max": 3.725290298461914e-08,
+            "original_mean_style": 0.9999141097068787,
+            "retimed_mean_D": 0.25140321254730225,
+            "retimed_mean_style": 0.8395434617996216,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 1.7007107544486644e-06,
+            "retimed_mean_shaped_style": 0.8395434021949768
+          },
+          {
+            "command_vx": 0.4,
+            "examples": 367,
+            "time_scale_p05_p50_p95": [
+              0.5525801181793213,
+              0.656749427318573,
+              0.7889449000358582
+            ],
+            "endpoint_vx_error_max": 1.4901161193847656e-07,
+            "original_mean_style": 0.9999141097068787,
+            "retimed_mean_D": 0.8391702175140381,
+            "retimed_mean_style": 0.9887745380401611,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.1239733025431633,
+            "retimed_mean_shaped_style": 0.9887743592262268
+          },
+          {
+            "command_vx": 0.6,
+            "examples": 367,
+            "time_scale_p05_p50_p95": [
+              0.8288702368736267,
+              0.9851241707801819,
+              1.1834174394607544
+            ],
+            "endpoint_vx_error_max": 1.7881393432617188e-07,
+            "original_mean_style": 0.9999141097068787,
+            "retimed_mean_D": 0.9737796783447266,
+            "retimed_mean_style": 0.9997009038925171,
+            "retimed_zero_style_fraction": 0.0,
+            "original_mean_shaped_style": 0.7035057544708252,
+            "retimed_mean_shaped_style": 0.9997007846832275
+          }
+        ]
+      }
+    }
+  ],
+  "method": "Constant time scale within each history: sample original at t-r*offset and multiply root linear/angular and joint velocities by r.",
+  "limits": [
+    "Each history has its own constant scale; this is not a stitched continuous retimed motion file.",
+    "Time scaling preserves local kinematic consistency but does not preserve gravity-dependent dynamics.",
+    "High reference scores do not establish policy reachability, exploration sufficiency or physical imitation feasibility.",
+    "Shaped style is an example score before style scale, policy dt and task/style mixing.",
+    "No expert data, discriminator or training settings were modified."
+  ],
+  "current_training_resource_verification": {
+    "training_root": "/home/robot/czy/exp1/exp_20261027_203528",
+    "all_remote_resource_hashes_match": true,
+    "resource_sha256": {
+      "resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf": "f45f8b3bffd95d1d3b664a78901e58f40168d9787c8364b9e1e95b587627c5c9",
+      "resources/motions/slow_walk_amp_v1.2/normalized/F1_B1_stand_to_walk.pkl": "b52e494467fff02d7476713b28d4e45d29ab5fe8f174e7c48b53f8ccf78e6da0",
+      "resources/motions/slow_walk_amp_v1.2/normalized/F1_B2_walk_to_stand.pkl": "c0ac857c3fe663eafd5d533811e7cd4fc3bd538b397b8bb160fdeda7f300751a",
+      "resources/motions/slow_walk_amp_v1.2/normalized/F1_B3_continuous_walk.pkl": "85d13aa13bb688faf5cb35dabbb8df0c105b614996b74f8f5035aafdda281dc0",
+      "resources/motions/slow_walk_amp_v1.2/normalized/F1_B4_walk_backwards.pkl": "0ba8de827a0eaba66aa0a8c593d6825a7078d53017b282a89c9b9675186c25eb",
+      "resources/robots/x1_29/meshes/left_ankle_roll.STL": "6346fce8cc33295fa00d61852c7415e356dabf634b99eb8a4f10b9d41e66f901",
+      "resources/robots/x1_29/meshes/right_ankle_roll_physically_mirrored.STL": "c369b3d3ea578c19e18c1d46fa767a48631f0e34b577f1b423a8ef2b3227f7ce"
+    }
+  }
+}

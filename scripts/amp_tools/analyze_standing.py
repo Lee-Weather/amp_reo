@@ -10,7 +10,7 @@ def span(signal):
     return float(np.quantile(signal, .95) - np.quantile(signal, .05))
 
 
-def analyze(csv_path):
+def analyze(csv_path, allow_invalid_windows=False):
     data = np.genfromtxt(csv_path, delimiter=",", names=True)
     x, y, z, w = (data[name] for name in ("qx", "qy", "qz", "qw"))
     roll = np.rad2deg(np.arctan2(2*(w*x+y*z), 1-2*(x*x+y*y)))
@@ -22,12 +22,20 @@ def analyze(csv_path):
                               ("after_first_walk", 34., 39.8),
                               ("after_second_walk", 54., 59.8)):
         mask = (data["time_s"] >= start) & (data["time_s"] < end)
+        reason = None
         if not mask.any() or data["done"][mask].any():
-            raise ValueError("Standing window is empty or includes a reset: " + label)
+            reason = "Standing window is empty or includes a reset: " + label
         command = np.column_stack([data[k][mask] for k in ("cmd_vx", "cmd_vy", "cmd_wz",
                                                          "cmd_linear_x", "cmd_linear_y", "cmd_angular_z")])
         if not np.allclose(command, 0, atol=1e-8):
-            raise ValueError("Standing window includes nonzero commands: " + label)
+            reason = "Standing window includes nonzero commands: " + label
+        if reason:
+            if not allow_invalid_windows:
+                raise ValueError(reason)
+            windows[label] = {"valid": False, "reason": reason,
+                              "requested_window_s": [start, end], "rows": int(mask.sum())}
+            masks.append(mask)
+            continue
         joints = {}
         for side in ("left", "right"):
             for joint in ("knee_pitch", "ankle_pitch"):
@@ -40,6 +48,7 @@ def analyze(csv_path):
                     "effective_target_p95_p05_deg": float(np.rad2deg(span(data["pd_target_effective_"+name][mask]))),
                 }
         windows[label] = {
+            "valid": True,
             "requested_window_s": [start, end], "rows": int(mask.sum()),
             "max_abs_command": float(np.abs(command).max()),
             "mean_abs_vx_m_s": float(np.abs(data["vx"][mask]).mean()),
@@ -67,7 +76,7 @@ def main():
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     if metadata["seed"] != 5:
         raise ValueError("This project's standing analysis uses seed=5")
-    data, roll, pitch, masks, windows = analyze(args.csv)
+    data, roll, pitch, masks, windows = analyze(args.csv, allow_invalid_windows=True)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     result = {"csv": args.csv.as_posix(), "metadata_source": metadata_path.as_posix(),
               "experiment": args.output_dir.name.removesuffix("_evaluation"), "seed": metadata["seed"],
@@ -94,7 +103,9 @@ def main():
             name = side+"_knee_pitch_joint"
             axes[2, col].plot(t, np.rad2deg(data["q_"+name][mask]), label=side)
             axes[3, col].plot(t, np.rad2deg(data["pd_target_effective_"+name][mask]), label=side)
-        axes[0, col].set_title(label.replace("_", " "))
+        valid = windows[label]["valid"]
+        axes[0, col].set_title(label.replace("_", " ")+("" if valid else " [invalid: reset/command]"),
+                               color="black" if valid else "#b13b3b")
         axes[3, col].set_xlabel("Replay time (s)")
         for row in range(4):
             axes[row, col].grid(alpha=.25)

@@ -1,0 +1,50 @@
+{
+  "last_iteration": 10302,
+  "scope": "Same-objective training aggregates, not fixed-command acceptance",
+  "windows": [
+    {
+      "iterations": [
+        10051,
+        10150
+      ],
+      "metrics": {
+        "Train/mean_episode_length": 758.3702990722657,
+        "Train/mean_reward": 11.12876172542572,
+        "AMP/kl": 0.011566178877837957,
+        "AMP/kl_max": 0.014531867243349553,
+        "Tracking/backward_abs_vx_error": 0.12712951429188252,
+        "Tracking/backward_vx": -0.025575291395653038,
+        "Tracking/backward_abs_vx": 0.07002253107726573,
+        "Tracking/backward_wrong_direction_fraction": 0.12083753041923045,
+        "Commands/backward_applied_fraction": 0.20941284716129302,
+        "Tracking/slow_forward_abs_vx_error": 0.05481560714542866,
+        "Tracking/forward_abs_vx_error": 0.07303883388638496,
+        "Tracking/zero_abs_vx_error": 0.03688237993046641
+      }
+    },
+    {
+      "iterations": [
+        10203,
+        10302
+      ],
+      "metrics": {
+        "Train/mean_episode_length": 884.5209973144531,
+        "Train/mean_reward": 14.045752086639403,
+        "AMP/kl": 0.013059881059452891,
+        "AMP/kl_max": 0.01599228786304593,
+        "Tracking/backward_abs_vx_error": 0.12451050452888011,
+        "Tracking/backward_vx": -0.026017196469474584,
+        "Tracking/backward_abs_vx": 0.06612669687718153,
+        "Tracking/backward_wrong_direction_fraction": 0.1089050654694438,
+        "Commands/backward_applied_fraction": 0.2044628953933716,
+        "Tracking/slow_forward_abs_vx_error": 0.052440076544880865,
+        "Tracking/forward_abs_vx_error": 0.07247033923864364,
+        "Tracking/zero_abs_vx_error": 0.03500853408128023
+      }
+    }
+  ],
+  "limits": [
+    "Values are arithmetic means of per-update logs; completed-episode buffers overlap.",
+    "Command groups include RSI, switching, exploration and recovery; no continuous backward success is established."
+  ]
+}

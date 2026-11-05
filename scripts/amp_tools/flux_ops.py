@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-ACCOUNT = "limxmts0chns5mnse9@uberip.com"
+ACCOUNT = "limx2f205wu6b0jq@maxxspace.com"
 CLI = Path(os.environ["APPDATA"])/"npm/node_modules/@limxdynamics/flux-cli/vendor/flux.exe"
 
 
@@ -18,7 +18,7 @@ def credentials():
 
 def sanitize(value):
     if isinstance(value, dict):
-        return {k: ("[REDACTED]" if re.search(r"(?i)token|secret|password|api.?key|startscript|urlDown|url_b64|logoUrl", k)
+        return {k: ("[REDACTED]" if re.search(r"(?i)token|secret|password|api.?key|startscript|urlDown|SignedUrl|url_b64|logoUrl", k)
                     else sanitize(v)) for k, v in value.items()}
     if isinstance(value, list):
         return [sanitize(v) for v in value]
@@ -26,13 +26,13 @@ def sanitize(value):
         value = re.sub(r"(?:gh[pousr]_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+|gm_sk_[A-Za-z0-9_-]+)", "[REDACTED]", value)
         value = re.sub(r"https?://[^\s\"<>]+\?[^\s\"<>]+", "[SIGNED_URL_REDACTED]", value)
         value = re.sub(r"(?i)https?%3a[^\s\"<>]+", "[ENCODED_URL_REDACTED]", value)
-        value = re.sub(r"(--(?:warm_start_url_b64|checkpoint_url_b64)(?:=|\s+))\S+", r"\1[REDACTED]", value)
+        value = re.sub(r"(--(?:warm_start_url_b64|checkpoint_url_b64|teacher_url_b64|recovery_url_b64)(?:=|\s+))\S+", r"\1[REDACTED]", value)
     return value
 
 
 def call(*args):
     env = os.environ.copy()
-    env.update(FLUX_API_KEY=credentials()["api_key"], FLUX_BASE_URL="https://internal.limxdynamics.com/dev-api")
+    env.update(FLUX_API_KEY=credentials()["api_key"], FLUX_BASE_URL=os.environ.get('FLUX_LOCAL_BASE_URL', "https://internal.limxdynamics.com/dev-api"))
     proc = subprocess.run([str(CLI), "--yes", "--timeout", "30s", "--retry", "1", *args],
                           env=env, capture_output=True, encoding="utf-8", errors="replace")
     try:

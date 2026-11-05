@@ -48,7 +48,7 @@ def main():
     a = p.parse_args()
     torch.set_num_threads(1)
     ck = torch.load(a.model, map_location="cpu", weights_only=False)
-    native = ck['metadata'].get('training',{}).get('curriculum')=='native_full_body_v1'
+    native = 'native_reference' in ck['metadata'].get('training',{})
     if a.vx is None: a.vx = ck['config']['commands']['native_speed'] if native else .3
     if a.window_starts is None: a.window_starts = [6.,26.,46.] if native else [4.,24.,44.]
     if a.window_seconds is None: a.window_seconds = 12. if native else 14.

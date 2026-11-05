@@ -1,0 +1,22 @@
+{
+  "criterion": "Planar norm <=0.02m/s, abs wz <=0.03rad/s for 0.2s of consecutive control samples in one episode",
+  "required_samples": 10,
+  "stops": [
+    {
+      "stage": 3,
+      "stop_command_time_s": 30.00000142492354,
+      "entry_time_for_02s_hold_s": 1.1000000522471964,
+      "confirmation_time_s": 1.2800000607967377,
+      "qualifying_fraction": 0.854,
+      "never_confirmed": false
+    },
+    {
+      "stage": 5,
+      "stop_command_time_s": 50.000002374872565,
+      "entry_time_for_02s_hold_s": 1.1600000550970435,
+      "confirmation_time_s": 1.3400000636465847,
+      "qualifying_fraction": 0.854,
+      "never_confirmed": false
+    }
+  ]
+}

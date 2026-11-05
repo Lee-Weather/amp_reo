@@ -1,0 +1,84 @@
+{
+  "last_iteration": 11026,
+  "scope": "Early stochastic production training, not fixed-command GPU acceptance",
+  "rollout_steps": 96,
+  "checkpoint_iteration": 11025,
+  "checkpoint_sha256": "6bd85eaaedc7174398ca349fa6b20293d110a4d1a4066f66d086d1b9820a83c5",
+  "formal_configuration_verified": true,
+  "metrics": {
+    "Train/mean_reward": {
+      "last": 11.281243324279785,
+      "first5_mean": 1.2990449219942093,
+      "last5_mean": 9.655180358886719
+    },
+    "Train/mean_episode_length": {
+      "last": 791.739990234375,
+      "first5_mean": 170.44399719238282,
+      "last5_mean": 679.089990234375
+    },
+    "AMP/kl": {
+      "last": 0.009241192601621151,
+      "first5_mean": 0.006719048321247101,
+      "last5_mean": 0.00903182839974761
+    },
+    "AMP/kl_max": {
+      "last": 0.019117344170808792,
+      "first5_mean": 0.012492319382727147,
+      "last5_mean": 0.013676345348358154
+    },
+    "Tracking/backward_vx": {
+      "last": -0.02356415055692196,
+      "first5_mean": -0.041259087063372134,
+      "last5_mean": -0.03702439814805984
+    },
+    "Tracking/backward_abs_vx": {
+      "last": 0.05029201880097389,
+      "first5_mean": 0.0663895308971405,
+      "last5_mean": 0.06379401609301567
+    },
+    "Tracking/backward_abs_vx_error": {
+      "last": 0.1167161837220192,
+      "first5_mean": 0.10531438738107682,
+      "last5_mean": 0.1048250824213028
+    },
+    "Tracking/backward_wrong_direction_fraction": {
+      "last": 0.06607731431722641,
+      "first5_mean": 0.061676347814500335,
+      "last5_mean": 0.06550914011895656
+    },
+    "Tracking/forward_abs_vx_error": {
+      "last": 0.055800653994083405,
+      "first5_mean": 0.07141363695263862,
+      "last5_mean": 0.06824405044317246
+    },
+    "Tracking/zero_abs_vx_error": {
+      "last": 0.027561482042074203,
+      "first5_mean": 0.03153249174356461,
+      "last5_mean": 0.030790084972977638
+    },
+    "Commands/backward_applied_fraction": {
+      "last": 0.20913951098918915,
+      "first5_mean": 0.195622256398201,
+      "last5_mean": 0.1889017790555954
+    },
+    "Tracking/moving_abs_yaw_rate": {
+      "last": 0.19934731721878052,
+      "first5_mean": 0.2020053744316101,
+      "last5_mean": 0.20152148306369783
+    }
+  },
+  "limits": [
+    "Completed-episode windows overlap; early samples favor first terminators.",
+    "First5 and last5 differ in RSI/reset/command mixture; no causal comparison.",
+    "Changed angular reward prevents ranking total rewards against exp1.8 as one fixed objective.",
+    "Command metrics include RSI, transitions and recovery, not fixed -0.2 playback.",
+    "Instantaneous moving abs yaw rate is not complete-cycle yaw drift.",
+    "Error spikes approximately every 3 updates and completion spikes approximately every 10 updates are consistent with 6-second resampling/20-second timeouts; aggregate curves alone do not establish causality."
+  ],
+  "command_resampling_seconds": 6.0,
+  "rollout_seconds": 1.92,
+  "episode_horizon_seconds": 20.0,
+  "actor_single_frame": 96,
+  "actor_frame_stack": 5,
+  "actor_observation_width": 480
+}
