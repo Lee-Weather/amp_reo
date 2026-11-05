@@ -1,0 +1,20 @@
+{
+  "schema": "x1_b1_checkpoint_controls_v1",
+  "source_task": "TASK_20261105_419",
+  "seed": 5,
+  "training_updates": 0,
+  "training_plan_sha256": "96ac722bf47e29d76ddfc74169f8da9e8e83f703d8a90b31001bfb6fbecd3501",
+  "input_bundle_sha256": "ba41a189f0ce4de9dce744a595356ae372a57144c564f0ee0db8376319439162",
+  "checkpoints": {
+    "50": "256412b3343ac3f97e7cd52f0706fd495eabe0e3e368111152e113fd3bf0385c",
+    "100": "370993ecf6f5d210db2a7abb9224e75f58b3b0a847dc60500fdceb88543fcf2c",
+    "150": "5432c7788c69ddb908e09602e9cd4c7d109633ecc6b48930a8656c328c9a1780",
+    "200": "f17eba2a3a5e8a58d6aa03d4f5139cd407255e926115f1a0719eee3250f331c9"
+  },
+  "diagnostic_source_sha256": {
+    "humanoid/scripts/probe_b1_recovery_checkpoints.py": "8cf93a7081a222eec15e051fe5b3c224a9145d95fffafe75b6bc54ec0a73f9bd",
+    "tests/test_replay_revision.py": "fc27b16efb02fe107326d536eb065c85ffc1f06eef43db682f13248589ac9a47"
+  },
+  "evaluation": "Fresh process per checkpoint; student-only; identical seed5/reference frame0/full384-step gate.",
+  "limitation": "One nominal episode per fixed checkpoint; no independent validation or robustness proof."
+}

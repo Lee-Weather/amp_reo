@@ -11,6 +11,27 @@ spec.loader.exec_module(module)
 
 
 class ReplayRevisionTests(unittest.TestCase):
+    def test_checkpoint_controls_bind_urls_to_ordered_frozen_identities(self):
+        import base64
+        import json
+        from humanoid.scripts.probe_b1_recovery_checkpoints import decode_models
+        expected = {'50': 'a'*64, '100': 'b'*64}
+        rows = [dict(step=step, sha256=sha, url='https://example.invalid/private')
+                for step, sha in [(50, 'a'*64), (100, 'b'*64)]]
+        def encode(value):
+            return base64.urlsafe_b64encode(json.dumps(value).encode()).decode()
+        self.assertEqual(decode_models(encode(rows), expected), rows)
+        for bad in (rows[::-1], rows[:1], rows+rows, [dict(rows[0], sha256='b'*64), rows[1]],
+                    [dict(rows[0], url='http://example.invalid/private'), rows[1]]):
+            with self.assertRaisesRegex(ValueError, 'URLs withheld'):
+                decode_models(encode(bad), expected)
+
+    def test_malformed_checkpoint_manifest_does_not_echo_download_secrets(self):
+        from humanoid.scripts.probe_b1_recovery_checkpoints import decode_models
+        with self.assertRaisesRegex(ValueError, 'URLs withheld') as caught:
+            decode_models('private-signature-should-not-appear', {'50': 'a'*64})
+        self.assertNotIn('private-signature-should-not-appear', str(caught.exception))
+
     def test_idle_desktop_does_not_hide_a_replay_or_training_process(self):
         query = "10665, /usr/NX/bin/nxnode.bin, 292\n133659, python, 5800\n"
         active, desktop = module.gpu_workloads(query)
