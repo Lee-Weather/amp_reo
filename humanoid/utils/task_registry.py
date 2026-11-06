@@ -177,6 +177,9 @@ class TaskRegistry():
         elif runner_name == "ConservativeAMPOnPolicyRunner":
             from humanoid.amp.conservative_runner import ConservativeAMPOnPolicyRunner
             runner_class = ConservativeAMPOnPolicyRunner
+        elif runner_name == "X1Exp31AMPOnPolicyRunner":
+            from humanoid.amp.x1_exp31_runner import X1Exp31AMPOnPolicyRunner
+            runner_class = X1Exp31AMPOnPolicyRunner
         elif runner_name == "DHOnPolicyRunner":
             from humanoid.algo.ppo.dh_on_policy_runner import DHOnPolicyRunner
             runner_class = DHOnPolicyRunner
@@ -187,14 +190,14 @@ class TaskRegistry():
         resume = train_cfg.runner.resume
         warm_start = getattr(args, "warm_start", None)
         if warm_start:
-            if resume or runner_name not in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner", "Exp24AMPOnPolicyRunner", "Exp25AMPOnPolicyRunner"):
+            if resume or runner_name not in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner", "Exp24AMPOnPolicyRunner", "Exp25AMPOnPolicyRunner", "X1Exp31AMPOnPolicyRunner"):
                 raise ValueError("AMP warm_start must be used without --resume")
             runner.warm_start(os.path.abspath(warm_start), getattr(args, "warm_start_sha256", None))
         elif resume:
             # load previously trained model
             resume_path = get_load_path(log_root, load_run=train_cfg.runner.load_run, checkpoint=train_cfg.runner.checkpoint)
             print(f"Loading model from: {resume_path}")
-            runner.load(resume_path, load_optimizer=(runner_name in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner", "Exp24AMPOnPolicyRunner", "Exp25AMPOnPolicyRunner")))
+            runner.load(resume_path, load_optimizer=(runner_name in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner", "Exp24AMPOnPolicyRunner", "Exp25AMPOnPolicyRunner", "X1Exp31AMPOnPolicyRunner")))
         return runner, train_cfg, log_dir
 
 # make global task registry
