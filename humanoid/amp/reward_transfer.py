@@ -7,13 +7,14 @@ import os
 import torch
 
 from .dh_models import ActorCriticDHAMP
+from .models import ActorCritic
 
 
 def transfer_for_reward_refinement(runner, path, expected_sha256=None):
-    if (not isinstance(runner.actor_critic, ActorCriticDHAMP)
+    if (not isinstance(runner.actor_critic, (ActorCriticDHAMP, ActorCritic))
             or runner.current_learning_iteration != 0 or runner.training_origin is not None
             or runner.optimizer.state or runner.disc_optimizer.state or runner.replay.size):
-        raise ValueError('Reward refinement requires a fresh DH runner')
+        raise ValueError('Reward refinement requires a fresh AMP runner')
     with open(path, 'rb') as f:
         digest = hashlib.sha256(f.read()).hexdigest()
     configured = runner.cfg.get('policy_transfer_source_sha256')
