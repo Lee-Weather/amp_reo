@@ -18,9 +18,9 @@ from mujoco_diagnostics import foot_contact_forces, roll_pitch_yaw
 from native_physics import align_runtime
 
 
-def frame_features(command, angular, rotation, q, dq, previous, default, scales, command_scale):
+def frame_features(command, angular, rotation, q, dq, previous, default, scales, command_scale, yaw_command=0.):
     return np.concatenate((
-        [command * command_scale[0], 0., 0.],
+        [command * command_scale[0], 0., yaw_command * command_scale[2]],
         angular * scales['ang_vel'],
         -rotation[2],
         (q - default) * scales['dof_pos'],
@@ -43,6 +43,11 @@ def main():
     p.add_argument('--passive-probe', type=Path, required=True)
     p.add_argument('--seconds', type=float, default=10.)
     p.add_argument('--vx', type=float, default=0.5953696966)
+    p.add_argument('--transition-seconds', type=float, default=2.0)
+    p.add_argument('--yaw-gain', type=float, default=0.)
+    p.add_argument('--yaw-rate-damping', type=float, default=0.)
+    p.add_argument('--yaw-clip', type=float, default=0.3)
+    p.add_argument('--yaw-threshold', type=float, default=0.05)
     a = p.parse_args()
     torch.set_num_threads(1)
     torch.manual_seed(5)
@@ -141,10 +146,12 @@ def main():
     d.qpos[2] += z_shift
     mujoco.mj_forward(m, d)
     hold = round(cfg['amp']['stand_buffer_seconds'] / dt)
-    schedule = SmoothCommands(1, 'cpu', hold, dt, 2.0, a.vx)
+    schedule = SmoothCommands(1, 'cpu', hold, dt, a.transition_seconds, a.vx)
     schedule.reset(torch.tensor([0]), torch.tensor([True]))
     schedule.requested[0, 0] = a.vx
     previous = np.zeros(n)
+    yaw_mode = a.yaw_gain != 0. or a.yaw_rate_damping != 0.
+    heading_reference = float(roll_pitch_yaw(rotation_from_wxyz(d.qpos[3:7]))[2]) if yaw_mode else 0.
 
     def state():
         velocity = np.zeros(6)
@@ -154,8 +161,11 @@ def main():
 
     def frame():
         q, dq, velocity, rotation = state()
+        err = (float(roll_pitch_yaw(rotation)[2]) - heading_reference + math.pi) % (2*math.pi) - math.pi if yaw_mode else 0.
+        moving = bool(schedule.value[0] > a.yaw_threshold or schedule.transition[0])
+        wz = float(np.clip(-a.yaw_gain*err - a.yaw_rate_damping*velocity[2], -a.yaw_clip, a.yaw_clip)) if (yaw_mode and moving) else 0.
         return frame_features(float(schedule.value[0]), velocity[:3], rotation, q, dq,
-                              previous, default, scales, command_scale)
+                              previous, default, scales, command_scale, wz)
 
     history = collections.deque([np.zeros(single, dtype=np.float32) for _ in range(frame_stack - 1)]
                                 + [frame()], maxlen=frame_stack)
@@ -230,12 +240,13 @@ def main():
         training_commit=a.training_commit, mujoco_version=mujoco.__version__,
         policy_input=frame_stack * single, policy_output=n, policy_dt=dt, sim_dt=simdt,
         frame_stack=frame_stack, num_single_obs=single, requested_vx=a.vx,
-        stand_seconds=hold * dt, command_transition_seconds=2.0,
+        stand_seconds=hold * dt, command_transition_seconds=a.transition_seconds,
         duration_s=float(numeric[-1, 1]), video_frames=frames, video_fps=25,
         fallen=fallen, fall_time_s=fall_time,
         video_path=str(video_path.resolve()), csv_path=str(csv_path.resolve()),
         physics_alignment=alignment, action_scale=action_scale,
         controller='substep bounded PD; no LPF; no noise or pushes',
+        external_heading_controller=dict(gain=a.yaw_gain,damping=a.yaw_rate_damping,clip=a.yaw_clip,threshold=a.yaw_threshold) if yaw_mode else None,
         termination='base z<0.35 or upright<0.5, record3s after first fall; no resets',
         limits=['MLP exp1.9 policy has no phase input; command ramp is imposed for comparison.',
                 'MuJoCo contact differs from PhysX; one nominal rollout only.'])
