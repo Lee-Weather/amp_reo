@@ -164,3 +164,20 @@
 **下一步**：用同一 `model_12250.pt` 在 MuJoCo 平地阶跃下做连续 10/20/60 s 检查（A/B/C），并补脚底最低碰撞点几何与视觉复核；Isaac 三件套已交付。
 
 > 本轮仅平地、阶跃；不设速度缓坡，不做坡面/台阶。
+
+
+### MuJoCo 回放（2026-11-06）
+
+同一 `model_12250.pt`，平地、校准 runtime、seed=5、无噪声/推力；使用 `scripts/amp_tools/sim2sim_amp_mlp.py`（LF 快照，避免 CRLF 导致 URDF SHA 不符）与 exp3.0 的 heading 配置。结果**未通过**：
+
+| 条件 | 结果 | 视频/CSV |
+| --- | --- | --- |
+| 标准 1.5 s 零指令缓冲后阶跃 0.595 | **1.06 s 跌倒**（缓冲期内；1.5 s 时 yaw≈177°，剧烈旋转） | [sim2sim_12250.mp4](czy/data/exp3.0/mujoco/sim2sim_12250.mp4)（102 帧/4.06 s） |
+| 取消站立缓冲、t=0 立即阶跃 + heading | **10 s 不摔，11.06 s 跌倒**；3.5/10 s 绝对航向约 23.6°/27.4°，3.5–10 s mean vx=0.254、RMSE=0.367 | [sim2sim_12250_step0_10s.mp4](czy/data/exp3.0/mujoco/sim2sim_12250_step0_10s.mp4)（250 帧/10 s）、[sim2sim_12250_step0_60s.mp4](czy/data/exp3.0/mujoco/sim2sim_12250_step0_60s.mp4)（352 帧/14.06 s，含跌倒后 3 s） |
+| 立即阶跃、关闭 heading | 3.36 s 跌倒 | 诊断，未保留为主视频 |
+
+**结论：exp3.0 的 Isaac A/B 通过不能转化为 MuJoCo 通过。** 主要失败点是**零指令站立在 MuJoCo 中 1.06 s 内失稳**；取消站立缓冲后能走约 10 s，但速度仅 0.254 m/s、RMSE 0.367、航向偏 23–27°，仍远未达 A。该结果与 exp1.9 MLP 11250 的 10 s 不摔形成对比，说明 exp3.0 的 heading/step 微调可能过拟合 Isaac 的站立/接触条件。
+
+视频均为 1280×720/25fps，全帧解码通过；CSV 数值有限。主视频哈希：standard `10da18e6…4d16`、10 s `16f87015…ed07`、60 s `74a8301e…a2aa`；CSV 哈希见 `czy/exp1/records/exp3.0_evaluation/`。MuJoCo 的视频/CSV 放在 `czy/data/exp3.0/mujoco/`，不改变根目录的三件套。
+
+**下一步**：优先修复 MuJoCo 站立/接触差异（更大接触随机化、MuJoCo-like contact、站立 init/噪声、或单独训练站立保持），再重训；不能以 Isaac 三件套代替 MuJoCo 验收。
