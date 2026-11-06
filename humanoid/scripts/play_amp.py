@@ -31,7 +31,7 @@ def main():
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20", "x1_amp_exp21", "x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29"):
+    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp30", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp30", "x1_amp_exp20", "x1_amp_exp21", "x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29"):
         raise ValueError("Use a registered x1_amp task")
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     if play.source_policy and (args.task not in ('x1_amp_exp20','x1_amp_exp21', 'x1_amp_exp22', 'x1_amp_exp23', 'x1_amp_exp24', 'x1_amp_exp25', 'x1_amp_exp26', 'x1_amp_exp27', 'x1_amp_exp28', 'x1_amp_exp29') or not play.checkpoint_path):
@@ -60,7 +60,7 @@ def main():
     cfg.noise.add_noise = False
     cfg.domain_rand.push_robots = False
     cfg.amp.reference_state_initialization = play.reset_mode == "rsi" and args.task not in ("x1_amp_exp21","x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29")
-    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20", "x1_amp_exp21", "x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29")
+    shared_buffer = args.task in ("x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp30", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp30", "x1_amp_exp20", "x1_amp_exp21", "x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29")
     if shared_buffer:
         cfg.amp.rsi_probability = 1. if play.reset_mode == "rsi" else 0.
         cfg.amp.stand_buffer_seconds = play.stand_buffer_seconds
@@ -155,7 +155,7 @@ def main():
         "training_motion_exploration": getattr(train_cfg.policy, "motion_exploration", None),
         "tracking_ang_sigma": cfg.rewards.tracking_sigma,
         "tracking_lateral_std": getattr(cfg.rewards,"tracking_lateral_std",None),
-        "foot_scuff_velocity_reference": "lowest_material_point_from_COM" if args.task in ("x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp20", "x1_amp_exp21", "x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29") else "rigid_body_COM",
+        "foot_scuff_velocity_reference": "lowest_material_point_from_COM" if args.task in ("x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp30", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp30", "x1_amp_exp20", "x1_amp_exp21", "x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29") else "rigid_body_COM",
         "backward_reward_speed_scale": getattr(cfg.rewards,"backward_speed_scale",None),
         "braking_leg_gate_scales": ({"linear":cfg.rewards.brake_leg_linear_scale,"angular":cfg.rewards.brake_leg_angular_scale}
                                     if hasattr(cfg.rewards,"brake_leg_linear_scale") else None),
