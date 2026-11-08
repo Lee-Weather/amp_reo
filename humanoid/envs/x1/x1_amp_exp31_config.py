@@ -1,4 +1,4 @@
-"""exp3.1: KL anchor zero-command stability + friction randomization."""
+"""exp3.1: KL anchor zero-command stability."""
 from .x1_amp_exp30_config import X1AMPExp30Cfg, X1AMPExp30CfgPPO
 
 
@@ -8,11 +8,9 @@ class X1AMPExp31Cfg(X1AMPExp30Cfg):
         zero_probability = 0.5
         resampling_time = 6.
 
-    class domain_rand(X1AMPExp30Cfg.domain_rand):
-        """新增：域随机化"""
-        randomize_friction = True
-        friction_range = [0.6, 1.2]
-
+    # domain_rand stays identical to exp3.0: reward_transfer.py protects
+    # domain_rand during warm_start, so friction randomization has to be a
+    # separate experiment from a matching source checkpoint.
     class rewards(X1AMPExp30Cfg.rewards):
         """新增：站姿稳定性奖赏"""
         standing_stability_angular_scale = -0.03
