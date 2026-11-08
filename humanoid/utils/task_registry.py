@@ -154,7 +154,7 @@ class TaskRegistry():
         
         runner_name = train_cfg_dict["runner_class_name"]
         if getattr(args, "checkpoint_dir", None):
-            if runner_name not in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner", "Exp24AMPOnPolicyRunner", "Exp25AMPOnPolicyRunner"):
+            if runner_name not in ("AMPOnPolicyRunner", "ConservativeAMPOnPolicyRunner", "AnchoredAMPOnPolicyRunner", "Exp23AMPOnPolicyRunner", "Exp24AMPOnPolicyRunner", "Exp25AMPOnPolicyRunner", "X1Exp31AMPOnPolicyRunner"):
                 raise ValueError("checkpoint_dir is supported for AMP training")
             from humanoid.amp.checkpoint import checkpoint_directory
             log_dir = checkpoint_directory(args, log_dir)
