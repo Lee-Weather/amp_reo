@@ -2,7 +2,13 @@
 from .x1_amp_exp31_config import X1AMPExp31Cfg, X1AMPExp31CfgPPO
 
 
+NOMINAL_FRACTION = 0.25
+
+
 class X1AMPExp32Cfg(X1AMPExp31Cfg):
+    class amp(X1AMPExp31Cfg.amp):
+        nominal_startup_fraction = NOMINAL_FRACTION
+
     class commands(X1AMPExp31Cfg.commands):
         """Same 50% zero-command as exp3.1."""
         zero_probability = 0.5
