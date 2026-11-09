@@ -63,11 +63,10 @@ class X1AMPExp32Env(X1AMPExp31Env):
         env afterward.
         """
         self.reset()
-        # force zero command on all envs
-        self.commands[:, :3] = 0.
+        # force zero command on all envs via standing_commands API
         self.standing_commands.requested[:] = 0.
-        self.standing_commands.value[:] = 0.
-        self.standing_commands.active_goal[:] = 0.
+        self.standing_commands.remaining[:] = 0
+        self.commands[:, :3] = self.standing_commands.applied()
 
         obs_list = []
         with torch.no_grad():
