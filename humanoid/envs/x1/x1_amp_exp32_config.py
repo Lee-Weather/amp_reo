@@ -11,6 +11,7 @@ class X1AMPExp32Cfg(X1AMPExp31Cfg):
 
     class commands(X1AMPExp31Cfg.commands):
         """Same 50% zero-command as exp3.1."""
+        native_speed = 0.5953696966
         zero_probability = 0.5
         resampling_time = 6.
 
