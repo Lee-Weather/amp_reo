@@ -1,0 +1,11 @@
+{
+  "account": "limxbe2b0a9iij6r@fldubai.com",
+  "storage_key": "upload/2026/11/5/input_model_14500_20261105105713A011.pt",
+  "file_name": "input_model_14500_20261105105713A011.pt",
+  "bytes": 15966922,
+  "sha256": "5a9b7cfb5a1a007f19eb22ac55e656852245e2b61db3eb0bf9ac9a2c0620a7a2",
+  "private_acl": "private",
+  "private_acl_verified": true,
+  "official_checkpoint_input": true,
+  "signed_urls_persisted": false
+}

@@ -1,0 +1,145 @@
+{
+  "purpose": "GPU verification of the consolidated exp2.12 implementation in x1_amp_config.py / x1_amp_env.py (flat config and env, no experiment inheritance)",
+  "date": "2026-11-04",
+  "branch": "codex/merge-exp212-flat",
+  "commits": {
+    "consolidation": "eb5a8c364a5116b1d88866fbbcf23b3f55c0441d",
+    "reset_idx_aliasing_fix": "4c73ab87ddcc5323590cd3bd8296dfdf30f8966d",
+    "smoke_whitelist": "c7278fe6dd9d951e4f12c203ec4ab36ea9dcbe2f",
+    "fresh_smoke_runner": "34d8c09ab8e4027fce21375e2fcafbdaca1378b8"
+  },
+  "flux": {
+    "project_id": "PRO_20261104_030",
+    "account": "limx1c5eccw64on4@maxxspace.com",
+    "resource": {
+      "goodsId": "ESKU000001",
+      "gpu": "1x4090D 24G"
+    },
+    "image": {
+      "imageId": "BJX00000001",
+      "imageVersion": "V000412",
+      "versionCode": "isaac-gym-v20"
+    },
+    "tasks": [
+      {
+        "task_id": "TASK_20261104_260",
+        "command": "gm-run amp_reo/humanoid/scripts/validate_amp.py --task=x1_amp --num_envs=8 --headless",
+        "result": "failed",
+        "error": "RuntimeError: shape mismatch: value tensor of shape [8, 3] cannot be broadcast to indexing result of shape [5, 3]",
+        "location": "x1_amp_env.py reset_idx, self.standing_commands.requested[ids]=requested",
+        "root_cause": "the chain inliner renamed exp22's env_ids parameter to the caller argument name ids, colliding with the local ids=env_ids[~standing]; full-vector writes then indexed the 5/8 RSI subset",
+        "fix": "bind the call argument to _arg_env_ids before inlining; regeneration changed only reset_idx"
+      },
+      {
+        "task_id": "TASK_20261104_263",
+        "command": "gm-run amp_reo/humanoid/scripts/validate_amp.py --task=x1_amp --num_envs=8 --headless",
+        "result": "passed",
+        "task_status": "5",
+        "wall_seconds": 117,
+        "commit": "4c73ab87ddcc5323590cd3bd8296dfdf30f8966d",
+        "stdout": [
+          "SIM_FK_MAX_ERROR_M=0.00000138",
+          "AMP_SIM_VALIDATION_OK dofs=29 obs=6468 critic=101 amp=3x86",
+          "EXP20_REFERENCE_AUDIT passed=true",
+          "CONTACT_RANDOMIZATION_READY verified=true near=0.5 original=0.25",
+          "NOMINAL_STARTUP_READY verified=true nominal_envs=2/8 fraction=0.25",
+          "NOMINAL_STARTUP_OBS_VERIFIED verified=true frame_dimension=98 noise_max_error=0"
+        ]
+      },
+      {
+        "task_id": "TASK_20261104_266",
+        "command": "gm-run amp_reo/humanoid/scripts/smoke_amp.py --task=x1_amp --num_envs=256 --headless --smoke_iterations=1 --resume_iterations=1 --output_dir=/workspace/amp_reo/logs/flat_smoke_20261104",
+        "result": "failed",
+        "error": "ValueError: exp2.3 requires its explicitly verified preserved-state continuation",
+        "explanation": "expected: the production Exp25AMPOnPolicyRunner refuses a fresh learn() without training_origin. Not a consolidation defect."
+      },
+      {
+        "task_id": "TASK_20261104_278",
+        "command": "gm-run amp_reo/humanoid/scripts/smoke_amp.py --task=x1_amp --num_envs=256 --headless --smoke_iterations=1 --resume_iterations=1 --output_dir=/workspace/amp_reo/logs/flat_smoke_20261104",
+        "result": "passed",
+        "task_status": "5",
+        "wall_seconds": 179,
+        "commit": "34d8c09ab8e4027fce21375e2fcafbdaca1378b8",
+        "stdout": "GPU_SMOKE_OK task=x1_amp seed=5 num_envs=256 policy_dt=0.02 physics_dt=0.002 initial_iteration=0 fresh=1 resumed=1 final=2 checkpoint_restore_exact=true inference_shape=[256,29] status=passed observation_shape=[256,6468] state_estimator_supervision_index=98 cuda_peak_allocated_bytes=1364760576",
+        "checks": [
+          "PPO policy update and critic update on the consolidated env",
+          "conditional discriminator update",
+          "checkpoint save/restore equality for model, discriminator, both Adam optimizers, iteration and learning rate",
+          "env.checkpoint_learning_state/restore_learning_state JSON round trip",
+          "inference action shape [256, 29]"
+        ]
+      }
+    ]
+  },
+  "verified_surface": {
+    "task": "x1_amp",
+    "policy_observation_dim": 6468,
+    "value_observation_dim": 101,
+    "amp_history": "3x86",
+    "sim_fk_max_error_m": 1.38e-06,
+    "auto_reset_boundary": "all 8 environments time out and reset, timeout mask does not leak",
+    "training_update_path": "base AMPOnPolicyRunner used for the fresh smoke; Exp25 continuation path not exercised because it requires an exact transferred checkpoint",
+    "baseline_task": "x1_amp_base registered separately"
+  },
+  "notes": [
+    "Task 260 is retained as evidence; do not reuse commit eb5a8c3.",
+    "Task 266 is retained as evidence of the Exp25 fresh-run guard.",
+    "Local static checks: 416 config leaves identical to x1_amp_exp212, pyflakes clean, py_compile clean, all self.cfg paths resolvable.",
+    "The local branch codex/exp1-9 working tree carries the same files; the verified code lives on codex/merge-exp212-flat.",
+    "The clean branch keeps only the four x1_amp/x1_dh_stand environment files; the full exp chain remains on codex/merge-exp212-flat and in the local tarball backup."
+  ],
+  "clean_branch": {
+    "branch": "clean",
+    "commit": "2c83fd89b20ae3365cfd2616087634c939af721d",
+    "base_snapshot": "85f0f77f726f62be80a85df0e9f4d55f78f5c85c",
+    "removed_files": 183,
+    "kept_environment_files": [
+      "x1_amp_config.py",
+      "x1_amp_env.py",
+      "x1_dh_stand_config.py",
+      "x1_dh_stand_env.py"
+    ],
+    "registered_tasks": [
+      "x1_dh_stand",
+      "x1_amp",
+      "x1_amp_base"
+    ],
+    "kept_tests": 11,
+    "local_static_checks": {
+      "all_python_parse": "ok",
+      "pyflakes_changed_files": "ok",
+      "registry_imports_resolved": 9,
+      "remaining_tests": "11/11 OK"
+    },
+    "validation": {
+      "task_id": "TASK_20261105_186",
+      "task_status": "5",
+      "command": "gm-run amp_reo/humanoid/scripts/validate_amp.py --task=x1_amp --num_envs=8 --headless",
+      "stdout": [
+        "SIM_FK_MAX_ERROR_M=0.00000138",
+        "AMP_SIM_VALIDATION_OK dofs=29 obs=6468 critic=101 amp=3x86",
+        "EXP20_REFERENCE_AUDIT passed=true",
+        "CONTACT_RANDOMIZATION_READY verified=true",
+        "NOMINAL_STARTUP_READY verified=true nominal_envs=2/8",
+        "NOMINAL_STARTUP_OBS_VERIFIED verified=true frame_dimension=98 noise_max_error=0"
+      ]
+    },
+    "recovery": {
+      "remote_branch": "codex/merge-exp212-flat",
+      "deleted_backup": "C:/Users/cuizeyu/AppData/Local/Temp/amp_verify/deleted_files_20261104.tgz"
+    },
+    "evaluation_products_commit": "150925b29b3687e6bac46a8c70741979de247d3b",
+    "removed_czy_products": 129,
+    "tracked_czy_files_after_cleanup": 15,
+    "kept_records": [
+      "czy/exp1/exp1.md",
+      "czy/exp1_part2.md (untracked)",
+      "czy/exp1_part3.md (untracked)",
+      "czy/exp1/exp2.md (untracked)",
+      "czy/exp1/records/ (untracked)"
+    ],
+    "skill": "czy/skills/x1-amp-clean/",
+    "skill_commit": "3b77b31b86e4b1451493626055e2987168a7be21",
+    "checker": "22/22 checks passed"
+  }
+}

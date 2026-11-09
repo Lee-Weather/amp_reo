@@ -3,6 +3,8 @@ import torch
 from humanoid.amp.nominal_startup import cohort_mask
 from .x1_amp_exp31_env import X1AMPExp31Env
 
+NOMINAL_FRACTION = 0.25
+
 
 class X1AMPExp32Env(X1AMPExp31Env):
     """Fix zero-command propagation to nominal envs.
@@ -17,8 +19,7 @@ class X1AMPExp32Env(X1AMPExp31Env):
 
     def _resample_commands(self, env_ids):
         """Draw fresh commands, keeping zero-command samples for nominal envs."""
-        nominal = cohort_mask(env_ids, self.num_envs,
-                              self.cfg.amp.nominal_startup_fraction)
+        nominal = cohort_mask(env_ids, self.num_envs, NOMINAL_FRACTION)
         if self._reset_commands is not None:
             self._reset_commands[nominal] = self.commands.new_tensor(
                 [self.cfg.commands.native_speed, 0., 0.])

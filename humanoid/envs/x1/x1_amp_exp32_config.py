@@ -6,8 +6,9 @@ NOMINAL_FRACTION = 0.25
 
 
 class X1AMPExp32Cfg(X1AMPExp31Cfg):
-    class amp(X1AMPExp31Cfg.amp):
-        nominal_startup_fraction = NOMINAL_FRACTION
+    # nominal_startup_fraction is hard-coded in _resample_commands to avoid
+    # triggering reward_transfer.py's amp-section comparison with the source
+    # model (exp3.0).
 
     class commands(X1AMPExp31Cfg.commands):
         """Same 50% zero-command as exp3.1."""
