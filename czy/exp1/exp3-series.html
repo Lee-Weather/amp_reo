@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>exp3 Series · Zero-Command Standing Stability</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8f9fc;
+  --surface: #ffffff;
+  --text: #1a1d2e;
+  --text-secondary: #5a5f7a;
+  --border: #e2e5f0;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+  --accent-dark: #1e40af;
+  --green: #059669;
+  --green-soft: #d1fae5;
+  --amber: #d97706;
+  --amber-soft: #fef3c7;
+  --red: #dc2626;
+  --red-soft: #fee2e2;
+  --code-bg: #f1f3f8;
+  --shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+:root[data-theme="dark"] {
+  --bg: #0f111a;
+  --surface: #191c2a;
+  --text: #e4e7f0;
+  --text-secondary: #9297b0;
+  --border: #2a2e42;
+  --accent: #60a5fa;
+  --accent-soft: #1e3a5f;
+  --accent-dark: #93c5fd;
+  --green: #34d399;
+  --green-soft: #064e3b;
+  --amber: #fbbf24;
+  --amber-soft: #78350f;
+  --red: #f87171;
+  --red-soft: #7f1d1d;
+  --code-bg: #1e2135;
+  --shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f111a; --surface: #191c2a; --text: #e4e7f0;
+    --text-secondary: #9297b0; --border: #2a2e42; --accent: #60a5fa;
+    --accent-soft: #1e3a5f; --accent-dark: #93c5fd; --green: #34d399;
+    --green-soft: #064e3b; --amber: #fbbf24; --amber-soft: #78350f;
+    --red: #f87171; --red-soft: #7f1d1d; --code-bg: #1e2135;
+    --shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+.container{max-width:960px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.hero{text-align:center;padding:3rem 0 2.5rem;border-bottom:1px solid var(--border);margin-bottom:2.5rem}
+.hero .tagline{display:inline-block;font-size:.7rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem}
+.hero h1{font-size:2rem;font-weight:800;margin-bottom:.75rem;text-wrap:balance}
+.hero p{font-size:1.05rem;color:var(--text-secondary);max-width:640px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.75rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.card h3{font-size:1.05rem;font-weight:700;margin-bottom:.65rem;margin-top:1rem}
+.card h3:first-child{margin-top:0}
+.card p,.card li{font-size:.925rem;color:var(--text-secondary)}
+.card ul{padding-left:1.25rem}
+.card li{margin-bottom:.3rem}
+.code{font-family:'JetBrains Mono',monospace;font-size:.8rem;background:var(--code-bg);padding:.15rem .4rem;border-radius:4px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;margin:.75rem 0;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.5}
+pre .add{color:var(--green)}
+pre .rm{color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin:.75rem 0}
+th,td{text-align:left;padding:.55rem .65rem;border-bottom:1px solid var(--border)}
+th{font-weight:600;color:var(--text-secondary);font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
+td{color:var(--text)}
+.section-title{font-size:1.4rem;font-weight:700;margin:2.5rem 0 1rem;padding-bottom:.5rem;border-bottom:2px solid var(--accent);display:inline-block}
+.step{border-left:3px solid}
+.step.v0{border-color:var(--accent)}
+.step.v1{border-color:var(--amber)}
+.step.v2{border-color:var(--green)}
+.note-box{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:1.5rem;margin-top:2rem}
+.note-box ul{padding-left:1.25rem}
+.note-box li{margin-bottom:.3rem;font-size:.9rem;color:var(--text)}
+.foot{font-size:.78rem;color:var(--text-secondary);margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="tagline">X1 AMP · 双足机器人运动控制</div>
+  <h1>exp3 系列：零指令站立稳定性</h1>
+  <p>三个逐步增强的实验，从航向反馈到固定锚点库，逐步强化行走策略在静止状态下的抗干扰能力。</p>
+</div>
+
+<h2 class="section-title">问题背景</h2>
+
+<div class="card">
+<p>基础策略（exp1.9@11250）在多样化速度指令下训练，但在指令降至零（站立）时表现出<strong>站立不稳定</strong>：策略会漂移、振荡甚至失败。三个实验共享以下约束：</p>
+<ul>
+  <li>相同 480 维观测（5 个堆叠的 96 维帧）</li>
+  <li>相同 MLP 架构</li>
+  <li>从 exp1.9@11250 热启动，采用 reward-transfer 模式</li>
+  <li>指令：<span class="code">NATIVE_SPEED = 0.595</span>，1.5s 站立缓冲后阶跃跳变</li>
+</ul>
+</div>
+
+<!-- ============ 3.0 ============ -->
+<h2 class="section-title">3.0 — 航向稳定</h2>
+
+<div class="card step v0">
+<h3>目标</h3>
+<p>通过将闭环航向反馈注入观测和指令空间，消除站立和启动过程中的偏航漂移。</p>
+
+<h3>改动内容</h3>
+<ul>
+  <li><strong>观测:</strong> 航向误差（偏离参考偏航角）注入原本未使用的 <span class="code">vy</span> 观测槽</li>
+  <li><strong>指令:</strong> 限幅的航向修正 <span class="code">−0.5 · err, ±0.3 rad/s</span> 写入 <span class="code">wz</span> 指令槽</li>
+  <li><strong>奖励:</strong> 航向误差的 Huber 惩罚，<span class="code">heading_scale = −0.1</span></li>
+  <li><strong>注意:</strong> 由于 <span class="code">stand_commands.applied()</span> 每步会清零槽位，航向信号在 <span class="code">step()</span> 调用 <span class="code">super().step()</span> 后恢复</li>
+</ul>
+
+<h3>结果</h3>
+<p>偏航漂移被抑制。但静止站立仍不稳定 —— 策略在零速度时没有收到明确的靠近源策略的约束信号。</p>
+</div>
+
+<!-- ============ 3.1 ============ -->
+<h2 class="section-title">3.1 — KL 锚点</h2>
+
+<div class="card step v1">
+<h3>目标</h3>
+<p>当目标速度接近零时，将策略约束在源策略（exp1.9@11250）附近，减少站立漂移。</p>
+
+<h3>改动内容</h3>
+<ul>
+  <li>新增 <span class="code">X1Exp31AMPOnRunner</span>：冻结源策略副本作为 <span class="code">policy_anchor</span></li>
+  <li><strong>锚点损失</strong>（<span class="code">coef = 0.5</span>）：每 mini-batch，对 <span class="code">obs[:,0] &lt; 0.01</span> 的行进行掩码（5 个堆叠帧中最旧的一帧，约 80ms 延迟）
+    <ul>
+      <li>当前采样动作 <span class="code">rsample()</span> 与锚点动作的 MSE，按当前 σ 归一化</li>
+      <li>并非 KL 散度 —— 实质是 σ 归一化的平方偏差</li>
+    </ul>
+  </li>
+  <li><strong>附加奖励:</strong> <span class="code">standing_stability_angular_scale = −0.03</span>，当 <span class="code">|commands[:,0]| &lt; 0.05</span> 时对基座角速度施加线性惩罚</li>
+</ul>
+
+<h3>已知问题</h3>
+<p><span class="code">zero_probability = 0.5</span> 实际上<strong>无效</strong> —— 采样函数（<span class="code">stationary.py:16-18</span>）仅在 <span class="code">lo ≠ hi</span> 时注入零值。由于 <span class="code">lin_vel_x</span> 被限定为 <span class="code">[0.595, 0.595]</span> 单点值，唯一的零指令来源是 1.5s 站立缓冲（约 50% 的重置）。</p>
+</div>
+
+<!-- ============ 3.2 ============ -->
+<h2 class="section-title">3.2 — 固定锚点库 + 重采样修复</h2>
+
+<div class="card step v2">
+<h3>目标</h3>
+<p>确保锚点损失在每次更新时都生效，而不依赖于批次组成；修复重采样传播中覆盖零指令的问题。</p>
+
+<h3>改动内容</h3>
+<ul>
+  <li><strong>站立锚点库:</strong> 预热时，让源策略在强制零指令环境下运行 256 帧，采集观测并存入固定缓冲区</li>
+  <li><strong>双重锚点损失:</strong>
+    <ul>
+      <li>批次锚点 — 同 3.1（每 mini-batch，零指令掩码行）</li>
+      <li>库锚点 — <span class="code">stand_anchor_coef = 0.8</span>，每 mini-batch 在固定库上计算，不受批次组成影响</li>
+    </ul>
+  </li>
+  <li><strong>重采样修复:</strong> 覆写 <span class="code">_resample_commands</span> —— 移除无条件覆盖名义队列指令的 <span class="code">[NATIVE_SPEED, 0, 0]</span> 行</li>
+  <li><strong>硬拒绝机制框架:</strong> 更新前保存快照，若库上动作 RMS 偏差超过阈值则回滚。默认 <span class="code">0.0</span> = 禁用</li>
+  <li><strong>指标:</strong> <span class="code">zero_requested_raw</span>、<span class="code">zero_applied_raw</span>、<span class="code">zero_applied_fraction</span> 输出到训练日志</li>
+</ul>
+
+<h3>早期训练指标</h3>
+<pre>zero_requested_raw: 0.000000    # 新采样指令全为 NATIVE_SPEED
+zero_applied_raw:  ~0.007      # ~0.7% 环境处于站立缓冲状态
+zero_applied_fraction: ~0.006  # 缓冲态占比一致</pre>
+</div>
+
+<!-- ============ Comparison ============ -->
+<h2 class="section-title">对比总览</h2>
+
+<div class="card" style="overflow-x:auto">
+<table>
+<thead>
+<tr><th>维度</th><th>3.0 航向</th><th>3.1 锚点</th><th>3.2 固定库</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>锚点方法</strong></td><td>—</td><td>每批次冻结策略</td><td>批次 + 256 帧固定库</td></tr>
+<tr><td><strong>站立信号</strong></td><td>航向误差注入 vy 槽</td><td>+ 角速度线性惩罚</td><td>同 3.1</td></tr>
+<tr><td><strong>零指令比例</strong></td><td>20%（无效）</td><td>50%（无效）</td><td>50%（修复后生效）</td></tr>
+<tr><td><strong>重采样覆盖</strong></td><td>存在</td><td>存在</td><td>已修复</td></tr>
+<tr><td><strong>硬拒绝</strong></td><td>—</td><td>—</td><td>已框架（禁用中）</td></tr>
+<tr><td><strong>迭代/保存</strong></td><td>1000/100</td><td>500/50</td><td>500/50</td></tr>
+<tr><td><strong>Runner 类</strong></td><td>基础 AMPOnRunner</td><td>X1Exp31AMPOnRunner</td><td>X1Exp32AMPOnRunner</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note-box">
+<h3 style="margin-bottom:.5rem;font-size:1rem">关键要点</h3>
+<ul>
+  <li><strong>零指令问题有两层:</strong> (a) 采样函数对单点范围 (lo=hi) 不会生成零值；(b) 即使采样到零值，名义队列也会被无条件覆盖。exp3.2 修复了 (b)。</li>
+  <li><strong>库覆盖:</strong> 256 帧库是单次快照。随着训练推进，策略内部状态分布会偏移，库的表征能力下降。滑动窗口会更鲁棒。</li>
+  <li><strong>下一步:</strong> 调整硬拒绝阈值是该系列的自然延续方向。</li>
+</ul>
+</div>
+
+<div class="foot">
+基于提交 <span class="code">e162921</span> · X1 AMP · 2026 年 11 月
+</div>
+
+</div>
+</body>
+</html>
