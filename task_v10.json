@@ -10,7 +10,7 @@
   },
   "taskCodeInfo": {
     "codeType": "2",
-    "codeUrl": "[{\"codeUrl\":\"https://github.com/Lee-Weather/amp_reo.git\",\"versionType\":\"3\",\"versionName\":\"81ab7efb73f5b2bcef7a7760e7888ec9f3ee855e\"}]",
+    "codeUrl": "[{\"codeUrl\":\"https://github.com/Lee-Weather/amp_reo.git\",\"versionType\":\"3\",\"versionName\":\"11cf66133428b745be7a73e31f2ee56c18228849\"}]",
     "isOpen": "1",
     "startScript": "python /workspace/amp_reo/humanoid/scripts/train.py --task=x1_amp_exp33 --headless --num_envs=4096 --seed=5 --max_iterations=200 --run_name=exp3.3_main --warm_start=/workspace/amp_reo/humanoid/exported_data/input_model_11750.pt",
     "hparamsPath": ""

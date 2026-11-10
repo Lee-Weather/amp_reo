@@ -79,3 +79,5 @@ class X1AMPExp33CfgPPO(X1AMPExp32CfgPPO):
         max_iterations = 500
         save_interval = 50
         warm_start_mode = "all_weights"
+        require_reward_transfer = False
+        require_policy_transfer = False
