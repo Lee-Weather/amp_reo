@@ -1,0 +1,22 @@
+{
+  "taskBaseInfo": {
+    "projectId": "PRO_20261110_002",
+    "taskType": "1",
+    "trainType": "1",
+    "taskName": "exp3.3-standard-upright-v8",
+    "goodsId": "ESKqh7S9NTaQ4C",
+    "imageId": "BJX2nS3L5TQaF4",
+    "imageVersion": "pre_view4_v1"
+  },
+  "taskCodeInfo": {
+    "codeType": "2",
+    "codeUrl": "[{\"codeUrl\":\"https://github.com/limxdynamics/amp_re0.git\",\"versionType\":\"3\",\"versionName\":\"832731af30438722fb991ff6d5346388ea143df1\"}]",
+    "isOpen": "1",
+    "startScript": "cd amp_reo && python humanoid/scripts/train.py --task=x1_amp_exp33 --headless --num_seeds=4096 --seed=5 --max_iterations=100 --run_name=exp3.3_main --warm_start=/workspace/amp_reo/logs/x1_amp_exp33/exported_data/exp3.3_main/input_model_11750.pt --warm_start_sha256=391f83466f26c76b0949f68b1771e01b3b4c5a49642527f1f3aea141bafc --warm_start_url_b64=aHR0cHM6Ly9saW14LWdyYWRtb3Rpb24ub3NzLWNuLWJlaWppbmcuYWxpeXVuY3MuY29tL3VwbG9hZCUyRjIwMjYlMkYxMSUyRjklMkZtb2RlbF8xMTc1MF8yMDI2MTEwOTExMzAxNUE1MzQucHQ_T1NTQWNjZXNzS2V5SWQ9TFRBSTV0OTFxV3VHUXEyU2hjSGNGcVd2JkV4cGlyZXM9MTc5NDg4OTM3OSZTaWduYXR1cmU9N2I3QjROMlhiV0JyT2FGaTVUeXk1SXRoY1ZVJTNE",
+    "hparamsPath": ""
+  },
+  "runtimeReminderConfig": {
+    "enableRuntimeReminder": true,
+    "reminderDurations": [60, 120, 180]
+  }
+}

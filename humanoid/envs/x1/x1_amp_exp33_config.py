@@ -78,3 +78,4 @@ class X1AMPExp33CfgPPO(X1AMPExp32CfgPPO):
         run_name = "exp3.3"
         max_iterations = 500
         save_interval = 50
+        warm_start_mode = "all_weights"

@@ -1,0 +1,14 @@
+{
+  "taskName": "exp3.3-standard-upright-v9",
+  "imageName": "registry.fluxninja.ai/limx/limx_isaacgym:pre_view4_v1",
+  "projectName": "X1 AMP exp3.2",
+  "workerCpuCore": 16,
+  "workerGpuCount": 1,
+  "workerMemory": 40,
+  "workerNumber": 1,
+  "startCommand": "gm_run",
+  "startScript": "gm-run amp_reo/humanoid/scripts/train.py --task=x1_amp_exp33 --headless --num_envs=4096 --seed=5 --max_iterations=100 --run_name=exp3.3_main --warm_start=/workspace/amp_reo/logs/x1_amp_exp33/exported_data/exp3.3_main/input_model_11750.pt --warm_start_sha256=391f83466f26c76c75b0949f68b1771e01b3b4c5a49642527f1f3aea1413bafc --warm_start_url_b64=aHR0cHM6Ly9saW14LWdyYWRtb3Rpb24ub3NzLWNuLWJlaWppbmcuYWxpeXVuY3MuY29tL3VwbG9hZCUyRjIwMjYlMkYxMSUyRjklMkZtb2RlbF8xMTc1MF8yMDI2MTEwOTExMzAxNUE1MzQucHQ/T1NTQWNjZXNzS2V5SWQ9TFRBSTV0OTFxV3VHUXEyU2hjSGNGcVd2JkV4cGlyZXM9MTc5NDg5MTA1NSZTaWduYXR1cmU9WFglMkYlMkJGTHh5ZzhpRzlHZVJWSXBKMHVTWThQNCUzRA==",
+  "gitRepository": "https://github.com/Lee-Weather/amp_reo.git",
+  "gitBranch": "codex/exp3-0",
+  "gitCommit": "832731af30438722fb991ff6d5346388ea143df1"
+}
