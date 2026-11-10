@@ -183,6 +183,9 @@ class TaskRegistry():
         elif runner_name == "X1Exp32AMPOnPolicyRunner":
             from humanoid.amp.x1_exp32_runner import X1Exp32AMPOnPolicyRunner
             runner_class = X1Exp32AMPOnPolicyRunner
+        elif runner_name == "X1Exp33AMPOnPolicyRunner":
+            from humanoid.amp.x1_exp33_runner import X1Exp33AMPOnPolicyRunner
+            runner_class = X1Exp33AMPOnPolicyRunner
         elif runner_name == "DHOnPolicyRunner":
             from humanoid.algo.ppo.dh_on_policy_runner import DHOnPolicyRunner
             runner_class = DHOnPolicyRunner
