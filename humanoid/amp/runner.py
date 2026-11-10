@@ -468,9 +468,18 @@ class AMPOnPolicyRunner:
         print("CHECKPOINT_SAVED "+json.dumps({"iteration": self.current_learning_iteration,
               "path": os.path.abspath(path), "bytes": os.path.getsize(path), "sha256": digest}), flush=True)
 
-    def load(self, path, load_optimizer=True):
+    def _structural_metadata(self):
+        """Return the subset of metadata that must match for warm_start compatibility."""
+        return {"dof_names": list(self.env.dof_names), "num_obs": self.env.num_obs,
+                "key_body_names": list(self.env.motion_library.key_body_names),
+                "history_steps": self.env.motion_library.history_steps}
+
+    def load(self, path, load_optimizer=True, relaxed_metadata=False):
         state = torch.load(path, map_location=self.device)
-        if state.get("metadata") != self._metadata():
+        if relaxed_metadata:
+            if state.get("metadata", {}).get("dof_names") != self._structural_metadata()["dof_names"]:
+                raise ValueError("Checkpoint robot conventions (dof_names) do not match this AMP task")
+        elif state.get("metadata") != self._metadata():
             raise ValueError("Checkpoint robot/observation/policy conventions do not match this AMP task; MLP and DH checkpoints cannot be resumed interchangeably")
         self.actor_critic.load_state_dict(state["model_state_dict"])
         self.discriminator.load_state_dict(state["discriminator_state_dict"])
@@ -507,7 +516,7 @@ class AMPOnPolicyRunner:
             digest = hashlib.sha256(stream.read()).hexdigest()
         if expected_sha256 is not None and digest != expected_sha256:
             raise ValueError("Warm-start checkpoint SHA256 mismatch")
-        self.load(path, load_optimizer=False)
+        self.load(path, load_optimizer=False, relaxed_metadata=True)
         self.optimizer = torch.optim.Adam(self.actor_critic.parameters(), lr=self.alg_cfg["learning_rate"])
         self.disc_optimizer = torch.optim.Adam(self.discriminator.network.parameters(),
                                                lr=self.disc_cfg["learning_rate"],
