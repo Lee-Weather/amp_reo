@@ -1,0 +1,28 @@
+{
+  "taskBaseInfo": {
+    "projectId": "PRO_20261106_005",
+    "taskType": "1",
+    "trainType": "1",
+    "taskName": "exp3.1-kl-anchor-step-v2",
+    "taskDescription": "exp3.1 KL anchor zero-command stability + friction randomization (fix warm_start sha/url from v1 TASK_20261108_024)",
+    "goodsId": "ESKU000001",
+    "goodsBackId": "SKUSL000002",
+    "imageId": "BJX00000001",
+    "imageVersion": "V000412"
+  },
+  "taskCodeInfo": {
+    "codeType": "2",
+    "codeUrl": "[{\"codeUrl\":\"https://github.com/limxdynamics/amp_re0.git\",\"versionType\":\"1\",\"versionName\":\"codex/exp3-0\"}]",
+    "isOpen": "1",
+    "startScript": "gm-run amp_reo/humanoid/scripts/train.py --task=x1_amp_exp31 --headless --num_envs=4096 --seed=5 --max_iterations=500 --run_name=exp3.1_main --checkpoint_dir=/workspace/amp_reo/logs/x1_amp_exp31/exported_data/exp3.1_main --warm_start=/workspace/amp_reo/logs/x1_amp_exp31/exported_data/exp3.1_main/input_model_11250.pt --warm_start_sha256=a558ff08e29c8840665353a5b30f24674562c21b6fdb6c0c47ec0f0cfcc9e451 --warm_start_url_b64=aHR0cHM6Ly9saW14LWdyYWRtb3Rpb24ub3NzLWNuLWJlaWppbmcuYWxpeXVuY3MuY29tL3VwbG9hZCUyRjIwMjYlMkYxMSUyRjYlMkZpbnB1dF9tb2RlbF8xMTI1MF8yMDI2MTEwNjEwMjUzMEE2OTgucHQ_T1NTQWNjZXNzS2V5SWQ9TFRBSTV0OTFxV3VHUXEyU2hjSGNGcVd2JkV4cGlyZXM9MTc5NDUzODI5NiZTaWduYXR1cmU9dG5URlZ0TUg4RktDRGZUYk9KRktlVmg1YzNRJTNE"
+  },
+  "runtimeReminderConfig": {
+    "enableRuntimeReminder": true,
+    "reminderDurations": [
+      60,
+      120,
+      180,
+      240
+    ]
+  }
+}

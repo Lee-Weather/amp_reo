@@ -1,0 +1,53 @@
+{
+  "checkpoint_sha256": "58e24c62a73bd12db0fc81b7e2e6e53cbf9c84ff5ab3c0c19aaf8c6db06bf8b6",
+  "training_commit": "80438eaf0219c9f3d618b2adf752108b215e86f0",
+  "mujoco_version": "3.15.0",
+  "policy_input": 480,
+  "policy_output": 29,
+  "policy_dt": 0.020000000949949026,
+  "sim_dt": 0.002,
+  "frame_stack": 5,
+  "num_single_obs": 96,
+  "requested_vx": 0.5953696966,
+  "stand_seconds": 1.500000071246177,
+  "command_transition_seconds": 0.02,
+  "duration_s": 5.440000258386135,
+  "video_frames": 136,
+  "video_fps": 25,
+  "fallen": true,
+  "fall_time_s": 2.440000115893781,
+  "video_path": "E:\\X1\\amp_re0\\clean_loop\\czy\\analysis\\exp30_diag\\R1_eval_quat.mp4",
+  "csv_path": "E:\\X1\\amp_re0\\clean_loop\\czy\\analysis\\exp30_diag\\R1_eval_quat.csv",
+  "physics_alignment": {
+    "mode": "verified_physx_link_inertia_v1",
+    "runtime_checkpoint_sha256": "23948ebc7492c96754b8eece068be80418356206588e1e7950bc13da8decb9b0",
+    "runtime_path": "E:\\X1\\amp_re0\\agibot_x1_train-main\\czy\\exp1\\records\\exp2.9_long_evaluation\\runtime_audit\\runtime.json",
+    "probe_path": "E:\\X1\\amp_re0\\agibot_x1_train-main\\czy\\exp1\\records\\exp2.9_long_evaluation\\runtime_audit\\passive_probe.json",
+    "compared_merged_bodies": 30,
+    "link_inertia_increment": 0.01,
+    "before_full_inertia_max_error": 0.010000194730135192,
+    "after_full_inertia_max_error": 4.5446540375415623e-07,
+    "joint_armature": [
+      0.0
+    ],
+    "passive_joint_damping": [
+      1.0
+    ],
+    "scope": "Mass/COM/full inertia and passive DOF properties; contact solvers are not equivalent."
+  },
+  "action_scale": 0.25,
+  "controller": "substep bounded PD; no LPF; no noise or pushes",
+  "external_heading_controller": {
+    "gain": 0.5,
+    "damping": 0.0,
+    "clip": 0.3,
+    "threshold": 0.05,
+    "heading_obs_scale": 1.0,
+    "heading_clip": 2.0
+  },
+  "termination": "base z<0.35 or upright<0.5, record3s after first fall; no resets",
+  "limits": [
+    "MLP exp1.9 policy has no phase input; command ramp is imposed for comparison.",
+    "MuJoCo contact differs from PhysX; one nominal rollout only."
+  ]
+}

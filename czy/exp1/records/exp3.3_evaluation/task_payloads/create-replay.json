@@ -1,0 +1,20 @@
+{
+  "taskBaseInfo": {
+    "projectId": "PRO_20261109_001",
+    "taskType": "1",
+    "trainType": "1",
+    "taskName": "exp3.3-playback-v5",
+    "taskDescription": "exp3.3: playback model_11950 with speed profile",
+    "goodsId": "ESKU000001",
+    "imageId": "BJX00000001",
+    "imageVersion": "V000412"
+  },
+  "taskCodeInfo": {
+    "codeType": "2",
+    "codeUrl": "[{\"codeUrl\":\"https://github.com/Lee-Weather/amp_reo.git\",\"versionType\":\"3\",\"versionName\":\"fffe274424cbaf04ba2cc76175eec19406c89abb\"}]",
+    "mainCodeUri": "",
+    "hparamsPath": "",
+    "startScript": "cd amp_reo && python -c \"import base64,urllib.request;b64='aHR0cHM6Ly9saW14LWdyYWRtb3Rpb24ub3NzLWNuLWJlaWppbmcuYWxpeXVuY3MuY29tL3VwbG9hZCUyRjIwMjYlMkYxMSUyRjExJTJGbW9kZWxfMTE5NTBfMjAyNjExMTExNTExNDhBMjM5LnB0P09TU0FjY2Vzc0tleUlkPUxUQUk1dDkxcVd1R1FxMlNoY0hjRnFXdiZFeHBpcmVzPTE3OTQ5ODg0OTEmU2lnbmF0dXJlPU54bjVPa050Tkc2aGU0MlE4ZUZ3ekhVQWRWTSUzRA==';url=base64.urlsafe_b64decode(b64.encode()).decode();urllib.request.urlretrieve(url,'m.pt');print('OK',__import__('os').path.getsize('m.pt'))\" && python humanoid/scripts/play_amp.py --task=x1_amp_exp33 --headless --checkpoint_path=m.pt --output_dir=/workspace/amp_reo/logs/x1_amp_exp33/playback/exp3.3",
+    "isOpen": "1"
+  }
+}

@@ -74,3 +74,7 @@ MUJOCO_LOG.TXT
 /czy/data/
 /czy/analysis/
 /czy/exp1/artifacts/
+
+# Bulk replay data stays local; evaluation notes and JSON summaries are versioned
+/czy/exp1/records/*_evaluation/**/*.csv
+/czy/exp1/records/*_evaluation/**/actor.pt

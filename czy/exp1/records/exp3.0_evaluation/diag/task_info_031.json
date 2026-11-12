@@ -1,0 +1,18 @@
+{
+  "experiment": "exp3.1",
+  "description": "KL anchor zero-command stability + friction randomization",
+  "taskId": "TASK_20261108_024",
+  "taskName": "exp3.1-kl-anchor-step",
+  "projectId": "PRO_20261106_005",
+  "branch": "codex/exp3-0",
+  "commit": "3a018cd",
+  "created": "2026-11-08 09:27",
+  "keyChanges": [
+    "KL anchor loss (coef=0.5) constrains policy near vx=0 to source model output",
+    "zero_command_probability 20% → 50%",
+    "Friction randomization [0.6, 1.2]",
+    "Standing stability angular penalty (-0.03 × ω/0.15)",
+    "max_iterations 1000 → 500",
+    "Warm start from model_11250.pt (same as exp3.0)"
+  ]
+}

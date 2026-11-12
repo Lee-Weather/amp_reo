@@ -1,0 +1,97 @@
+{
+  "experiment": "exp3.3",
+  "task": "x1_amp_exp33",
+  "checkpoint": {
+    "file": "model_11950.pt",
+    "bytes": 10779333,
+    "sha256": "13ce746b025c3f5a5dc0da7bab4326428308c114c7fa079115acdd157bcafa3f"
+  },
+  "training": {
+    "task_id": "TASK_20261111_106",
+    "status": 5,
+    "iterations": "11750->11950",
+    "runtime_seconds": 2172,
+    "commit": "fffe274424cbaf04ba2cc76175eec19406c89abb",
+    "source_sha256": "391f83466f26c76c75b0949f68b1771e01b3b4c5a49642527f1f3aea1413bafc"
+  },
+  "protocol": {
+    "seed": 5,
+    "steps": 3000,
+    "stage_seconds": 10,
+    "profile": [
+      0,
+      0.4,
+      0.6,
+      0,
+      0.4,
+      0
+    ],
+    "video": "1920x1080@25fps",
+    "envs": 1,
+    "command": "regenerated at 50 Hz"
+  },
+  "root_causes": [
+    "x1_amp_exp33_env.py wrote standing_state quaternion w-first [1,0,0,0]; the env reads xyzw, so every standing reset started upside down (base_euler_x 179.4 deg, base_height -0.528 m). Fixed in 520c76f.",
+    "Commands/zero_applied_fraction stayed ~0 in exp3.1/3.2/3.3 training, so zero-command standing behaviour was never trained; the policy cannot hold the 1.5 s standing buffer."
+  ],
+  "baseline": {
+    "server_dir": "/home/robot/czy/exp1/exp_20261111_172509",
+    "standing": {
+      "terminations": 3000,
+      "steps": 3000,
+      "base_euler_x_deg": 179.4,
+      "base_height_m_mean": -0.528,
+      "command_applied_max": 0.0,
+      "foot_contact_n_mean": 0.0,
+      "video_bitrate_kbps": 845
+    },
+    "rsi": {
+      "terminations": 94,
+      "steps": 3000,
+      "mean_vx": -0.59,
+      "rmse_vx": 0.87,
+      "yaw_drift_deg_max": 140.5,
+      "action_clip_steps": 240
+    }
+  },
+  "rerun_fixed": {
+    "server_dir": "/home/robot/czy/exp1/exp_20261112_135836",
+    "code_commits": [
+      "520c76f2c9e5bbe9b90ae223aafac2e32c019609",
+      "e5a0dfafc8ff00e9494df7de73aa07423906ca99"
+    ],
+    "deployment_files_verified": 165,
+    "relaxed_metadata": true,
+    "standing": {
+      "terminations": 42,
+      "steps": 3000,
+      "episode_length_steps_mean": 71.4,
+      "base_height_m_mean": 0.566,
+      "base_height_m_at_termination": 0.201,
+      "base_euler_x_deg_mean": -2.9,
+      "command_applied_mean": 0.0,
+      "mean_vx": -0.637,
+      "yaw_drift_deg_max": 174.7,
+      "foot_force_l_r_mean": [
+        124,
+        174
+      ]
+    },
+    "rsi": {
+      "terminations": 41,
+      "steps": 3000,
+      "episode_length_steps_mean": 72.1,
+      "base_height_m_at_termination": 0.205,
+      "command_applied_mean": 0.002,
+      "mean_vx": -0.618,
+      "yaw_drift_deg_max": 168.2,
+      "action_clip_steps": 252
+    }
+  },
+  "verdict": "fail: standing survives only ~1.4 s (< 1.5 s buffer), commands never applied, backwards drift 0.6 m/s",
+  "evidence": {
+    "baseline_csv": "baseline/standing_isaac_diag.csv, baseline/rsi_isaac_diag.csv",
+    "rerun_csv": "rerun_fixed/standing_isaac_diag.csv, rerun_fixed/rsi_isaac_diag.csv",
+    "videos": "rerun_fixed/{standing,rsi}_play_output.mp4 (60 s each)"
+  }
+}
