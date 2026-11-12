@@ -70,7 +70,7 @@
 
 ## MuJoCo 复测（2026-11-08，与 exp3.0 完全同协议）
 
-工具链先做复现性验证（`czy/exp1/records/exp3.1_evaluation/mujoco/`，2026-11-12 由 `czy/analysis/exp31_diag/` 迁入）：
+工具链先做复现性验证（`czy/data/exp3.1/mujoco/`，2026-11-12 由 `czy/analysis/exp31_diag/` 迁入）：
 
 | 验证 | 结果 |
 | --- | --- |

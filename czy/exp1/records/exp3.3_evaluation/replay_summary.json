@@ -93,8 +93,9 @@
   },
   "verdict": "fail: standing survives only ~1.4 s (< 1.5 s buffer), commands never applied, backwards drift 0.6 m/s",
   "evidence": {
-    "baseline_csv": "baseline/standing_isaac_diag.csv, baseline/rsi_isaac_diag.csv",
-    "rerun_csv": "rerun_fixed/standing_isaac_diag.csv, rerun_fixed/rsi_isaac_diag.csv",
-    "videos": "rerun_fixed/{standing,rsi}_play_output.mp4 (60 s each)"
+    "three_piece": "czy/data/exp3.3/{model_11950.pt, play_output.mp4, isaac_diag.csv} (rerun standing, fixed pose)",
+    "rsi_rerun": "czy/data/exp3.3/rsi/{play_output.mp4, isaac_diag.csv}",
+    "baseline": "czy/data/exp3.3/baseline/{standing,rsi}_{play_output.mp4, isaac_diag.csv}",
+    "records": "czy/exp1/records/exp3.3_evaluation/ (metadata, logs, replay_summary.json)"
   }
 }

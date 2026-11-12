@@ -1,0 +1,62 @@
+{
+  "checkpoint": {
+    "file": "model_11750.pt",
+    "bytes": 10780293,
+    "sha256": "391f83466f26c76c75b0949f68b1771e01b3b4c5a49642527f1f3aea1413bafc"
+  },
+  "task": "x1_amp_exp32",
+  "training_task_id": null,
+  "terminations": 2,
+  "timeouts": 2,
+  "falls": 0,
+  "base_height_m_mean": 0.623,
+  "yaw_drift_deg_max": 32.1,
+  "segments": {
+    "zero": {
+      "vx": [
+        0.004,
+        0.031,
+        0.015
+      ],
+      "rmse": [
+        0.007,
+        0.082,
+        0.053
+      ]
+    },
+    "forward_0.4": {
+      "vx": [
+        0.375,
+        0.313
+      ],
+      "rmse": [
+        0.056,
+        0.06
+      ]
+    },
+    "forward_0.6": {
+      "vx": 0.492,
+      "rmse": 0.075
+    }
+  },
+  "protocol": {
+    "seed": 5,
+    "steps": 3000,
+    "stage_seconds": 10,
+    "profile": [
+      0,
+      0.4,
+      0.6,
+      0,
+      0.4,
+      0
+    ],
+    "video": "1920x1080@25fps",
+    "envs": 1
+  },
+  "server_dir": "/home/robot/czy/exp1/exp_20261112_144500_exp31_exp32",
+  "code_commit": "85bd4ff",
+  "deployment_files_verified": 165,
+  "note": "Isaac replay added on 2026-11-12 purely for archive/comparison; the original MuJoCo evidence for this experiment is under data/{exp}/mujoco/",
+  "experiment": "exp3.2"
+}

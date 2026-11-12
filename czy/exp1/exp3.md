@@ -11,6 +11,8 @@
 
 当前实验为 **exp3.3**，源模型为 exp3.2 的 `model_11750.pt`（SHA `391f8346…1413bafc`），下一轮为 **exp3.4**。exp3 系列仍未通过 MuJoCo 零指令站立；3.3 复跑证明两个独立缺陷：站姿四元数顺序错误（已修）和零指令/站姿保持从未被真正训练（`Commands/zero_applied_fraction` 在 3.1、3.2、3.3 三代训练里都≈0）。
 
+**归档约定（2026-11-12 统一）**：每个实验在 `czy/data/{实验编号}/` 保存 `model_{iter}.pt`、`play_output.mp4`、`isaac_diag.csv` 三件套（不区分是否达标）；MuJoCo、RSI、修复前基线等附加回放放该目录的子目录（`mujoco/`、`rsi/`、`baseline/`）；metadata、日志、机读摘要留在 `czy/exp1/records/{实验编号}_evaluation/`。exp3.1 与 3.2 的 Isaac 回放是 2026-11-12 为归档补跑的（之前只有 MuJoCo）。
+
 ---
 
 ## 实验 exp3.0：MLP 11250 平地阶跃行走与航向反馈
@@ -264,7 +266,7 @@
 
 训练终态（11750）：Mean episode task reward ≈34（起点 −1.2），`rew_tracking_lin_vel`≈1.04、`rew_tracking_ang_vel`≈0.66，style≈4.3（expert 0.988 / policy −0.988），`Tracking/forward_abs_vx_error` 0.038、`lateral_abs_velocity` 0.026。
 
-MuJoCo 复测（2026-11-08，与 exp3.0 同协议；证据 `czy/exp1/records/exp3.1_evaluation/mujoco/`）：
+MuJoCo 复测（2026-11-08，与 exp3.0 同协议；证据 `czy/data/exp3.1/mujoco/`）：
 
 | 场景 | 参数 | 结果 |
 | --- | --- | --- |
@@ -274,7 +276,17 @@ MuJoCo 复测（2026-11-08，与 exp3.0 同协议；证据 `czy/exp1/records/exp
 | G4 1.5 s 缓冲后阶跃 | `--vx 0.595 --stand-seconds 1.5 --seconds 10` | **1.08 s 跌倒（缓冲期内）** |
 | G5 立即阶跃 | `--vx 0.595 --stand-seconds 0 --seconds 10` | **3.14 s 跌倒**；mean vx 0.958、RMSE 1.05、3 s yaw −94° |
 
-**结论**：❌ 未达标。零指令站立与 3.0 实质相同（1.08 s vs 1.06 s），行走反而更差。
+Isaac 回放（2026-11-12 补跑归档，服务器 `exp_20261112_144500_exp31_exp32`，代码 `85bd4ff`，模型 SHA `5c78…e73dc`，seed 5，六段 0/0.4/0.6/0/0.4/0，3000 步）：
+
+| 段 | 指令 | 实际 vx | RMSE |
+| --- | --- | --- | --- |
+| 0 / 3 / 5（零指令） | 0 | 0.003 / 0.031 / 0.014 | 0.007–0.105 |
+| 1 / 4 | 0.40 | 0.386 / 0.326 | 0.044 / 0.054 |
+| 2 | 0.60 | 0.488 | 0.075 |
+
+全程只有 2 次终止，都是 10 s 分段正常超时，**没有跌倒**；高度均值 0.624 m，yaw 漂移最大 32.6°。
+
+**结论**：❌ 未达标（MuJoCo 口径）。但 Isaac 里同一模型零指令站得住、0.4/0.6 跟踪误差 0.04–0.075，与 MuJoCo 的 1.08 s 跌倒形成鲜明对比 → 3.1 的缺口主要是 **Isaac→MuJoCo 迁移**，而不是 Isaac 内训练目标没达成。零指令站立与 3.0 在 MuJoCo 上实质相同（1.08 vs 1.06 s），行走反而更差。
 
 **根因分析**：
 
@@ -363,7 +375,7 @@ MuJoCo 复测（2026-11-08，与 exp3.0 同协议；证据 `czy/exp1/records/exp
 
 训练早期指标：`zero_requested_raw` 0.000000（新采样指令全是 NATIVE_SPEED），`zero_applied_raw` ≈0.007、`zero_applied_fraction` ≈0.006；重采样修复没有把零指令暴露拉起来。
 
-MuJoCo 复测（2026-11-09，与 3.1 同协议；证据 `czy/exp1/records/exp3.2_evaluation/mujoco/`）：
+MuJoCo 复测（2026-11-09，与 3.1 同协议；证据 `czy/data/exp3.2/mujoco/`）：
 
 | 场景 | 结果 | 对比 3.1 |
 | --- | --- | --- |
@@ -373,7 +385,17 @@ MuJoCo 复测（2026-11-09，与 3.1 同协议；证据 `czy/exp1/records/exp3.2
 | G4 1.5 s 缓冲后阶跃 10 s | **1.76 s 跌倒（缓冲期内）** | 1.08 s |
 | G5 立即阶跃 10 s | **3.12 s 跌倒** | 3.14 s |
 
-**结论**：❌ 未达标。站立时间从 ~1.1 s 提升到 1.7–2.2 s，但仍远低于 10 s；立即阶跃无改善。
+Isaac 回放（2026-11-12 补跑归档，同一次部署 `exp_20261112_144500_exp31_exp32`，代码 `85bd4ff`，模型 SHA `391f…3bafc`，seed 5，3000 步）：
+
+| 段 | 指令 | 实际 vx | RMSE |
+| --- | --- | --- | --- |
+| 0 / 3 / 5（零指令） | 0 | 0.004 / 0.031 / 0.015 | 0.007–0.082 |
+| 1 / 4 | 0.40 | 0.375 / 0.313 | 0.056 / 0.060 |
+| 2 | 0.60 | 0.492 | 0.075 |
+
+同样只有 2 次正常超时、无跌倒，高度均值 0.623 m，yaw 漂移最大 32.1°。
+
+**结论**：❌ 未达标（MuJoCo 口径）。站立时间从 ~1.1 s 提升到 1.7–2.2 s，但仍远低于 10 s；立即阶跃无改善。与 3.1 一样，Isaac 内零指令站立正常而 MuJoCo 1.7–2.2 s 就倒，**迁移差距是主要矛盾**，不是 Isaac 训练不足。
 
 **根因分析**：
 
@@ -494,7 +516,9 @@ Isaac 回放（服务器 `exp_20261111_172509`，seed 5，六段 0/0.4/0.6/0/0.4
 
 **证据位置**：
 
-- 基线（倒置站姿）：`czy/exp1/records/exp3.3_evaluation/baseline/`（`standing_*`、`rsi_*` 的 CSV、metadata、日志）。
-- 复跑（修正后）：`czy/exp1/records/exp3.3_evaluation/rerun_fixed/`（CSV、metadata、日志，以及两段 60 s / 1920×1080 / 25 fps 视频）。
+- 三件套（复跑 standing，修正站姿）：`czy/data/exp3.3/` 的 `model_11950.pt` + `play_output.mp4` + `isaac_diag.csv`。
+- RSI 复跑：`czy/data/exp3.3/rsi/`（`play_output.mp4` + `isaac_diag.csv`）。
+- 基线（倒置站姿）：`czy/data/exp3.3/baseline/`（两套 `*_play_output.mp4` + `*_isaac_diag.csv`）。
+- metadata、日志、机读摘要与任务 payload：`czy/exp1/records/exp3.3_evaluation/`。
 - 训练曲线与任务：`TASK_20261111_106`（flux 可按 key 拉 11751–11950）。
 - 站姿修复与回放开关注释见 `520c76f`、`e5a0dfa`。
