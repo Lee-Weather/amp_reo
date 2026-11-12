@@ -75,7 +75,8 @@
       "foot_force_l_r_mean": [
         124,
         174
-      ]
+      ],
+      "steps_with_command_applied": 0
     },
     "rsi": {
       "terminations": 41,
@@ -85,7 +86,9 @@
       "command_applied_mean": 0.002,
       "mean_vx": -0.618,
       "yaw_drift_deg_max": 168.2,
-      "action_clip_steps": 252
+      "action_clip_steps": 252,
+      "steps_with_command_applied": 16,
+      "command_applied_steps_fraction": 0.0053
     }
   },
   "verdict": "fail: standing survives only ~1.4 s (< 1.5 s buffer), commands never applied, backwards drift 0.6 m/s",
