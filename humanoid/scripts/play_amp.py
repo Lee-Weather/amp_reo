@@ -28,6 +28,9 @@ def main():
     parser.add_argument("--checkpoint_path", type=str, help="Load a local checkpoint without optimizer states")
     parser.add_argument('--source_policy',action='store_true',help='exp2.0 only: evaluate the verified7000 source via policy migration, not target checkpoint resume')
     parser.add_argument("--reset_mode", choices=("standing", "rsi"), default="standing")
+    parser.add_argument("--relaxed_metadata", action="store_true",
+                        help="Load a checkpoint whose control metadata differs by design (e.g. a deliberately "
+                             "changed standing pose); still checks joint names, obs size and history length")
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
@@ -83,7 +86,8 @@ def main():
         if play.source_policy:
             runner.warm_start(os.path.abspath(play.checkpoint_path))
         else:
-            runner.load(os.path.abspath(play.checkpoint_path), load_optimizer=False)
+            runner.load(os.path.abspath(play.checkpoint_path), load_optimizer=False,
+                        relaxed_metadata=play.relaxed_metadata)
     else:
         train_cfg.runner.resume = True
         runner, _, _ = task_registry.make_alg_runner(env, args=args, train_cfg=train_cfg, log_root="default")
