@@ -39,8 +39,11 @@ class X1AMPExp33Env(X1AMPExp32Env):
         # [0:3]   base position
         pos = self.standing_state.new_tensor([0.0, 0.0, 0.64])
 
-        # [3:7]   base orientation – identity (upright, no tilt)
-        quat = self.standing_state.new_tensor([1.0, 0.0, 0.0, 0.0])
+        # [3:7]   base orientation – identity (upright, no tilt), xyzw order
+        # like every other standing_state built from motion clips; writing
+        # w-first here would be read as qx=1 (180 deg about x) and every
+        # standing reset would start upside down.
+        quat = self.standing_state.new_tensor([0.0, 0.0, 0.0, 1.0])
 
         # [7:13]  base linear & angular velocity – zero
         vel = self.standing_state.new_zeros(6)
