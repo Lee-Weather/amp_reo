@@ -25,7 +25,11 @@ import struct
 from pathlib import Path
 
 import numpy as np
-from lxml import etree
+
+try:  # lxml is faster, but the training box only guarantees the stdlib parser
+    from lxml import etree
+except ImportError:  # pragma: no cover - depends on the host environment
+    import xml.etree.ElementTree as etree
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_URDF = ROOT / "resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf"
