@@ -681,14 +681,22 @@ Isaac 回放（服务器 `exp_20261111_172509`，seed 5，六段 0/0.4/0.6/0/0.4
 
 ### 8. 执行顺序
 
-1. FK 校验（本地，~15 min）→ 写 `pose_check.json`。
-2. 站姿结论 + 单测（~30 min）。
-3. 任务/指标/管道修改 + 20 轮冒烟（~1 h，云端约 12 min）。
-4. 正式 500 轮（~1.5 h）。
-5. Isaac 回放 + 三件套归档（~15 min）。
+1. FK 校验（本地，~15 min）→ 写 `pose_check.json`。✅
+2. 站姿结论 + 单测（~30 min）。✅ `tests/test_exp34.py`（服务器 9 passed）
+3. 任务/指标/管道修改 + 20 轮冒烟（~1 h）。✅ zero_requested 0.37 / zero_applied 0.30
+4. 正式 500 轮（~1.5 h）：`TASK_20261113_071`（排队中）。
+5. 取模 + Isaac 回放（服务器，**模型来自 exp3.4，metadata 天然匹配，不需要 `--relaxed_metadata`**）：
+   ```
+   scp 模型 → /home/robot/czy/exp1/<exp34 目录>/checkpoints/
+   xvfb-run -a python -u humanoid/scripts/play_amp.py --task=x1_amp_exp34 --headless --num_envs=1 \
+     --checkpoint_path=checkpoints/model_XXXXX.pt --seed=5 --reset_mode=standing \
+     --output_dir=logs/replay/standing_seed5
+   …同上 --reset_mode=rsi --output_dir=logs/replay/rsi_seed5
+   ```
 6. MuJoCo G1–G5（`sim2sim_amp_mlp.py`，~30 min）：
-   `--root <repo> --checkpoint czy/data/exp3.4/model_XXXX.pt --mjcf-source czy/data/exp3.1/mujoco/G1_zero_heading/mjcf/x1_29dof_scene.xml --meshes resources/robots/x1_29/meshes --training-commit <commit> --runtime-properties E:/X1/amp_re0/agibot_x1_train-main/czy/exp1/records/exp2.9_long_evaluation/runtime_audit/runtime.json --passive-probe …/passive_probe.json`
-7. 笔记与归档（~20 min）。
+   `--root <repo> --checkpoint czy/data/exp3.4/model_XXXXX.pt --mjcf-source czy/data/exp3.1/mujoco/G1_zero_heading/mjcf/x1_29dof_scene.xml --meshes resources/robots/x1_29/meshes --training-commit <task 的 resolved commit> --runtime-properties E:/X1/amp_re0/agibot_x1_train-main/czy/exp1/records/exp2.9_long_evaluation/runtime_audit/runtime.json --passive-probe …/passive_probe.json`（G1/G2/G3 零指令、G4 缓冲阶跃、G5 立即阶跃）
+7. 三件套归档到 `czy/data/exp3.4/`（model + play_output.mp4 + isaac_diag.csv），MuJoCo 进 `mujoco/`，metadata 进 `records/exp3.4_evaluation/`；回填 §7 与索引。
+8. 检查点：模型到 11950 时先看 `Commands/zero_applied_fraction` ≥0.30 且 `rew_tracking_lin_vel` 掉幅 <20%，再让其跑满 500 轮。
 
 ### 9. 风险与决策点
 
