@@ -488,6 +488,8 @@ Isaac 回放（服务器 `exp_20261111_172509`，seed 5，六段 0/0.4/0.6/0/0.4
 | 站姿 | **3000/3000 步全部重置**；base_euler_x 179.4°、base_height −0.528 m、足底接触力 0、`command_applied` 恒 0 |
 | RSI | 94/3000 终止；mean vx −0.59、RMSE 0.87；yaw 最大 140°；252 步动作饱和 |
 
+> 基线两行的 `mean vx` 同样是倒地位移：站姿行 3000 步全部倒置出生立即重置；RSI 行只有 2504/3000 步高度 >0.5 m，且 `command_applied` 全程为 0、pitch 均值 −13.7°，即全程后仰漂移而非行走。
+
 **根因 A：站姿四元数顺序写错。** `x1_amp_exp33_env.py` 把 `standing_state` 的四元数写成 w-first `[1,0,0,0]`，而环境与所有轨迹一致按 **xyzw** 解析（`x1_amp_env.py` 里 `qx,qy,qz,qw = state[3:7]`、零偏航四元数是 `[0,0,0,1]`），于是站姿被读成绕 x 轴 180°，机器人倒置出生。CSV 证据：base_euler_x 179.4°、base_height −0.528 m、足底接触力 0；checkpoint 的 `control.standing_state[3:7]` 同样记录为 `[1,0,0,0]`，说明训练期的站姿重置用的也是倒置姿态。
 
 修复：`520c76f` 改为 `[0,0,0,1]`。由于站姿属于 checkpoint 的 control metadata，改后 `runner.load` 会拒载；`e5a0dfa` 增加 `--relaxed_metadata`（仍校验关节名、观测维度和历史长度），专门用于"有意改站姿"的回放。
