@@ -76,7 +76,14 @@
         124,
         174
       ],
-      "steps_with_command_applied": 0
+      "steps_with_command_applied": 0,
+      "pitch_deg_at_0.5s": -11.7,
+      "pitch_deg_at_1.0s": -19.5,
+      "time_to_abs_pitch_20deg_s_median": 1.02,
+      "backward_base_speed_at_0.5s": -0.23,
+      "backward_base_speed_at_1.0s": -0.72,
+      "net_base_dx_per_episode_m_median": -0.71,
+      "motion_note": "mean_vx is the base displacement caused by the backward topple, not walking velocity"
     },
     "rsi": {
       "terminations": 41,
@@ -88,10 +95,11 @@
       "yaw_drift_deg_max": 168.2,
       "action_clip_steps": 252,
       "steps_with_command_applied": 16,
-      "command_applied_steps_fraction": 0.0053
+      "command_applied_steps_fraction": 0.0053,
+      "motion_note": "mean_vx likewise dominated by the backward topple; only 16/3000 steps had a command applied"
     }
   },
-  "verdict": "fail: standing survives only ~1.4 s (< 1.5 s buffer), commands never applied, backwards drift 0.6 m/s",
+  "verdict": "fail: after the quaternion fix the robot no longer starts inverted, but it leans backward from the first step (pitch -11.7 deg at 0.5 s, -19.5 deg at 1.0 s) and topples at ~1.4 s, just before the 1.5 s standing buffer ends; commands are therefore almost never applied (0 steps standing, 16/3000 RSI); the large negative mean_vx is the fall, not backward walking",
   "evidence": {
     "three_piece": "czy/data/exp3.3/{model_11950.pt, play_output.mp4, isaac_diag.csv} (rerun standing, fixed pose)",
     "rsi_rerun": "czy/data/exp3.3/rsi/{play_output.mp4, isaac_diag.csv}",
