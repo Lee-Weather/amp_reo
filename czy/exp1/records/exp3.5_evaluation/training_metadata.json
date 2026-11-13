@@ -1,0 +1,71 @@
+{
+  "experiment": "exp3.5",
+  "task_id": "TASK_20261113_134",
+  "task_name": "exp3.5-buffer-fix-v1",
+  "branch": "codex/exp3-4",
+  "training_commit": "530ae2a",
+  "start_time": "2026-11-13 13:39:11",
+  "end_time": "2026-11-13 14:16:09",
+  "runtime_seconds": 2218,
+  "iterations": {
+    "first": 11750,
+    "last": 11950,
+    "count": 200,
+    "seconds_per_iteration": 11.1
+  },
+  "warm_start": {
+    "file": "model_11750.pt",
+    "sha256": "391f83466f26c76c75b0949f68b1771e01b3b4c5a49642527f1f3aea1413bafc"
+  },
+  "final_model": {
+    "file": "model_11950.pt",
+    "sha256": "794c64455ee4586f31c88569eab1d3617707f540e72daec4514d07bbbfbf50d8"
+  },
+  "changes_vs_exp34": {
+    "standing_pose": "motion-library stand frame (was pd_stand)",
+    "commands.resampling_time": "6 s -> 1 s",
+    "amp.stand_buffer_seconds": "1.5 s -> 0.4 s",
+    "commands.zero_probability": "0.5 -> 0.35 (curriculum 0.25 for the first 60 iterations)"
+  },
+  "curve": {
+    "Tracking/zero_vx": [
+      -0.68,
+      -0.684,
+      -0.677
+    ],
+    "Episode/zero_completed_length": [
+      81.2,
+      78.6,
+      78.5
+    ],
+    "Episode/forward_completed_length": [
+      79.2,
+      78.6,
+      78.5
+    ],
+    "Init/standing_early_failure_rate": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "Train/mean_reward": [
+      -8.17,
+      -5.53,
+      -6.03
+    ]
+  },
+  "isaac_acceptance": {
+    "standing": {
+      "steps": 1500,
+      "resets": 42,
+      "mean_vx": -0.5
+    },
+    "walk": {
+      "steps": 1500,
+      "resets": 39,
+      "cmd_0.4_real": -0.42,
+      "cmd_0.6_real": -0.46
+    }
+  },
+  "verdict": "fail: the buffer/period fix took effect but zero-command standing is unchanged and walking regressed"
+}
