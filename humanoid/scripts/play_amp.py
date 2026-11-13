@@ -34,7 +34,7 @@ def main():
     play, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     args = get_args()
-    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp30", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp30", "x1_amp_exp20", "x1_amp_exp21", "x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29", "x1_amp_exp31", "x1_amp_exp32", "x1_amp_exp33", "x1_amp_exp34", "x1_amp_exp35"):
+    if args.task not in ("x1_amp", "x1_amp_exp11", "x1_amp_exp3", "x1_amp_exp14", "x1_amp_exp15", "x1_amp_exp16", "x1_amp_exp17", "x1_amp_exp18", "x1_amp_exp19", "x1_amp_exp30", "x1_amp_exp110", "x1_amp_exp111", "x1_amp_exp112", "x1_amp_exp113", "x1_amp_exp113t", "x1_amp_exp114", "x1_amp_exp114t", "x1_amp_exp115", "x1_amp_exp115t", "x1_amp_exp116", "x1_amp_exp117", "x1_amp_exp118", "x1_amp_exp30", "x1_amp_exp20", "x1_amp_exp21", "x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29", "x1_amp_exp31", "x1_amp_exp32", "x1_amp_exp33", "x1_amp_exp34", "x1_amp_exp35", "x1_amp_exp36"):
         raise ValueError("Use a registered x1_amp task")
     cfg, train_cfg = task_registry.get_cfgs(args.task)
     if play.source_policy and (args.task not in ('x1_amp_exp20','x1_amp_exp21', 'x1_amp_exp22', 'x1_amp_exp23', 'x1_amp_exp24', 'x1_amp_exp25', 'x1_amp_exp26', 'x1_amp_exp27', 'x1_amp_exp28', 'x1_amp_exp29') or not play.checkpoint_path):
@@ -77,7 +77,7 @@ def main():
         cfg.domain_rand.friction_range = [float(cfg.terrain.static_friction)]*2
         cfg.domain_rand.restitution_range = [0.,0.]
     env, _ = task_registry.make_env(args.task, args=args, env_cfg=cfg)
-    if args.task in ("x1_amp_exp21","x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29", "x1_amp_exp31", "x1_amp_exp32", "x1_amp_exp33", "x1_amp_exp34", "x1_amp_exp35"):
+    if args.task in ("x1_amp_exp21","x1_amp_exp22", "x1_amp_exp23", "x1_amp_exp24", "x1_amp_exp25", "x1_amp_exp26", "x1_amp_exp27", "x1_amp_exp28", "x1_amp_exp29", "x1_amp_exp31", "x1_amp_exp32", "x1_amp_exp33", "x1_amp_exp34", "x1_amp_exp35", "x1_amp_exp36"):
         env.evaluation_reset_mode = play.reset_mode
     if play.checkpoint_path:
         args.resume = False
