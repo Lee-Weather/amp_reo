@@ -21,7 +21,7 @@ class X1AMPExp34Cfg(X1AMPExp33Cfg):
     class env(X1AMPExp33Cfg.env):
         # Phase A (diagnose) keeps this False and runs the exp3.3 pipeline with the
         # new metrics; Phase B flips it on and the 50% zero draws reach the policy.
-        zero_exposure_fix = False
+        zero_exposure_fix = True
         # (iteration threshold, zero probability before, zero probability after)
         zero_curriculum = (100, 0.3, 0.5)
         # Forward kinematics on X1_29DOF_physically_mirrored.urdf: the lowest foot

@@ -9,13 +9,26 @@
   ``standing_commands.requested`` instead of replaying the reset snapshot or the
   forced native speed of the nominal cohort.
 """
+import json
+
 import torch
 
+from humanoid.amp.nominal_startup import cohort_mask
 from .x1_amp_exp33_env import X1AMPExp33Env
 
 
 class X1AMPExp34Env(X1AMPExp33Env):
     """Deployment pd_stand pose (FK-verified) plus zero-command instrumentation."""
+
+    # The exp2.x base class that carries ``_iteration`` is not in this task's MRO,
+    # so the learning iteration is kept here and fed by the runner through
+    # ``set_training_iteration``.
+    _iteration = 0
+
+    def set_training_iteration(self, iteration):
+        if iteration < 0:
+            raise ValueError("Negative exp3.4 iteration")
+        self._iteration = int(iteration)
 
     def _init_buffers(self):
         super()._init_buffers()
@@ -31,26 +44,29 @@ class X1AMPExp34Env(X1AMPExp33Env):
         iteration = int(getattr(self, "_iteration", 0))
         return float(low if iteration < warmup else high)
 
-    def _draw_commands_fresh(self, count):
+    def _draw_commands(self, count):
+        """Draw native-speed commands with a real zero share.
+
+        The inherited sampler (``humanoid/amp/stationary.py:17``) intentionally
+        skips zero sampling when ``command_ranges['lin_vel_x']`` is degenerate,
+        and this task pins that range to the native speed — so exp3.1/3.2/3.3
+        never actually saw a zero-command goal even though ``zero_probability``
+        was 0.5.  With ``env.zero_exposure_fix`` the zero share is drawn here
+        instead, which also covers the reset-time draw in ``reset_idx``.
+        """
+        if not getattr(self.cfg.env, "zero_exposure_fix", False):
+            return super()._draw_commands(count)
         result = torch.zeros(count, 3, device=self.device)
         result[:, 0] = self.cfg.commands.native_speed
-        zero = torch.rand(count, device=self.device) < self._zero_probability()
-        result[zero, 0] = 0.0
+        result[torch.rand(count, device=self.device) < self._zero_probability(), 0] = 0.0
         return result
 
     def _resample_commands(self, env_ids):
         if not len(env_ids):
             return
         inside_reset = self._reset_reference is not None
-        if inside_reset or not getattr(self.cfg.env, "zero_exposure_fix", False):
-            # exp3.3 behaviour: inside a reset the reset-time draw is kept, outside
-            # the exp3.2 override decides (it may replay the snapshot or force the
-            # nominal cohort to native speed).
-            super()._resample_commands(env_ids)
-            requested = self.standing_commands.requested[env_ids]
-        else:
-            requested = self._draw_commands_fresh(len(env_ids))
-            self.standing_commands.requested[env_ids] = requested
+        super()._resample_commands(env_ids)
+        requested = self.standing_commands.requested[env_ids]
 
         stats = self._resample_stats
         stats["drawn"] += int(len(env_ids))
@@ -62,6 +78,22 @@ class X1AMPExp34Env(X1AMPExp33Env):
         if drawn:
             self._zero_ratio = stats["zero"] / drawn
             self._reference_ratio = stats["from_reference"] / drawn
+
+        if getattr(self, "_resample_debug", 0) < 12:
+            self._resample_debug = getattr(self, "_resample_debug", 0) + 1
+            nominal = cohort_mask(env_ids, self.num_envs, 0.25)
+            print("ZERO_PIPELINE_DEBUG " + json.dumps({
+                "call": self._resample_debug,
+                "iteration": int(getattr(self, "_iteration", -1)),
+                "zero_p": self._zero_probability(),
+                "fix": bool(getattr(self.cfg.env, "zero_exposure_fix", False)),
+                "batch": int(len(env_ids)),
+                "inside_reset": bool(inside_reset),
+                "requested_zero": int((requested[:, 0].abs() < 0.01).sum()),
+                "reset_draw_zero": int((self._reset_commands[:, 0].abs() < 0.01).sum()) if self._reset_commands is not None else None,
+                "cum_zero": int(stats["zero"]),
+                "cum_drawn": int(stats["drawn"]),
+            }), flush=True)
 
     # ── metrics ─────────────────────────────────────────────────────────
     def compute_reward(self):

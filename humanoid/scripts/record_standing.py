@@ -28,6 +28,10 @@ def angles(root):
         np.arcsin(np.clip(2*(w*y-z*x), -1, 1)))))
 
 
+# Tasks whose standing_state is a fixed pose usable for the static PD gate.
+STANDING_GATE_TASKS = ("x1_amp_exp11", "x1_amp_exp33", "x1_amp_exp34")
+
+
 def text(frame, message, xy, color=(235, 235, 235), scale=.75):
     cv2.putText(frame, message, xy, cv2.FONT_HERSHEY_SIMPLEX,
                 scale, (0, 0, 0), 4, cv2.LINE_AA)
@@ -44,8 +48,8 @@ def main():
     parsed, rest = parser.parse_known_args()
     sys.argv = [sys.argv[0]]+rest
     args = get_args()
-    if args.task != "x1_amp_exp11":
-        raise ValueError("Use --task=x1_amp_exp11")
+    if args.task not in STANDING_GATE_TASKS:
+        raise ValueError("Use one of " + ", ".join(STANDING_GATE_TASKS))
     if parsed.seconds <= 0:
         raise ValueError("seconds must be positive")
     os.makedirs(parsed.output_dir, exist_ok=True)

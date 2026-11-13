@@ -643,7 +643,39 @@ Isaac 回放（服务器 `exp_20261111_172509`，seed 5，六段 0/0.4/0.6/0/0.4
 
 ### 7. 实验结果
 
-待训练完成后补充。
+**P0 站姿 FK 校验：通过。** 新工具 `scripts/amp_tools/check_pose_fk.py`（纯 numpy/lxml，本地可跑）在 `X1_29DOF_physically_mirrored.urdf` 上算出的结果：
+
+| 姿态 | 脚底高度差 | 左右前后差 | CoM 余量 | 结论 |
+| --- | --- | --- | --- | --- |
+| pd_stand（部署值，右髋 −0.4） | 0.0 mm | 0.0 mm | **+99.2 mm** | pass |
+| 同上但右髋 +0.4 | 31.6 mm | 207.0 mm | +13.3 mm | fail（镜像约定错） |
+| 轨迹平均姿态（mean29） | 0.8 mm | 4.8 mm | −31.8 mm | fail（行走均值不是静态站姿） |
+
+同时得到两个可用于仿真的数字：脚底最低点距 base_link **0.611 m**（原 `standing_state` 写 0.64 m，出生时悬空 29 mm，已改为 0.611），足底接触面约 200×116 mm。
+
+**P1 零指令暴露：根因找到并修复。** 诊断冒烟（20 轮 × 64 env）打印出的关键事实：
+
+- `Commands/zero_requested_fraction` 恒为 0；`zero_requested_raw` 也是 0；调试输出显示 `command_ranges['lin_vel_x'] = [0.595, 0.595]`（退化）。
+- 根因在 `humanoid/amp/stationary.py:17`：`sample_commands` 在 `lin_vel_x` 上下界相等时**故意跳过零采样**（"固定评估指令不得被随机置零"）。而 exp3.0–3.3 的任务都把该区间钉死在 native speed，于是 `zero_probability = 0.5` 从 3.1 起就是死代码，`_draw_commands` 永远只返回 native。
+- 修法：`x1_amp_exp34_env.py` 在 `env.zero_exposure_fix` 下自行抽样（native/零各按 `zero_curriculum`），同时覆盖 `reset_idx` 与周期性重采样两条路径。
+
+冒烟验证（20 轮 × 64 env，warm start 11750）：
+
+| 指标 | 修复前（fix=False） | 修复后 p=0.3 | 修复后 p=0.5 |
+| --- | --- | --- | --- |
+| `Commands/zero_requested_fraction` | 0.000 | 0.210 | **0.370** |
+| `Commands/zero_applied_fraction`（buffer 外） | 0.000 | 0.163 | **0.299** |
+| `Commands/stand_buffer_active_fraction` | 0.38–0.43 | 0.49 | 0.41 |
+
+零指令通路打通（目标 0.30 已达），顺带发现 runner 不会给该任务设置 `_iteration`（exp2.x 的基类不在 MRO 里），已在 env 补 `set_training_iteration`。
+
+**P2 固定 PD 站立门禁：失败，且暴露更深的问题。** `record_standing.py --task=x1_amp_exp34 --seconds=5 --seeds 5`：3 个 trial 分别在 **1.66 / 1.70 / 1.76 s** 跌倒，终止时高度 0.07 m、roll ±100–180°、非足部接触力 675–950 N。逐帧看（`standing_diag.csv`）：出生时高 0.626 m，pitch 从 0° 缓慢单调增长到 1.5 s 的 47°，随后前倾摔倒——**不是 PD 力矩不够，而是静态稳定点不存在**。
+
+原因是资产本身的脚型：URDF/MJCF 里 `*_ankle_roll_link` 的碰撞体就是那块圆底踝壳（`left_ankle_roll.STL`，最低 8 mm 内只有约 9 mm×30 mm 的接触带），等效"摇椅脚"。真实 X1 是平底足，所以这个仿真永远无法用固定 PD 站住，任何零指令站立策略都得靠主动平衡。
+
+**结论**：P0、P1 达标；P2 的门禁设计本身不适用于当前资产。exp3.4 是否继续训练取决于先处理脚型：要么给足部加平底碰撞（或换成平底 mesh），要么接受摇椅脚、放弃固定 PD 门禁、直接训练主动平衡并只用策略站立验收。
+
+**证据**：`czy/exp1/records/exp3.4_evaluation/`（`pose_check.json`、`p2_standing/`、`smoke/smoke_metrics.log`）；服务器目录 `/home/robot/czy/exp1/exp_20261113_101027_exp34`。
 
 ### 8. 执行顺序
 
