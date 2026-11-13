@@ -677,9 +677,21 @@ Isaac 回放（服务器 `exp_20261111_172509`，seed 5，六段 0/0.4/0.6/0/0.4
 
 **训练已启动**：云端任务 `TASK_20261113_071`（`exp3.4-zero-exposure-v2`，2026-11-13 10:46 建，账号 `limx16c492gkh03c` / userId 4768，代码分支 `codex/exp3-4` 提交 `81ee8f7`，500 轮、4096 env、warm start 3.2 的 `model_11750` SHA `391f…3bafc`）。
 
-**证据**：`czy/exp1/records/exp3.4_evaluation/`（`pose_check.json`、`p2_standing/`、`smoke/smoke_metrics.log`）；服务器目录 `/home/robot/czy/exp1/exp_20261113_101027_exp34`。
+**证据**：`czy/exp1/records/exp3.4_evaluation/`（`pose_check.json`、`p2_standing/`、`smoke/smoke_metrics.log`、`create_task.json`）；服务器目录 `/home/robot/czy/exp1/exp_20261113_101027_exp34`（含 `logs/replay/rehearsal_standing` 的 exp34 回放演练，用 3.2 模型验证命令通路，3000 步仅 1 次重置）。
+
+**训练中观测**（`TASK_20261113_071`，11:12 提交后持续监控）：
+
+| 轮次 | zero_applied | standing 早停率 | zero_vx | 零指令回合长度 | 前向回合长度 | mean_reward |
+| --- | --- | --- | --- | --- | --- | --- |
+| 11762 | 0.296 | 1.00 | −0.575 | 66.6 | 93.6 | −4.37 |
+| 11898 | 0.286 | 1.00 | −0.564 | — | — | −3.87 |
+| 11953 | 0.250 | 1.00 | −0.555 | 78.7 | 130.6 | −4.01 |
+
+读数解释：`command_from_reference_fraction≈1.0` 说明**几乎只有重置时才会换指令**——回合只有 70–130 步（1.4–2.6 s），永远到不了 300 步的周期性重采样点。因此"走到一半被要求停下"这种关键样本在训练里几乎不存在，零指令只来自站立重置，而站立重置目前 100% 早停。两者都在变长（66→79、94→131 步），方向对但很慢；若跑满 500 轮后 standing 仍早停，exp3.5 应先把 `resampling_time` 从 6 s 降到 1–1.5 s（让零指令在短回合内也能出现），而不是继续加零指令比例。
 
 ### 8. 执行顺序
+
+> **云端任务状态码**：`flux task create` 只生成**草稿**（`taskStatus=0`），必须再执行 `flux task run --task-id TASK_xxx` 才会真正提交并调度（提交后 2=排队/启动中、3=运行、5=成功、6=失败）。exp3.4 第一次就是停在 0，白等 26 分钟。
 
 1. FK 校验（本地，~15 min）→ 写 `pose_check.json`。✅
 2. 站姿结论 + 单测（~30 min）。✅ `tests/test_exp34.py`（服务器 9 passed）
