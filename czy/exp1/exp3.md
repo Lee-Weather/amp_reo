@@ -9,8 +9,9 @@
 | exp3.2 | 2026-11-09 | 固定站立锚点库（256 帧）+ 双锚损失 + 零指令重采样修复；MuJoCo 五场景 1.74–3.12 s 全部跌倒 | 失败 | 未留档（taskName `exp3.2-fix-zero-command-v1`） | 未留档 | model_11750.pt（SHA 391f…3bafc） |
 | exp3.3 | 2026-11-12 | 用部署 pd_stand 站姿替换零指令站姿；训练 200 轮完成；复跑显示站姿每 1.4 s 跌倒、指令从未生效 | 失败（两处根因，见 §7） | TASK_20261111_106 | limxbe2d78owe5wc（userId 4742） | model_11950.pt（SHA 13ce…af3f） |
 | exp3.4 | 2026-11-13 | 站姿 FK 校验 + 零指令暴露管道修复（退化区间跳过零采样）；从 3.2 的 11750 热启动 500 轮 | 完成：管道修好（zero_applied 0.21–0.30），但站立/行走均回退（12250：33–44 次重置/3000 步，0.4 段倒走 −0.15）；MuJoCo 被 runtime 审计挡住 | TASK_20261113_071 | limx16c492gkh03c（userId 4768） | 失败（负结果，见 §7） |
+| exp3.5 | 2026-11-13 | 修 3.4 暴露的"缓冲↔回合长度"死锁：站姿回到运动库帧、`resampling_time` 6→1 s、`stand_buffer_seconds` 1.5→0.4 s；200 轮 | 训练中（TASK_20261113_134，13:39 开跑） | TASK_20261113_134 | limx16c492gkh03c（userId 4768） | 待产出 |
 
-当前实验为 **exp3.4（待训练）**，上一轮 exp3.3 已完结并归档。exp3.4 的源模型为 exp3.2 的 `model_11750.pt`（SHA `391f8346…1413bafc`）；exp3.3 的 11950 不能沿用，它是在倒置站姿上训出来的。exp3 系列仍未通过 MuJoCo 零指令站立；3.3 复跑证明两个独立缺陷：站姿四元数顺序错误（已修）和零指令/站姿保持从未被真正训练（`Commands/zero_applied_fraction` 在 3.1、3.2、3.3 三代训练里都≈0），后者是 exp3.4 的主攻方向。
+当前实验为 **exp3.5（训练中）**，exp3.4 已完结（负结果，§7）。exp3.5 直接针对 3.4 发现的两个机制：`stand_buffer_seconds` 1.5 s（75 步）比零指令回合（71 步）还长，导致行走指令永远发不下去；以及 `resampling_time` 6 s 让短回合里根本不会发生"走到一半被要求停下"。改动只有三处（站姿回运动库帧、指令周期 1 s、缓冲 0.4 s），其余与 3.4 完全一致，便于单变量归因。
 
 **归档约定（2026-11-12 统一）**：每个实验在 `czy/data/{实验编号}/` 保存 `model_{iter}.pt`、`play_output.mp4`、`isaac_diag.csv` 三件套（不区分是否达标）；MuJoCo、RSI、修复前基线等附加回放放该目录的子目录（`mujoco/`、`rsi/`、`baseline/`）；metadata、日志、机读摘要留在 `czy/exp1/records/{实验编号}_evaluation/`。exp3.1 与 3.2 的 Isaac 回放是 2026-11-12 为归档补跑的（之前只有 MuJoCo）。
 
@@ -749,3 +750,51 @@ Isaac 回放（服务器 `exp_20261111_172509`，seed 5，六段 0/0.4/0.6/0/0.4
 - **零样本拉高后行走变差**：用 0.3→0.5 的课程，若 `rew_tracking_lin_vel` 在前 100 轮掉超过 20%，先停在 0.3。
 - **metadata 拒载**：站姿变会改 control metadata，训练侧走 `all_weights`（3.3 已有路径），回放侧才用 `--relaxed_metadata`。
 - **Isaac 通过但 MuJoCo 仍短命**：说明瓶颈在接触/摩擦建模而非训练目标，exp3.5 应转向域随机（3.0 已列方向），不要继续加零指令样本。
+
+---
+
+## exp3.5：解开"缓冲 ↔ 回合长度"死锁
+
+### 1. 背景
+
+exp3.4 把零指令通路修好（`stationary.py:17` 在退化区间跳过零采样），但策略反而更差。回放把机制钉死了：
+
+- 零指令回合只有 **71 步（1.42 s）**，而 `stand_buffer_seconds = 1.5 s = 75 步`——机器人还没拿到行走指令就摔了，`command_applied` 最大只有 0.028；
+- `resampling_time = 6 s = 300 步`，而回合只有 71–165 步，**周期性重采样几乎从不触发**（`Commands/command_from_reference_fraction ≈ 1.0`），所以"走到一半被要求停下"这种关键样本根本不存在；
+- 站立重置用的是部署 `pd_stand`（不在 AMP 运动库分布内），判别器把策略往"静止保持"推，而静止保持恰好无法在圆底踝壳上站稳。
+
+三者叠加成死锁：摔 → 从"站立+零指令"重置 → 再次摔，永远拿不到"走一段再停"的经验。
+
+### 2. 改动（只动三处，其余与 exp3.4 完全一致）
+
+| 项 | exp3.4 | exp3.5 | 目的 |
+| --- | --- | --- | --- |
+| 站立重置姿态 | 部署 `pd_stand`（+ 0.611 m） | 运动库站立帧（3.2 那一帧） | 让站姿回到判别器分布内 |
+| `commands.resampling_time` | 6 s（300 步） | **1 s（50 步）** | 指令变化落进 2–4 s 的短回合 |
+| `amp.stand_buffer_seconds` | 1.5 s（75 步） | **0.4 s（20 步）** | 缓冲不再吞掉整个回合 |
+
+零采样仍按课程 0.25（前 60 轮）→ 0.35；其余奖励、锚点、硬拒绝、`all_weights` 热启动（3.2 的 `model_11750`）都不变。
+
+实现要点：`X1AMPExp35Env._init_buffers` 直接从 `X1AMPExp32Env` 起调 MRO，跳过 exp3.3/3.4 的 `pd_stand` 覆写；`exp34` 的 `standing_pose_z` 改为可空（`None` 时沿用继承来的高度）。
+
+### 3. 冒烟（20 轮 × 64 env，warm start 11750）
+
+| 指标 | exp3.4 | exp3.5 |
+| --- | --- | --- |
+| `Commands/command_from_reference_fraction` | 1.00 | **0.502**（一半指令变化发生在回合中途） |
+| `Commands/stand_buffer_active_fraction` | 0.41–0.49 | **0.113** |
+| `Commands/zero_requested_fraction` | 0.37 | 0.306 |
+| `Commands/zero_applied_fraction`（缓冲外） | 0.30 | 0.277（课程仍在 0.25 段） |
+| 零指令回合 / 前向回合 | 66 / 94 步 | 83 / 77 步 |
+
+结构与预期一致：指令周期和缓冲都已生效。
+
+### 4. 正式训练
+
+`TASK_20261113_134`（`exp3.5-buffer-fix-v1`），2026-11-13 13:39:11 开跑，200 轮 4096 env，分支 `codex/exp3-4` 提交 `530ae2a`，warm start 3.2 的 `model_11750`。
+
+**中途判据**：到 11900（150 轮）时看三个数——`Episode/zero_completed_length` 是否 ≥150 步（3 s，跨过早停阈值）、`Init/standing_early_failure_rate` 是否 <1.0、`Episode/forward_completed_length` 是否仍 >300 步（行走没被拖垮）。三条都满足才做完整回放验收，否则按 §5 继续调。
+
+### 5. 若仍失败的下一步
+
+优先怀疑顺序：① 指令周期还不够短（再降到 0.6 s 或只在行走后 1 s 处强制插零）；② 零指令样本权重过高（降到 0.2）；③ 站位仍偏窄（`hip_roll` ±0.05 → ±0.02 或加大 `feet_friction`），把圆底踝壳的支撑面纳入域随机。
