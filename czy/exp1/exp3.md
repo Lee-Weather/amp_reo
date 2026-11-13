@@ -8,8 +8,9 @@
 | exp3.1 | 2026-11-08 | KL 锚点 + 站姿角速度惩罚、零指令比例 50%；MuJoCo 零指令 1.08 s 跌倒、立即阶跃 3.14 s 跌倒 | 失败 | TASK_20261108_033 | limxbe2b0a9iij6r（userId 4741） | model_11750.pt（SHA 5c78…e73dc） |
 | exp3.2 | 2026-11-09 | 固定站立锚点库（256 帧）+ 双锚损失 + 零指令重采样修复；MuJoCo 五场景 1.74–3.12 s 全部跌倒 | 失败 | 未留档（taskName `exp3.2-fix-zero-command-v1`） | 未留档 | model_11750.pt（SHA 391f…3bafc） |
 | exp3.3 | 2026-11-12 | 用部署 pd_stand 站姿替换零指令站姿；训练 200 轮完成；复跑显示站姿每 1.4 s 跌倒、指令从未生效 | 失败（两处根因，见 §7） | TASK_20261111_106 | limxbe2d78owe5wc（userId 4742） | model_11950.pt（SHA 13ce…af3f） |
+| exp3.4 | 2026-11-12 | 站姿 FK 校验 + 零指令暴露管道修复；从 3.2 的 11750 热启动 500 轮 | 待训练（方案见文末 §1–§6） | — | limxbe2d78owe5wc（userId 4742） | — |
 
-当前实验为 **exp3.3**，源模型为 exp3.2 的 `model_11750.pt`（SHA `391f8346…1413bafc`），下一轮为 **exp3.4**。exp3 系列仍未通过 MuJoCo 零指令站立；3.3 复跑证明两个独立缺陷：站姿四元数顺序错误（已修）和零指令/站姿保持从未被真正训练（`Commands/zero_applied_fraction` 在 3.1、3.2、3.3 三代训练里都≈0）。
+当前实验为 **exp3.4（待训练）**，上一轮 exp3.3 已完结并归档。exp3.4 的源模型为 exp3.2 的 `model_11750.pt`（SHA `391f8346…1413bafc`）；exp3.3 的 11950 不能沿用，它是在倒置站姿上训出来的。exp3 系列仍未通过 MuJoCo 零指令站立；3.3 复跑证明两个独立缺陷：站姿四元数顺序错误（已修）和零指令/站姿保持从未被真正训练（`Commands/zero_applied_fraction` 在 3.1、3.2、3.3 三代训练里都≈0），后者是 exp3.4 的主攻方向。
 
 **归档约定（2026-11-12 统一）**：每个实验在 `czy/data/{实验编号}/` 保存 `model_{iter}.pt`、`play_output.mp4`、`isaac_diag.csv` 三件套（不区分是否达标）；MuJoCo、RSI、修复前基线等附加回放放该目录的子目录（`mujoco/`、`rsi/`、`baseline/`）；metadata、日志、机读摘要留在 `czy/exp1/records/{实验编号}_evaluation/`。exp3.1 与 3.2 的 Isaac 回放是 2026-11-12 为归档补跑的（之前只有 MuJoCo）。
 
@@ -509,7 +510,7 @@ Isaac 回放（服务器 `exp_20261111_172509`，seed 5，六段 0/0.4/0.6/0/0.4
 
 > 表格里的 `mean vx` 都是"后仰倒地时的底座位移速度"，不是行进速度；判断是否行走应看 `command_applied` 与足底接触相位，本轮 `command_applied` 基本为 0。
 
-**遗留疑问**：pd_stand 右髋 pitch 写成 −0.40（左 +0.40），而同组膝 0.49、踝 −0.21 左右同号；URDF 里右髋限位 [−2, 1] 与左 [−1, 2] 是镜像的，两种符号约定都解释不全。复跑中"出生即持续后仰"与该疑点方向一致，exp3.4 前必须用 FK 或部署配置确认这组值，避免再次在错误的站姿上训练。
+**站姿数值溯源（部分澄清）**：pd_stand 的数值与部署参考配置逐项一致（`czy/origin_x1/agibot_x1_train-main/humanoid/envs/x1/x1_dh_stand_config.py:129-140`：左髋 pitch +0.4、右髋 pitch −0.4、双膝 0.49、双踝 −0.21、髋 roll ±0.05、髋 yaw ∓0.31），说明 3.3 不是抄错，右髋负号是部署约定。但那份参考对应 `resources/robots/x1/urdf/x1.urdf`（12 自由度 DH），本项目用 `X1_29DOF_physically_mirrored.urdf`，两套 URDF 的左右髋 pitch 轴都写 `(0,0,1)`——数值能否直接搬到 29 自由度模型必须用 FK 验证（列为 exp3.4 的 P0）。
 
 **下一轮方向（exp3.4）**：
 
@@ -526,3 +527,138 @@ Isaac 回放（服务器 `exp_20261111_172509`，seed 5，六段 0/0.4/0.6/0/0.4
 - metadata、日志、机读摘要与任务 payload：`czy/exp1/records/exp3.3_evaluation/`。
 - 训练曲线与任务：`TASK_20261111_106`（flux 可按 key 拉 11751–11950）。
 - 站姿修复与回放开关注释见 `520c76f`、`e5a0dfa`。
+
+## 实验 exp3.4：站姿 FK 校验 + 零指令暴露修复（方案）
+
+> 状态：方案已写，未开训。§7 待训练完成后补充。
+
+### 1. 上一实验结果与教训
+
+> 数据：exp3.3 复跑（`czy/data/exp3.3/`）与训练曲线（TASK_20261111_106，11751–11950）。
+> - 站姿四元数修好后不再倒置，但**出生即后仰**：pitch 0.5 s −11.7°、1.0 s −19.5°，1.02 s 就 |pitch|≥20°，1.4 s 摔倒重置；每回合净后移 0.71 m。
+> - 全程 `command_applied` 为 0（站姿）/16 步（RSI）；`Commands/zero_applied_fraction` 训练期 0.0000。
+> - 3.1/3.2 的 Isaac 补跑反而 60 s 零跌倒、0.4/0.6 跟踪 RMSE 0.044–0.075，与 MuJoCo 1.7–2.2 s 跌倒形成对照。
+
+**核心教训**：
+
+1. 站姿必须先做"可执行性"校验（四元数、脚底同高、左右对称），否则整轮训练白做；3.3 就是 200 轮训在倒置站姿上。
+2. 零指令暴露是硬前置指标，不是事后统计：三代训练该指标≈0，说明 50% 零指令从未进入策略，锚/惩罚都在空集上生效。
+3. 站姿数值本身不是抄错：与部署参考 `czy/origin_x1/agibot_x1_train-main/humanoid/envs/x1/x1_dh_stand_config.py:129-140` 逐项一致；问题是它出自 12 自由度 DH 的 `x1.urdf`，能否直接搬到 29 自由度 physically mirrored URDF 未验证。
+4. MuJoCo 与 Isaac 的差距是独立议题（3.1/3.2 已证），本轮先不碰域随机，只解决"站姿 + 零指令暴露"。
+
+### 2. 本轮修改目标
+
+| 门禁 | 目标（量化） |
+| --- | --- |
+| P0 站姿 FK | 双脚最低点高度差 ≤5 mm、左右脚前后差 ≤10 mm、CoM 投影距支撑多边形边界 ≥20 mm、最低点离地 2 mm |
+| P1 零指令暴露 | 20 轮冒烟内 `Commands/zero_requested_fraction` ≥0.45、`zero_applied_fraction` ≥0.30 |
+| P2 静态门禁 | 固定 PD、seed 5，站立 5 s 0 跌倒 |
+| P3 Isaac | A：零指令 10 s 0 跌倒且 |pitch|≤10°；B：20 s，0.4/0.6 跟踪 RMSE ≤0.10、航向 ≤15°；C：60 s 0 重置 |
+| P4 MuJoCo | G1/G2/G3 零指令 10 s 不摔；G4 缓冲后阶跃 10 s 不摔；G5 立即阶跃 10 s，mean vx 0.5–0.7、RMSE ≤0.10 |
+
+非目标：不改 AMP/D 语义与 PD 增益、不新增奖励项、不做 heading 改造、不在本轮追 60 s MuJoCo。
+
+### 3. 修改内容
+
+### 修改一：站姿 FK 校验（P0，先于任何训练）
+
+- 新工具 `scripts/amp_tools/check_pose_fk.py`：纯 `numpy` + `lxml`，不需要 Isaac/torch，可直接在本地跑。
+- 输入：`resources/robots/x1_29/urdf/X1_29DOF_physically_mirrored.urdf` + 待检姿态（exp34 config 的 `default_joint_angles`、部署原值、3.2 的轨迹站姿帧三选一）。
+- 输出 JSON：两只脚各 4 个足底角点的世界坐标、脚底高度差、左右脚前后差、CoM 投影与支撑多边形余量；`--variant right-hip-pitch=±0.4` 两种约定各算一次。
+- 判定：四项阈值全过 → 站姿照用；任一项不过 → 按 FK 结果修正，并同步 config 的 `default_joint_angles` 与 env 的 `_PD_STAND_ANGLES`。
+- 产出记录在 `czy/exp1/records/exp3.4_evaluation/pose_check.json`。
+
+### 修改二：站姿与采样回归单测（`tests/test_exp34.py`，纯 CPU）
+
+- `standing_state[3:7] == [0,0,0,1]` 且四元数范数为 1（防再次写错顺序）。
+- config 的 `default_joint_angles` 与 env 的 `_PD_STAND_ANGLES` 逐项一致（防两处漂移）。
+- FK 对称性容差（复用 `check_pose_fk` 的纯函数）。
+- `_draw_commands(10000)` 的零比例落在 [0.45, 0.55]（stub env，不需要仿真）。
+
+### 修改三：零指令暴露管道（P1，本轮核心）
+
+新任务 `x1_amp_exp34`：`x1_amp_exp34_config.py` / `x1_amp_exp34_env.py`，继承 exp33（锚、库、硬拒绝、站姿惩罚都不动），新增 `X1Exp34AMPOnPolicyRunner` 只负责指标。
+
+**新增指标**（写进 `extras["training_metrics"]`，自动进 TensorBoard）：
+
+| 指标 | 含义 |
+| --- | --- |
+| `Commands/zero_requested_fraction` | 重采样后 `requested[:,0]==0` 的比例 |
+| `Commands/zero_applied_fraction` | buffer 外、非 transition 的 steady 状态里 `applied==0` 的比例 |
+| `Commands/stand_buffer_active_fraction` | `standing_commands.remaining>0` 的比例 |
+| `Commands/command_from_reference_fraction` | 重置时命令直接取自参考片段的比例 |
+| `Commands/nominal_override_fraction` | 被 nominal/native 覆盖的比例 |
+
+**假设（短训验证）**：`x1_amp_env.py:820` 在 RSI 重置时把 `_reset_commands` 设为参考片段速度；`_resample_commands`（`x1_amp_env.py:862-871`）据此跳过 `_draw_commands`，并把 nominal cohort 强制写成 `[native_speed,0,0]` → 50% 零样本进不了 `standing_commands.requested`，于是 `applied` 永远非零。
+
+**修法**（按诊断结果组合）：
+
+1. 重采样一律重新抽样（走 `_draw_commands`），参考片段速度只用于挑匹配的帧，不再作为命令来源。
+2. 抽到零指令的 env 在重置时走 standing 分支：姿态用 `standing_state`、`buffer=1.5 s`、参考帧取站立帧。
+3. 去掉 nominal→native 的强制覆盖；若担心早期行走样本不足，前 100 轮保留 25% 覆盖作课程。
+4. `StandingCommands.applied()` 语义不变，但指标只在 buffer 外统计，避免把"缓冲期 0"误记成零指令。
+
+**门禁**：20 轮 × 64 env 冒烟必须同时满足 `zero_requested≥0.45`、`zero_applied≥0.30`；否则停在冒烟，不进正式训练。
+
+### 修改四：课程（保守）
+
+- 前 100 轮 `zero_probability=0.3`，之后 0.5。
+- 其余奖励/AMP/控制与 3.2/3.3 完全一致；若 P2 通过但策略仍后仰，姿态/重心项留到 exp3.5。
+
+### 4. 修改文件
+
+- 新增 `scripts/amp_tools/check_pose_fk.py`、`tests/test_exp34.py`。
+- 新增 `humanoid/envs/x1/x1_amp_exp34_config.py`、`x1_amp_exp34_env.py`、`humanoid/amp/x1_exp34_runner.py`。
+- `humanoid/envs/__init__.py`、`humanoid/utils/task_registry.py`（注册与白名单）。
+- 若 FK 证伪部署值：`x1_amp_exp34_config.py` 的 `default_joint_angles` 与 `x1_amp_exp34_env.py` 的 `_PD_STAND_ANGLES` 同步修正。
+- 分支 `codex/exp3-4`。
+
+### 5. 训练参数与任务
+
+| 项 | 值 |
+| --- | --- |
+| 任务 | `x1_amp_exp34` |
+| 源模型 | `czy/data/exp3.2/model_11750.pt`，SHA `391f8346…1413bafc`（不用 11950：它在倒置站姿上训出来的） |
+| 迁移 | warm_start `all_weights` + 优化器重建（同 3.3 路径） |
+| 轮数 / 保存 | 500 / 50 |
+| 环境 / seed | 4096 / 5 |
+| rollout / PPO | 96 / 5 epochs × 16 mini-batch |
+| 学习率 | 1e-5 起，KL 自适应上限 1e-4 |
+| 账号 / 项目 | `limxbe2d78owe5wc`（userId 4742） / `PRO_20261109_001` |
+| 镜像 | `BJX00000001` / `V000412`（Isaac Gym Preview 4） |
+| 启动命令 | `gm-run amp_reo/humanoid/scripts/train.py --task=x1_amp_exp34 --headless --num_envs=4096 --seed=5 --max_iterations=500 --run_name=exp3.4_main --warm_start=/workspace/amp_reo/humanoid/exported_data/input_model_11750.pt --warm_start_sha256=391f8346…3bafc` |
+| 预计耗时 | 3.3 实测 2172 s / 200 轮 ≈ 10.9 s/轮 → 500 轮 ≈ 1.5 h（不含排队） |
+
+### 6. 预期与验收
+
+| 门禁 | 指标 | 通过线 | 停止条件 |
+| --- | --- | --- | --- |
+| P0 | 脚底 Δz / 前后差 / CoM 余量 | ≤5 mm / ≤10 mm / ≥20 mm | 不对称且无法解释 → 改站姿或改映射，不进训练 |
+| P1 | zero_requested / zero_applied（20 轮） | ≥0.45 / ≥0.30 | <0.1 → 停，先修管道 |
+| P2 | 固定 PD 5 s，seed 5 | 0 跌倒 | 失败 → 先修站姿/PD |
+| P3-A | Isaac 零指令 10 s | 0 跌倒，|pitch|≤10° | 跌倒 → 停 |
+| P3-B | Isaac 20 s 0.4/0.6 | RMSE ≤0.10、航向 ≤15° | |
+| P3-C | Isaac 60 s | 0 重置 | |
+| P4 | MuJoCo G1–G5 | 零指令 ≥10 s、阶跃 ≥10 s、mean vx 0.5–0.7、RMSE ≤0.10 | 任一失败 → 记录，转 exp3.5 处理接触/摩擦 |
+
+### 7. 实验结果
+
+待训练完成后补充。
+
+### 8. 执行顺序
+
+1. FK 校验（本地，~15 min）→ 写 `pose_check.json`。
+2. 站姿结论 + 单测（~30 min）。
+3. 任务/指标/管道修改 + 20 轮冒烟（~1 h，云端约 12 min）。
+4. 正式 500 轮（~1.5 h）。
+5. Isaac 回放 + 三件套归档（~15 min）。
+6. MuJoCo G1–G5（`sim2sim_amp_mlp.py`，~30 min）：
+   `--root <repo> --checkpoint czy/data/exp3.4/model_XXXX.pt --mjcf-source czy/data/exp3.1/mujoco/G1_zero_heading/mjcf/x1_29dof_scene.xml --meshes resources/robots/x1_29/meshes --training-commit <commit> --runtime-properties E:/X1/amp_re0/agibot_x1_train-main/czy/exp1/records/exp2.9_long_evaluation/runtime_audit/runtime.json --passive-probe …/passive_probe.json`
+7. 笔记与归档（~20 min）。
+
+### 9. 风险与决策点
+
+- **部署值在 29 自由度模型上不对称**：若 FK 显示脚底不齐，优先怀疑 DH→29 自由度的轴映射，而不是简单翻转符号；必要时回到"轨迹平均站姿"降级方案。
+- **零样本拉高后行走变差**：用 0.3→0.5 的课程，若 `rew_tracking_lin_vel` 在前 100 轮掉超过 20%，先停在 0.3。
+- **metadata 拒载**：站姿变会改 control metadata，训练侧走 `all_weights`（3.3 已有路径），回放侧才用 `--relaxed_metadata`。
+- **Isaac 通过但 MuJoCo 仍短命**：说明瓶颈在接触/摩擦建模而非训练目标，exp3.5 应转向域随机（3.0 已列方向），不要继续加零指令样本。
