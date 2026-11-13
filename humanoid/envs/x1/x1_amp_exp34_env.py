@@ -32,8 +32,12 @@ class X1AMPExp34Env(X1AMPExp33Env):
 
     def _init_buffers(self):
         super()._init_buffers()
-        # FK on X1_29DOF_physically_mirrored.urdf: sole touches the ground at 0.611 m.
-        self.standing_state[2] = float(getattr(self.cfg.env, "standing_pose_z", 0.611))
+        # FK on X1_29DOF_physically_mirrored.urdf: the pd_stand sole touches the
+        # ground at 0.611 m.  ``standing_pose_z = None`` keeps whatever height the
+        # inherited standing frame carries (used by exp3.5's clip-frame pose).
+        height = getattr(self.cfg.env, "standing_pose_z", 0.611)
+        if height is not None:
+            self.standing_state[2] = float(height)
         self._resample_stats = {"drawn": 0, "zero": 0, "from_reference": 0}
         self._zero_ratio = 0.0
         self._reference_ratio = 0.0
