@@ -1,0 +1,102 @@
+{
+  "experiment": "exp3.4",
+  "task_id": "TASK_20261113_071",
+  "task_name": "exp3.4-zero-exposure-v2",
+  "account": "limx16c492gkh03c",
+  "user_id": 4768,
+  "branch": "codex/exp3-4",
+  "training_commit": "dd683f3",
+  "project": "PRO_20261109_001",
+  "image": "BJX00000001 / V000412 (1x4090D 24G)",
+  "start_time": "2026-11-13 11:12:39",
+  "end_time": "2026-11-13 12:44:12",
+  "runtime_seconds": 5493,
+  "iterations": {
+    "first": 11750,
+    "last": 12250,
+    "count": 500,
+    "seconds_per_iteration": 11.3
+  },
+  "warm_start": {
+    "file": "model_11750.pt",
+    "sha256": "391f83466f26c76c75b0949f68b1771e01b3b4c5a49642527f1f3aea1413bafc"
+  },
+  "final_model": {
+    "file": "model_12250.pt",
+    "sha256": "eeed4a541db4668014520c0de54b6bb032671ea17a1239d1a719f9188d63ba60"
+  },
+  "curve": {
+    "Commands/zero_applied_fraction": [
+      0.296,
+      0.286,
+      0.25,
+      0.219,
+      0.205
+    ],
+    "Init/standing_early_failure_rate": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "Tracking/zero_vx": [
+      -0.575,
+      -0.564,
+      -0.555,
+      -0.582,
+      -0.575
+    ],
+    "Episode/zero_completed_length": [
+      66.6,
+      null,
+      78.7,
+      86.1,
+      93.4
+    ],
+    "Episode/forward_completed_length": [
+      93.6,
+      null,
+      130.6,
+      156.3,
+      165.8
+    ],
+    "Train/mean_reward": [
+      -4.37,
+      -3.87,
+      -4.01,
+      -3.46,
+      -4.39
+    ]
+  },
+  "isaac_acceptance": {
+    "standing": {
+      "resets": 44,
+      "mean_vx": [
+        -0.6,
+        -0.55
+      ],
+      "min_height_m": 0.28,
+      "max_abs_pitch_rad": 1.56
+    },
+    "buffer_rsi": {
+      "resets": 41,
+      "applied_max": 0.028,
+      "note": "episode 71 steps < 75-step stand buffer"
+    },
+    "walk": {
+      "resets": 33,
+      "cmd_0.4_real": -0.15,
+      "cmd_0.6_real": -0.29
+    }
+  },
+  "mujoco_acceptance": {
+    "status": "blocked",
+    "reason": "runtime audit asset_urdf_sha256=6ab9202a... != committed URDF f45f8b3b...; no audit generator available",
+    "fixed_en_route": [
+      "duplicate autolimits attribute",
+      "absolute Windows STL paths",
+      "duplicate actuator block"
+    ]
+  }
+}

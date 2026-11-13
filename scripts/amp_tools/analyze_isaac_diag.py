@@ -16,7 +16,7 @@ from pathlib import Path
 
 import numpy as np
 
-FIELDS = ("active_stage", "command_applied", "cmd_linear_x", "vx", "vy",
+FIELDS = ("active_stage", "command_requested", "command_applied", "vx", "vy",
           "base_euler_x", "base_euler_y", "base_euler_z", "base_height",
           "done", "timeout", "episode_id")
 
@@ -37,7 +37,7 @@ def load(path):
 
 def stage_blocks(data, dt):
     stages = data["active_stage"].astype(int)
-    command = data["cmd_linear_x"]
+    command = data["command_requested"]
     applied = data["command_applied"]
     blocks, start = [], 0
     for index in range(1, len(stages) + 1):

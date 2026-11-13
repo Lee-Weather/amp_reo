@@ -32,13 +32,20 @@ def prepare_mjcf(source, meshes, destination, joint_names):
     raw = (source / "x1_29dof_raw.xml").read_text(encoding="utf-8")
     raw = re.sub(r'meshdir="[^"]*"', 'meshdir="{}"'.format(meshes), raw, count=1)
     raw = re.sub(r'file="../../meshes/([^"]+)"', r'file="{}/\1"'.format(meshes), raw)
+    # The committed x1_29dof_raw.xml also carries absolute Windows mesh paths;
+    # rewrite every STL reference onto the supplied mesh directory so the model
+    # loads on any host.
+    raw = re.sub(r'file="[^"]*/([^/"]+\.STL)"',
+                 lambda m: 'file="{}/{}"'.format(meshes, m.group(1)), raw)
     raw = raw.replace(' content_type="model/stl"', "")
     raw = re.sub(r' actuatorfrcrange="[^"]*"', "", raw)
-    raw = re.sub(r"<compiler ", '<compiler autolimits="true" ', raw, count=1)
+    raw = re.sub(r'<compiler (?!.*autolimits)', '<compiler autolimits="true" ', raw, count=1)
     actuators = "\n".join('    <motor joint="{}" gear="1"/>'.format(name) for name in joint_names)
+    # Idempotent: an already prepared source already carries the actuator block.
+    raw = re.sub(r"\s*<actuator>.*?</actuator>", "", raw, flags=re.S)
     raw = raw.replace("</mujoco>", "  <actuator>\n{}\n  </actuator>\n</mujoco>".format(actuators))
     scene = (source / "x1_29dof_scene.xml").read_text(encoding="utf-8")
-    scene = re.sub(r"<compiler ", '<compiler autolimits="true" ', scene, count=1)
+    scene = re.sub(r'<compiler (?!.*autolimits)', '<compiler autolimits="true" ', scene, count=1)
     scene = re.sub(r'timestep="[^"]*"', 'timestep="{}"'.format(0.002), scene, count=1)
     destination.mkdir(parents=True, exist_ok=True)
     (destination / "x1_29dof_raw.xml").write_text(raw, encoding="utf-8")
